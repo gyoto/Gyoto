@@ -485,8 +485,8 @@ void Disk3D::fitsWrite(string filename, const std::string & prefix) {
   }
 
   pixfile = const_cast<char *>(fullname.c_str());
-  GYOTO_DEBUG_THIS_EXPR(filename_);
-  GYOTO_DEBUG_THIS_EXPR(pixfile);
+  GYOTO_DEBUG_EXPR(filename_);
+  GYOTO_DEBUG_EXPR(pixfile);
 
   ////// CREATE FILE
   GYOTO_DEBUG << "creating file" << endl;

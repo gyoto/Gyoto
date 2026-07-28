@@ -65,10 +65,10 @@ if (gyoto_haveXerces() && gyoto_haveCFITSIO()) {
   sc2 = gyoto_Scenery("check-disk3d.xml");
   write, format="%s\n", " done.";
   
-  //write, format="%s", "Removing temporary files...";
-  //remove, "check-disk3d.xml";
-  //remove, "check-disk3d.fits.gz";
-  //write, format="%s\n", " done.";
+  write, format="%s", "Removing temporary files...";
+  remove, "check-disk3d.xml";
+  remove, "check-disk3d.fits.gz";
+  write, format="%s\n", " done.";
  } else {
   write, format="%s", "Cloning...";
   sc2 = sc.clone;

@@ -36,18 +36,6 @@ class TestDisk3D(unittest.TestCase):
         os.makedirs(cls.artifacts_dir, exist_ok=True)
 
     def test_Disk3D(self):
-
-        # TO BE REMOVED:
-        # load Yorick-generated objects
-        ysc = gyoto.core.Factory("../yorick/check-disk3d.xml").scenery()
-        yd3d = gyoto.std.Disk3D(ysc.Astrobj)
-        ypemissquant_shape = gyoto.core.array_size_t(4)
-        yd3d.getEmissquantNaxes(ypemissquant_shape)
-        print([ypemissquant_shape[i] for i in range(4)])
-        ypemissquant = gyoto.core.array_double.frompointer(yd3d.getEmissquant())
-        ypvelocity = gyoto.core.array_double.frompointer(yd3d.getVelocity())
-        # END TO BE REMOVED
-
         # emiss
         # ! axis ordering is reversed
         emissquant_shape = np.asarray((1, 2, 10, 10), np.uint64)
@@ -57,10 +45,6 @@ class TestDisk3D(unittest.TestCase):
         emissquant[0:3, :, 0, :] = 100.
         emissquant[3:10, :, 1, :] = 100.
         pemissquant = gyoto.core.array_double.fromnumpy4(emissquant)
-        # TO BE REMOVED:
-        for k in range(200):
-            assert ypemissquant[k] == pemissquant[k]
-        # END TO BE REMOVED
 
         # velocity
         # ! axis ordering is reversed and leading 3 is implicit
@@ -68,10 +52,6 @@ class TestDisk3D(unittest.TestCase):
         pvelocity_shape = gyoto.core.array_size_t.fromnumpy1(velocity_shape[1:])
         velocity = np.ones(velocity_shape[::-1])
         pvelocity = gyoto.core.array_double.fromnumpy4(velocity)
-        # TO BE REMOVED:
-        for k in range(600):
-            assert ypvelocity[k] == pvelocity[k]
-        # END TO BE REMOVED
 
         # metric
         metric = gyoto.std.KerrBL()
@@ -136,6 +116,7 @@ class TestDisk3D(unittest.TestCase):
         self.assertTrue((naxes2 == naxes3).all(),
                         "naxes not conserved in i/o or clone")
 
+        # emissquant
         buf_emiss_size = naxes2.prod()
         pemissquant2 = gyoto.core.array_double.frompointer(
             d3d2.getEmissquant())
@@ -146,12 +127,6 @@ class TestDisk3D(unittest.TestCase):
             self.assertEqual(pemissquant2[k], pemissquant3[k],
                              'emissquant not conserved')
 
-            # TO BE REMOVED
-            self.assertEqual(pemissquant2[k], ypemissquant[k],
-                             'emissquant not conserved')
-        for k in range(4):
-            assert naxes2[k] == ypemissquant_shape[k]
-        # END TO BE REMOVED
 
         # velocity
         buf_velocity_size = velocity_shape.prod()
@@ -161,10 +136,6 @@ class TestDisk3D(unittest.TestCase):
             d3d3.getVelocity())
         for k in range(buf_velocity_size):
             assert pvelocity2[k] == pvelocity3[k], "Velocity changed"
-            # TO BE REMOVED
-            self.assertEqual(pvelocity2[k], ypvelocity[k],
-                             'velocity not conserved')
-            # END TO BE REMOVED
 
 if __name__ == '__main__':
     unittest.main()

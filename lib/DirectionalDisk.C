@@ -370,8 +370,9 @@ void DirectionalDisk::fitsRead(string filename) {
 
 void DirectionalDisk::fitsWrite(string filename, const std::string & prefix) {
   if (!emission_) GYOTO_ERROR("DirectionalDisk::fitsWrite(filename): nothing to save!");
-  filename_ = filename;
-  char*     pixfile   = const_cast<char*>(filename_.c_str());
+
+  std::string fullname;
+  char*     pixfile;
   fitsfile* fptr      = NULL;
   int       status    = 0;
   long      naxes []  = {long(nnu_), long(ni_), long(nr_)};
@@ -379,29 +380,21 @@ void DirectionalDisk::fitsWrite(string filename, const std::string & prefix) {
   char * CNULL=NULL;
 
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
-  if (prefix != ""){
-    GYOTO_DEBUG << "filename :" << filename << " : PREFIX |" << prefix << "|"<< endl;
-    //filename_ = filename
-    if (filename_.compare(0,1,"!")){
-        // pixfile = const_cast<char*>((prefix.append(filename_)).c_str());
-        pixfile = const_cast<char*>((filename.insert(0,prefix)).c_str());
-        GYOTO_INFO << "pixfile :" << pixfile << endl;
-    }
-    else{
-        GYOTO_DEBUG << "filename :" << filename << " : PREFIX |" << prefix << "|"<< endl;
-        filename_ = filename_.substr(1);
-        filename = filename.substr(1);
-        GYOTO_DEBUG << "filename_ :" << filename_ << endl;
-        // pixfile = const_cast<char*>((prefix.append(filename_).insert(0,"!")).c_str());
-        pixfile = const_cast<char*>((filename.insert(0,"!" + prefix)).c_str());
-        GYOTO_DEBUG << "pixfile" << pixfile << endl;
-    }
+
+  if (!filename.compare(0,1,"!")) {
+    filename_ = filename.substr(1);
+    fullname = "!" + prefix + filename_;
+  } else {
+    filename_ = filename;
+    fullname = prefix + filename_;
   }
-  else
-    GYOTO_DEBUG << "NO PREFIX  " << filename << endl;
+
+  pixfile = const_cast<char *>(fullname.c_str());
+  GYOTO_DEBUG_EXPR(filename_);
+  GYOTO_DEBUG_EXPR(pixfile);
 
   ////// CREATE FILE
- GYOTO_INFO << " writing pixfile :" << pixfile << endl;
+  GYOTO_INFO << " writing pixfile :" << pixfile << endl;
 
   ////// CREATE FILE
   GYOTO_DEBUG << "creating file \"" << pixfile << "\"... ";
