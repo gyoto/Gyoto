@@ -264,6 +264,5 @@ def minmax(data):
             min = b
     return [min, max]
 
-
 if __name__ == '__main__':
     unittest.main()
