@@ -113,7 +113,7 @@ tag_platform=sysconfig.get_platform().replace("-", "_").replace(".", "_"); \
 print(f"{tag_interpreter}-{tag_abi}-{tag_platform}")').whl
 
 CHECK_ENV = @DYLIB_VAR@=../lib/.libs:../plugins/python/lib/.libs:$$@DYLIB_VAR@ \
-	PYTHONPATH=testbed:$$PYTHONPATH
+	PYTHONPATH=testbed:$$PYTHONPATH GYOTO_EXAMPLES_DIR=$(top_srcdir)/doc/examples/
 
 MPIRUN = mpirun --mca btl_tcp_if_include lo 
 

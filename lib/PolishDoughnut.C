@@ -295,8 +295,8 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   outerradius.papa = this;
   rmin=r_centre_;
   r_torusouter_ = outerradius.ridders(rmin,rmax);
-  cout << "Torus rinner, rcen, router= " << rintorus_ << " " << r_centre_ << " " << r_torusouter_ << endl;
-  cout << "Pot center surface= " << W_centre_ << " " << W_surface_ << endl;
+  GYOTO_INFO << "Torus rinner, rcen, router= " << rintorus_ << " " << r_centre_ << " " << r_torusouter_ << endl;
+  GYOTO_INFO << "Pot center surface= " << W_centre_ << " " << W_surface_ << endl;
   //GYOTO_ERROR("Testing");
   GYOTO_IF_DEBUG;
   GYOTO_DEBUG_EXPR(l0_);

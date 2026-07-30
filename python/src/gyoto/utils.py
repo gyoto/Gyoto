@@ -317,7 +317,7 @@ Second form:
 
     if scalars == 2:
         for key in res:
-            res[key]=res[key][0]
+            res[key]=res[key][...,0]
 
     # Reset Resolution and Quantities
     sc.Screen.Resolution = resbefore
