@@ -113,7 +113,9 @@ tag_platform=sysconfig.get_platform().replace("-", "_").replace(".", "_"); \
 print(f"{tag_interpreter}-{tag_abi}-{tag_platform}")').whl
 
 CHECK_ENV = @DYLIB_VAR@=../lib/.libs:../plugins/python/lib/.libs:$$@DYLIB_VAR@ \
-	PYTHONPATH=testbed:$$PYTHONPATH GYOTO_EXAMPLES_DIR=$(top_srcdir)/doc/examples/
+	PYTHONPATH=testbed:$$PYTHONPATH \
+	GYOTO_EXAMPLES_DIR=$(top_srcdir)/doc/examples/ \
+	PYTHONPYCACHEPREFIX=pycache
 
 MPIRUN = mpirun --mca btl_tcp_if_include lo 
 
@@ -203,7 +205,7 @@ check-mpi: testbed/stamp ../bin/gyoto-mpi-worker.@sovers@@EXEEXT@ $(GYOTO_PLUGIN
 
 # clean up:
 check-clean:
-	-rm -f example.pdf example-patterndisk.pdf
+	-rm -f example*.pdf
 	-rm -Rf tests/artifacts/
 
 # those targets are yet empty:
@@ -301,6 +303,8 @@ endif
 	-rm -f tests/*.pyc *_wrap.cxx
 	-rm -Rf _gyoto*.so src/Gyoto*.egg-info _*.so testbed
 	-rm -Rf dist gyoto/__pycache__/ tests/__pycache__/ .eggs/ __pycache__/
+	-rm -Rf ../doc/examples/__pycache__/ src/gyoto.egg-info/
+	-rm -Rf pycache
 	-rmdir include
 
 distclean: clean 

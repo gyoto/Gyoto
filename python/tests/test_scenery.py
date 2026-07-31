@@ -35,6 +35,7 @@ import matplotlib.pyplot as plt
 gyoto.core.requirePlugin('stdplug')
 
 GYOTO_EXAMPLES_DIR = os.environ.get("GYOTO_EXAMPLES_DIR", "../doc/examples/")
+GYOTO_MAX_THREADS =  int(os.environ.get("GYOTO_MAX_THREADS", os.cpu_count()))
 
 class TestScenery(unittest.TestCase):
     @classmethod
@@ -111,7 +112,7 @@ class TestScenery(unittest.TestCase):
         im1 = sc3.rayTrace(quantities="Intensity")["Intensity"]
 
         # Ray-tracing on all threads (sc())
-        sc3.nThreads(os.cpu_count())
+        sc3.nThreads(GYOTO_MAX_THREADS)
         im2 = sc3.rayTrace(quantities="Intensity")["Intensity"]
 
         # The two images are not strictly equal because Delta is
@@ -148,7 +149,7 @@ class TestScenery(unittest.TestCase):
         sc = gyoto.utils.readScenery(GYOTO_EXAMPLES_DIR +
                                      "example-complex-astrobj.xml")
 
-        sc.NThreads = 8
+        sc.NThreads = GYOTO_MAX_THREADS
         sc.NProcesses = 0
 
         data = sc[:, :]["Spectrum"]

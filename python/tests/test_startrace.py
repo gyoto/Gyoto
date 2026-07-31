@@ -29,6 +29,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 gyoto.core.requirePlugin('stdplug')
 
 GYOTO_EXAMPLES_DIR = os.environ.get("GYOTO_EXAMPLES_DIR", "../doc/examples/")
+GYOTO_MAX_THREADS =  int(os.environ.get("GYOTO_MAX_THREADS", os.cpu_count()))
 
 class TestStarTrace(unittest.TestCase):
     @classmethod
@@ -55,7 +56,7 @@ class TestStarTrace(unittest.TestCase):
         stt.OpticallyThin = False
 
         sc.Astrobj = stt
-        sc.NThreads = os.cpu_count()
+        sc.NThreads = GYOTO_MAX_THREADS
 
         # Ray-tracing StarTrace
         sc.Quantities = "Intensity"
