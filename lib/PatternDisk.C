@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2014, 2017-2019 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2026 Thibaut Paumard, Frederic Vincent, Julien Brulé
 
     This file is part of Gyoto.
 
@@ -496,19 +496,12 @@ void PatternDisk::fitsWrite(std::string filename, const std::string & prefix) {
   GYOTO_DEBUG_EXPR(pixfile);
 
   ////// CREATE FILE
-  fits_create_file(&fptr,pixfile, &status);
-  if (status) {
-        GYOTO_INFO << status << endl;
-        GYOTO_INFO << "CFITSERROR create file" << endl;
-      throwCfitsioError(status) ;
-  }
-
+  GYOTO_DEBUG << "creating file \"" << pixfile << "\"... ";
+  fits_create_file(&fptr, pixfile, &status);
+  if (status) throwCfitsioError(status) ;
   if (debug()) cerr << "done." << endl;
   fits_create_img(fptr, DOUBLE_IMG, 3, naxes, &status);
-  if (status) {
-        GYOTO_INFO << "CFITSERROR create img" << endl;
-      throwCfitsioError(status) ;
-  }
+  if (status) throwCfitsioError(status) ;
 
   ////// WRITE FITS KEYWORDS COMMON TO ALL TABLES ///////
   //set Omega and t0;

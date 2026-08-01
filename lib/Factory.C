@@ -539,7 +539,6 @@ Factory::Factory(SmartPointer<Scenery> sc)
     photon_(NULL), spectro_(NULL), filename_("")
 {
   GYOTO_DEBUG << "Initializing XML stuff" << endl;
-  GYOTO_INFO << " FACT Initializing XML stuff" << endl;
   XMLPlatformUtils::Initialize();
   impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
   if (!impl_) GYOTO_ERROR("Problem initializing DOMImplementation");
@@ -550,11 +549,9 @@ Factory::Factory(SmartPointer<Scenery> sc)
   root_ = doc_->getDocumentElement();
 
   GYOTO_DEBUG << "Creating FactoryMessenger" << endl;
-  GYOTO_INFO << "Creating FactoryMessenger" << endl;
   FactoryMessenger fm(this, root_);
 
   GYOTO_DEBUG << "scenery_ -> fillElement(&fm);" << endl;
-  GYOTO_INFO << "Fact scenery_ -> fillElement(&fm);" << endl;
   scenery_ -> fillElement(&fm);
 
 }
@@ -604,7 +601,6 @@ Factory::Factory(SmartPointer<Astrobj::Generic> ao)
     scenery_(NULL), gg_(NULL), obj_(ao), photon_(NULL),
     spectro_(NULL), filename_("")
 {
-  GYOTO_INFO << "Factory astrobj generic" << endl;
   XMLPlatformUtils::Initialize();
   impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
   if (!impl_) GYOTO_ERROR("Problem initializing DOMImplementation");
@@ -695,7 +691,6 @@ void Factory::metric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
 }
 
 void Factory::astrobj(SmartPointer<Astrobj::Generic> ao, DOMElement *el) {
-  GYOTO_INFO << "Factory astrobj ao generic domelt" << endl;
   GYOTO_DEBUG << endl;
   if (!ao && !obj_) return;
   if (obj_ && ao && ao!= obj_) GYOTO_ERROR("Inconsistent use of Astrobjs");
@@ -1139,13 +1134,11 @@ std::vector<unsigned long> FactoryMessenger::parseArrayULong(std::string content
 }
 
 std::string FactoryMessenger::fullPath(const std::string &fname) const {
-  GYOTO_INFO << "FactoryMessenger request fullPath " << fname << endl;
   return employer_ -> fullPath(fname);
 }
 
 std::string Factory::fullPath(const std::string &fname) const {
   GYOTO_DEBUG << endl;
-  GYOTO_INFO << "Factory fullPath " << fname << endl;
   if (!fname.compare(0, 1, "/")) return fname; // fname is already absolute 
   string fpath = "";
 
@@ -1161,7 +1154,6 @@ std::string Factory::fullPath(const std::string &fname) const {
 
     char * cwd = getcwd(NULL, 0);
     curwd = cwd;
-    GYOTO_INFO << "Factory xml path " << curwd << endl;
     free (cwd); cwd = NULL;
   }
 
@@ -1169,24 +1161,16 @@ std::string Factory::fullPath(const std::string &fname) const {
   if (fname.compare(0, prefix.size(), prefix)) {
     // fname does not start with "`pwd`/":
     // it is relative to xmlpath
-    if (xmlpath.compare(0, 1, "/")) {
-        GYOTO_INFO << "Factory xml absolute path " << fpath << endl;
-        fpath = curwd + "/" ;
-    }
+    if (xmlpath.compare(0, 1, "/")) fpath = curwd + "/" ;
     fpath += xmlpath + "/";
-        GYOTO_INFO << "Factory xml 1 relative path " << fpath << endl;
     fpath += fname;
-        GYOTO_INFO << "Factory xml 2 relative path " << fpath << endl;
   } else {
     // fname starts with "`pwd`/": relative to working directory
     fpath = curwd + "/";
-        GYOTO_INFO << "Factory xml 1 pwd trick path " << fpath << endl;
     fpath += fname.substr(prefix.size());
-        GYOTO_INFO << "Factory xml 2 pwd trick path " << fpath << endl;
   }
 
   GYOTO_DEBUG << "returns " << fpath << endl;
-  GYOTO_INFO << "returns " << fpath << endl;
   return fpath;
   
 }

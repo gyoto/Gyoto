@@ -612,6 +612,8 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
     $result = SWIG_NewPointerObj((new Gyoto::Value(static_cast< const Gyoto::Value& >($1))), SWIGTYPE_p_Gyoto__Value, SWIG_POINTER_OWN |  0 );
   }
 }
+
+
 // Non-Gyoto typemaps:
 // Handle std::string
 %include "std_string.i";
@@ -1283,40 +1285,3 @@ size_t gyotoid(PyObject* obj) {
 }
 %}
 size_t gyotoid(PyObject* obj);
-
-
-// add std::optional<string> mapping
-//%typemap(in) std::optional<string> {
-//    if($input == Py_None) {
-//        $1 = std::optional<string>();
-//    }
-//    else {
-//        $1 = std::optional<string>((string)PyString_AsString($input));
-//    }
-//}
-
-// Typemaps for std::optional<std::string>
-//%typemap(in) std::optional<std::string> {
-//  if ($input == Py_None) {
-//    $1 = std::nullopt;
-//  } else {
-    //$1 = std::optional<std::string>(PyUnicode_AsUTF8($input));
-//    $1 = std::string(PyUnicode_AsUTF8($input));
-//  }
-//}
-
-//%typecheck(SWIG_TYPECHECK_STRING) std::optional<string> {
-//  $1 = PyString_Check($input) ? 1 : 0;
-//}
-
-//%apply std::string { std::optional<std::string> prefix }
-
-// Overload for the function with 2 arguments (omitting the optional)
-
-//%extend Gyoto::Astrobj::PatternDisk {
-//    void fitsWrite(std::string filename) { ($self)->fitsWrite(filename, std::nullopt); }
-//}
-//%include GyotoPatternDisk.h
-
-
-

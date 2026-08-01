@@ -54,7 +54,6 @@ FitsRW::~FitsRW() {}
 #ifdef GYOTO_USE_CFITSIO
 fitsfile* FitsRW::fitsCreate(string const filename) const{
   GYOTO_MSG << "FitsRW creating FITS file " << filename << endl;
-  GYOTO_INFO << "FitsRW creating FITS file " << filename << endl;
   
   char*     fitsname   = const_cast<char*>(filename.c_str());
   int       status    = 0;
@@ -83,7 +82,6 @@ fitsfile* FitsRW::fitsCreate(string const filename) const{
 
 fitsfile* FitsRW::fitsOpen(string const filename) const{
   GYOTO_DEBUG << "FitsRW opening FITS file " << filename << endl;
-  GYOTO_INFO << "FitsRW opening FITS file " << filename << endl;
 
   fitsfile* fptr; // pointer to FITS file
   int       status    = 0;
