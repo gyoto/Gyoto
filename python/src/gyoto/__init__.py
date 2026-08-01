@@ -134,8 +134,8 @@ class GyotoPluginLoader(importlib.abc.Loader):
 
         class Metric(core.Metric):
             _plugin = name
-            def __init__(self, clsname):
-                super().__init__(clsname, (self._plugin,))
+            def __init__(self, clsname, *kwargs):
+                super().__init__(clsname, (self._plugin,), *kwargs)
         Metric.__module__ = fullname
         Metric.__doc__ = '''Instanciate Metric of kind clsname from plugin '''+name+'''.
 
@@ -147,8 +147,8 @@ class GyotoPluginLoader(importlib.abc.Loader):
 
         class Astrobj(core.Astrobj):
             _plugin = name
-            def __init__(self, clsname):
-                super().__init__(clsname, (self._plugin,))
+            def __init__(self, clsname, *kwargs):
+                super().__init__(clsname, (self._plugin,), *kwargs)
         Astrobj.__module__ = fullname
         Astrobj.__doc__ = '''Instanciate Astrobj of kind clsname from plugin '''+name+'''.
 
@@ -160,8 +160,8 @@ class GyotoPluginLoader(importlib.abc.Loader):
 
         class Spectrum(core.Spectrum):
             _plugin = name
-            def __init__(self, clsname):
-                super().__init__(clsname, (self._plugin,))
+            def __init__(self, clsname, *kwargs):
+                super().__init__(clsname, (self._plugin,), *kwargs)
         Spectrum.__module__ = fullname
         Spectrum.__doc__ = '''Instanciate Spectrum of kind clsname from plugin '''+name+'''.
 
@@ -173,8 +173,8 @@ class GyotoPluginLoader(importlib.abc.Loader):
 
         class Spectrometer(core.Spectrometer):
             _plugin = name
-            def __init__(self, clsname):
-                super().__init__(clsname, (self._plugin,))
+            def __init__(self, clsname, *kwargs):
+                super().__init__(clsname, (self._plugin,), *kwargs)
         Spectrometer.__module__ = fullname
         Spectrometer.__doc__ = '''Instanciate Spectrometer of kind clsname from plugin '''+name+'''.
 

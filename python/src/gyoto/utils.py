@@ -492,7 +492,7 @@ klass      -- a Python class to instanciate the C++ class.
         if plugin is not None and plugin == valid_identifier(plugin):
             module = f'gyoto.{plugin}'
         else:
-            module = 'gyoto.util'
+            module = 'gyoto.utils'
 
     if base is None:
         base=namespace.Generic
@@ -505,15 +505,15 @@ klass      -- a Python class to instanciate the C++ class.
     class klass(base):
         _classname  = classname
         _plugin     = plugin
-        def __init__(self, *args):
+        def __init__(self, *args, **kwargs):
             if self._plugin is None:
                 plugins=()
             else:
                 plugins=(self._plugin,)
             if args:
-                super().__init__(*args)
+                super().__init__(*args, **kwargs)
             else:
-                super().__init__(self._classname, plugins)
+                super().__init__(self._classname, plugins, **kwargs)
 
     klass.__name__   = identifier
     klass.__doc__    = doc

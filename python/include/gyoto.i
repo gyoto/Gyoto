@@ -118,6 +118,39 @@ Gyoto::SmartPointer<gtype>, gtype * {
 %typemap(typecheck) gtype const * = Gyoto::SmartPointer<gtype>;
 %enddef
 
+//  Monkey-patch an __init__ that handles keywords
+%define GyotoGyotoMonkeyPatchConstructor(klass)
+%pythoncode %{
+#  Monkey-patch an __init__ that handles keywords
+## klass ## .___init__ =  ## klass ## .__init__
+def _ ## klass ## __init__(self, *args, **kwargs):
+    r"""
+    Constructor for <class>.
+
+    Initializes an object using self.___init__(*args), then sets properties
+    according to kwargs.
+
+      obj = <class>(*args, property1=value1, property2=value2...)
+
+    is equivalent to:
+
+      obj = <class>(*args)
+      obj.property1 = value1
+      obj.property2 = value2
+      ...
+
+    see also <class>.___init__.
+
+    """
+    self.___init__(*args)
+    for key, value in kwargs.items():
+        setattr(self, key, value)
+
+## klass ## .__init__ = _ ## klass ## __init__
+del _ ## klass ## __init__
+%}
+%enddef
+
 // Include header for a class deriving from SmartPointee, providing
 // the ref and unref features
 %define GyotoSmPtrClass(klass)
@@ -131,6 +164,7 @@ Gyoto::SmartPointer<gtype>, gtype * {
   }
 };
 %include Gyoto ## klass ## .h
+GyotoGyotoMonkeyPatchConstructor(klass)
 %enddef
 
 // Include header for a base class (e.g. GyotoMetric.h), provide
@@ -161,8 +195,9 @@ Gyoto::SmartPointer<gtype>, gtype * {
 %ignore  Gyoto::klass::Generic::Generic(kind_t);
 %ignore  Gyoto::klass::Generic::Generic(const std::string);
 %ignore  Gyoto::klass::Generic::Generic(const int, const std::string &);
-// Make a pseudo constructor for down-casting.
+// Add a few methods to Generic
 %extend Gyoto::klass::Generic {
+  // Initialize from kind string
   Generic(std::string nm) {
     std::vector<std::string> plugin;
     Gyoto::klass::Generic * res = NULL;
@@ -185,6 +220,7 @@ Gyoto::SmartPointer<gtype>, gtype * {
     // end special case
     return res;
   }
+  // Initialize from kind string and list of plugins
   Generic(std::string nm, std::vector<std::string> plugin) {
     GYOTO_DEBUG_EXPR(plugin.size());
     Gyoto::klass::Generic * res = NULL;
@@ -207,20 +243,24 @@ Gyoto::SmartPointer<gtype>, gtype * {
     // end special case
     return res;
   }
+  // initialize from pointer
   Generic(long address) {
     Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(address);
     // Should be done by ref feature:
     // if (res) res -> incRefCount();
     return res;
   }
+  // down-casting
   Generic(Gyoto::klass::Generic *orig) {
     return orig;
   }
+  // for printing: use XML description
   std::string __str__() {
     return Gyoto::Factory($self).format();
   }
 };
 %include Gyoto ## klass ## .h
+GyotoGyotoMonkeyPatchConstructor(klass)
 %enddef
 
 // Include header for derived class. Parameters: nspace: namespace
@@ -247,6 +287,37 @@ Gyoto::SmartPointer<gtype>, gtype * {
   }
  };
 %include hdr
+
+//  Monkey-patch an __init__ that handles keywords
+%pythoncode %{
+#  Monkey-patch an __init__ that handles keywords
+## nick ## .___init__ =  ## nick ## .__init__
+def _ ## nick ## __init__(self, *args, **kwargs):
+    r"""
+    Constructor for <class>.
+
+    Initializes an object using self.___init__(*args), then sets properties
+    according to kwargs.
+
+      obj = <class>(*args, property1=value1, property2=value2...)
+
+    is equivalent to:
+
+      obj = <class>(*args)
+      obj.property1 = value1
+      obj.property2 = value2
+      ...
+
+    see also <class>.___init__.
+
+    """
+    self.___init__(*args)
+    for key, value in kwargs.items():
+        setattr(self, key, value)
+
+## nick ## .__init__ = _ ## nick ## __init__
+del _ ## nick ## __init__
+%}
 %enddef
 
 // Simplification of the above when nick == klass

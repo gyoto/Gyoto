@@ -44,6 +44,14 @@ class TestSmartPointer(unittest.TestCase):
         decrement the reference counter correctly.
 
         '''
+        # properties that we can try setting during construction
+        testproperties = {
+            'Metric': {'Mass': (4e8, 'sunmass')},
+            'Astrobj': {'RMax': 1000.},
+            'Spectrum': {},
+            'wave': {'NSamples': 10},
+            'Spectrometer': {},
+        }
         for gnspace in ('Metric', 'Astrobj', 'Spectrum', 'Spectrometer'):
             pnspace=gnspace.lower()
             nspace=getattr(gyoto, pnspace)
@@ -75,6 +83,26 @@ class TestSmartPointer(unittest.TestCase):
                     classname='Python::ThinDisk'
                 # Construct instance from default constructor
                 obj=cls()
+                # Try setting some properties
+                try:
+                    kwargs = testproperties[classname]
+                except KeyError:
+                    kwargs = testproperties[gnspace]
+                obj = cls(**kwargs)
+                for key, value in kwargs.items():
+                    if (numpy.size(value) == 2
+                        and isinstance(value[0], float)
+                        and isinstance(value[1], str)
+                        ):
+                        val0 = value[0]
+                        unit = value[1]
+                        val1 = obj.get(key, unit)
+                    else:
+                        val0 = value
+                        val1 = obj.get(key)
+                    self.assertEqual(
+                        val1, val0,
+                        f'gyoto.{gnspace}.{classname}.{key} could not be set')
                 # Check that method names are not also Property names
                 for method in dir(cls):
                     if (obj.knowsProperty(method) and f'{classname}.{method}'
@@ -533,3 +561,6 @@ class TestScreen(unittest.TestCase):
         except:
             self.fail('Failed syntax: value = scr.PALN()')
         self.assertEqual(valin, valout)
+
+if __name__ == '__main__':
+    unittest.main()

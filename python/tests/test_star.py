@@ -95,5 +95,27 @@ class TestStar(unittest.TestCase):
         plt.close()
         self.file_output.close()
 
+        # Initialization in one call
+        st2 = gyoto.std.Star(
+            Radius=0.5,
+            Metric=gyoto.std.KerrBL(
+                Spin=0.995,
+                Mass=(4e6, "sunmass"),
+            ),
+            Integrator="runge_kutta_fehlberg78",
+            DeltaMaxOverR=0.1,
+            InitCoord=st.InitCoord,
+        )
+        st2.xFill(800.)
+        n2 = st.get_nelements()
+        x2 = np.ndarray(n2)
+        y2 = np.ndarray(n2)
+        z2 = np.ndarray(n2)
+        st2.getSkyPos(screen, x2, y2, z2)
+        self.assertEqual(n, n2)
+        self.assertEqual(abs(x-x2).max(), 0)
+        self.assertEqual(abs(y-y2).max(), 0)
+        self.assertEqual(abs(z-z2).max(), 0)
+
 if __name__ == '__main__':
     unittest.main()

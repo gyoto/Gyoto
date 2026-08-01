@@ -526,10 +526,17 @@ name of the plug-in and of the classes that it registers are valid
 Python identifiers:
 \begin{code}
   import gyoto.stdplug
-  st = gyoto.stdplug.Star() # st containt a Gyoto::Astrobj::Generic* pointer
+  st = gyoto.stdplug.Star() # st containts a Gyoto::Astrobj::Generic* pointer
   st.Metric = gyoto.metric.KerrBL()
   st.Metric.Mass = 4e6, "sunmass"
   st.Radius = 2e7, "km"
+  # or, in one go:
+  st = gyoto.stdplug.Star(
+      Metric = gyoto.metric.KerrBL(
+          Mass = (4e6, "sunmass"),
+      ),
+      Radius = (2e7, "km"),
+  )
 \end{code}
 
 The source directories \texttt{python} and \texttt{plugins/python}
