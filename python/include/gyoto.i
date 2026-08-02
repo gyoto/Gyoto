@@ -953,6 +953,15 @@ ExtendArrayNumPy(array_size_t, size_t);
         if called: return object.__getattribute__(self, key)
         else:      return self.get(key)
 
+    def __dir__(self):
+        r"""
+        dir(self)
+
+        This function lists attributes known to self.
+
+        """
+        return list(self.getPropertyNames(True)) + super().__dir__()
+
   %}
 }
 %include "GyotoObject.h"
