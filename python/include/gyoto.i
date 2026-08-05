@@ -55,6 +55,9 @@ del _gyoto_tmp_getdlopenflags, _gyoto_tmp_setdlopenflags, _gyoto_tmp_RTLD_GLOBAL
 
 # inspect and re are needed in Object.__getattribute__
 import inspect, re
+
+# numpy is needed in AstrobjProperties.__init__
+import numpy
 %}
 
 //  ********** MACRO DEFINITIONS *********** //
@@ -749,6 +752,19 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
     (void)DIM5;
     return static_cast< name * >(IN_ARRAY5);
   }
+%pythoncode %{
+    @classmethod
+    def fromnumpy(cls, array_like):
+        '''initialize a gyoto.core array from a numpy array'''
+        methods = {
+            1: cls.fromnumpy1,
+            2: cls.fromnumpy2,
+            3: cls.fromnumpy3,
+            4: cls.fromnumpy4,
+            5: cls.fromnumpy5,
+        }
+        return methods[len(array_like.shape)](array_like);
+    %}
 };
 %enddef
 
@@ -1049,14 +1065,6 @@ GyotoSmPtrClass(Photon)
 %rename(AstrobjProperties) Gyoto::Astrobj::Properties;
 GyotoSmPtrClassGeneric(Astrobj)
 
-GyotoSmPtrClassDerived(Astrobj, ThinDisk)
-
-%ignore Gyoto::Astrobj::Standard::Standard();
-%ignore Gyoto::Astrobj::Standard::Standard(double radmax);
-%ignore Gyoto::Astrobj::Standard::Standard(std::string kind);
-%ignore Gyoto::Astrobj::Standard::Standard(const Standard& );
-GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAstrobj.h)
-
 %define _PConverter(member, method)
   Gyoto::Units::Converter * method() {
   Gyoto::Units::Converter * res = $self->member;
@@ -1068,7 +1076,140 @@ GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAs
   _PConverter(binspectrum_converter_, binSpectrumConverter)
   _PConverter(intensity_converter_, intensityConverter)
   _PConverter(spectrum_converter_, spectrumConverter)
- };
+};
+
+%pythoncode %{
+#  Monkey-patch an __init__ that support a dict as input
+AstrobjProperties.___init__ =  AstrobjProperties.__init__
+def AstrobjProperties___init__(self, *args, **kwargs):
+    r"""AstrobjProperties() -> AstrobjProperties
+        Just create an AstrobjProperties object without initializing
+        any of the pointers.
+
+    AstrobjProperties(double * arg2, double * arg3) -> AstrobjProperties
+        Set intensity and time pointers.
+
+    AstrobjProperties(dict data) -> AstrobjProperties
+        Initialize from dict of numpy arrays. In that form, data
+        buffers is passed as a a dictionary using Gyoto observable
+        names as keys. The attributes offset, shape, nsamples and data
+        are set automatically.
+
+    AstrobjProperties(str quantities, shape=tuple, nsamples=int)
+        Initialize from a list of quantities. In this form, a shape
+        must be passed as a keword argument as well as nsamples, the
+        number of spectral elements, if any spectral quantity is
+        requested. A dictionary containing numpy arrays for the
+        various quantities, using their names as keys, is constructed
+        and stored in the data attribute. The attributes shape,
+        nsamples (if provided), offset and data are set.
+
+    In all forms, attributes can be set using keyword arguments.
+
+    Notable attributes:
+
+    Pertaining to the underlying C++ class:
+    offset: the number of cells to skip between planes of the spectral
+        quantities
+
+    alloc: True if buffers are allocated for entire field (npix*npix)
+
+    Python-only attributes (only in the third and fourth form:
+    shape: the shape of numpy arrays for scalar quantities
+
+    nsamples: the number of spectral channels
+
+    data: the dictionary of numpy arrays
+
+    """
+    data = None
+    quantities = None
+    special_names = {
+        'FirstDistMin': 'first_dmin',
+        'SpectrumStokesQ': 'stokesQ',
+        'SpectrumStokesU': 'stokesU',
+        'SpectrumStokesV': 'stokesV',
+    }
+    scalar_quantities = ('Intensity', 'EmissionTime', 'MinDistance',
+                         'FirstDistMin', 'Redshift', 'NbCrossEqPlane',
+                         'User1', 'User2', 'User3', 'User4', 'User5')
+    spectral_quantities = ('Spectrum', 'SpectrumStokesQ', 'SpectrumStokesU',
+                           'SpectrumStokesV', 'BinSpectrum')
+    if len(args):
+        if isinstance(args[0], dict):
+            data = args[0]
+            args = ()
+        elif isinstance(args[0], str):
+            quantities = args[0]
+            args = ()
+        elif len(numpy.shape(args[0])) and isinstance(args[0][0], str):
+            quantities = ' '.join(args[0])
+            args = ()
+
+        if quantities:
+            dims = kwargs["shape"]
+            kwargs["offset"] = int(numpy.asarray(dims).prod())
+            try:
+                nsamples = kwargs["nsamples"]
+            except KeyError:
+                nsamples = None
+
+            data = dict()
+
+            for q in scalar_quantities:
+                if q in quantities:
+                    data[q] = numpy.zeros(dims)
+
+            for q in spectral_quantities:
+                if q in quantities:
+                    data[q] = numpy.zeros((nsamples,)+dims)
+
+            if 'ImpactCoords' in quantities:
+                data['ImpactCoords'] = numpy.zeros(dims+(16,))
+
+    self.___init__(*args)
+
+    if data is not None:
+        self.data = data
+        for key in data:
+            shape = data[key].shape
+            if key in scalar_quantities:
+                if 'shape' not in kwargs:
+                    kwargs['shape'] = shape
+                if 'offset' not in kwargs:
+                    kwargs['offset'] = int(numpy.asarray(shape).prod())
+            elif key in spectral_quantities:
+                if 'shape' not in kwargs:
+                    kwargs['shape'] = shape[1:]
+                if 'offset' not in kwargs:
+                    kwargs['offset'] = int(numpy.asarray(shape[1:]).prod())
+                if 'nsamples' not in kwargs:
+                    kwargs['nsamples'] = shape[0]
+            elif key in ('ImpactCoords',):
+                if 'shape' not in kwargs:
+                    kwargs['shape'] = shape[:-1]
+                if 'offset' not in kwargs:
+                    kwargs['offset'] = int(numpy.asarray(shape[:-1]).prod())
+            pointer = array_double.fromnumpy(data[key])
+            try:
+                attrname = special_names[key]
+            except KeyError:
+                attrname = key.lower()
+            setattr(self, attrname, pointer)
+
+    for key, value in kwargs.items():
+        setattr(self, key, value)
+AstrobjProperties.__init__ = AstrobjProperties___init__
+del AstrobjProperties___init__
+%}
+
+GyotoSmPtrClassDerived(Astrobj, ThinDisk)
+
+%ignore Gyoto::Astrobj::Standard::Standard();
+%ignore Gyoto::Astrobj::Standard::Standard(double radmax);
+%ignore Gyoto::Astrobj::Standard::Standard(std::string kind);
+%ignore Gyoto::Astrobj::Standard::Standard(const Standard& );
+GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAstrobj.h)
 
 %extend Gyoto::Metric::Generic {
   // Support this syntax:
