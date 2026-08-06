@@ -36,11 +36,11 @@
 
 // Make it possible to detect that a .h file is being processed by
 // Swig rather than CPP. There should be a Swig feature for that, I
-// didn't find it.
+// did not find it.
 %define GYOTO_SWIGIMPORTED
 %enddef
 
-// Make sure we don't activate the deprecated method names (see
+// Make sure we do not activate the deprecated method names (see
 // GyotoDefs.h): it is better to fail on them to update them now.
 %define GYOTO_NO_DEPRECATED
 %enddef
@@ -404,7 +404,7 @@ swig_type_info * __Gyoto_SWIGTYPE_p_Gyoto__Error() {
 // Rename operator=() -> assign() for everything
 %rename(assign) *::operator=;
 // Rename operator*() -> __ref__
-// nothing to do, that's the default
+// nothing to do, this is the default
 
 // ******** TYPEMAPS ******** //
 // Actually instantiate typemaps using de macros defined above
@@ -978,6 +978,35 @@ ExtendArrayNumPy(array_size_t, size_t);
         """
         return list(self.getPropertyNames(True)) + super().__dir__()
 
+    def write(self, filename):
+        '''Write Gyoto object to XML file'''
+        Factory(self).write(filename)
+
+    @classmethod
+    def read(cls, filename):
+        '''Create a new Gyoto object from an XML file'''
+        f = Factory(filename)
+        obj = getattr(f, f.kind().lower())()
+        if type(obj) is not cls:
+            try:
+                obj = cls(obj)
+            except:
+                pass
+        assert isinstance(obj, Object), 'could not reconstruct object'
+        return obj
+
+    def __reduce__(self):
+        '''Pickle this object'''
+        return (type(self).read, (str(self),))
+
+    def __deepcopy__(self):
+        '''Return a deep copy of self'''
+        return self.clone()
+
+    def __copy__(self):
+        '''Return a shallow copy of self'''
+        return self.clone()
+
   %}
 }
 %include "GyotoObject.h"
@@ -1498,7 +1527,7 @@ public:
   int Gyoto::__class__ = 0;
 }
 
-// Some way to get an object's address
+// Some way to get the address of an object
 %inline %{
 size_t gyotoid(PyObject* obj) {
   GYOTO_DEBUG_EXPR(obj);

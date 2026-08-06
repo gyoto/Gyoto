@@ -21,7 +21,6 @@
 #
 import os
 import sys
-import copy
 import unittest
 import gyoto.core
 import numpy as np
@@ -56,16 +55,29 @@ class TestPatternDisk(unittest.TestCase):
         intensity = opacity * 0. + 1.
         pintensity = gyoto.core.array_double.fromnumpy3(intensity)
         # Create PatternDisk, attach grids, set some parameters
-        pd = gyoto.std.PatternDisk()
-        pd.copyIntensity(pintensity, pgridshape)
-        pd.copyOpacity(popacity, pgridshape)
-        pd.innerRadius(3)
-        pd.outerRadius(28)
-        pd.repeatPhi(8)
-        metric = cls.create_metric()
-        # see if we have the good one
-        pd.metric(metric)
-        pd.rMax(50)
+        metric = gyoto.std.KerrBL(Mass = (4e6, "sunmass"))
+        cls.pd = gyoto.std.PatternDisk(
+            Metric = metric,
+            RMax = 50,
+            InnerRadius = 3,
+            OuterRadius = 28,
+        )
+        cls.pd.copyIntensity(pintensity, pgridshape)
+        cls.pd.copyOpacity(popacity, pgridshape)
+        cls.pd.repeatPhi(8)
+        cls.sc = gyoto.core.Scenery(
+            Metric = metric,
+            Astrobj = cls.pd,
+            Screen = gyoto.core.Screen(
+                Metric = metric,
+                Resolution = 64,
+                Time = (1000., "geometrical_time"),
+                Distance = (100., "geometrical"),
+                FieldOfView = 30. / 100.,
+                Inclination = (110., "degree"),
+                PALN = (180., "degree")
+            )
+        )
         # needed for tests functions below
         cls.gridshape = gridshape
         cls.pgridshape = pgridshape
@@ -73,60 +85,23 @@ class TestPatternDisk(unittest.TestCase):
         cls.popacity = popacity
         cls.intensity = intensity
         cls.pintensity = pintensity
-        cls.pd = pd
-
-    @staticmethod
-    def create_metric():
-        # Create a metric
-        metric = gyoto.std.KerrBL()
-        metric.mass(4e6, "sunmass")
-        return metric
-
-    def create_screen(self):
-        # Create screen
-        screen = gyoto.core.Screen()
-        metric = self.create_metric()
-        screen.metric(metric)
-        screen.resolution(64)
-        screen.time(1000., "geometrical_time")
-        screen.distance(100., "geometrical")
-        screen.fieldOfView(30. / 100.)
-        screen.inclination(110., "degree")
-        screen.PALN(180., "degree")
-        return screen
-
-    def create_scenery(self):
-        # Create Scenery
-        sc = gyoto.core.Scenery()
-        metric = TestPatternDisk.create_metric(self)
-        sc.metric(metric)
-        sc.screen(TestPatternDisk.create_screen(self))
-        sc.astrobj(TestPatternDisk.pd)
 
     def test_PatternDisk_create_scenery(self):
-        # Create Scenery
-        sc = gyoto.core.Scenery()
-        metric = self.create_metric()
-        sc.metric(metric)
-        sc.screen(self.create_screen())
-        sc.astrobj(self.pd)
-        self.assertIsInstance(sc, gyoto.core.Scenery)
-        TestPatternDisk.sc = copy.copy(sc)
+        self.assertIsInstance(self.sc, gyoto.core.Scenery)
 
     def test_fio_PatternDisk_simple(self):
-        TestPatternDisk.pd.fitsWrite("!test_patterndisk.fits.gz")
-        gyoto.core.Factory(TestPatternDisk.sc).write("test_patterndisk.xml")
-        gyoto.core.Factory("test_patterndisk.xml").scenery()
+        self.pd.fitsWrite("!test_patterndisk.fits.gz")
+        self.sc.write("test_patterndisk.xml")
+        gyoto.core.Scenery.read("test_patterndisk.xml")
         os.unlink("test_patterndisk.fits.gz")
         os.unlink("test_patterndisk.xml")
 
     def test_fio_PatternDisk_prefix(self):
-        TestPatternDisk.pd.fitsWrite("!test_patterndisk2.fits.gz",
-                                     self.artifacts_dir)
-        gyoto.core.Factory(TestPatternDisk.sc).write(
-            self.artifacts_dir + "test_patterndisk2.xml")
-        sc2 = gyoto.core.Factory(self.artifacts_dir
-                                 + "test_patterndisk2.xml").scenery()
+        self.pd.fitsWrite("!test_patterndisk2.fits.gz",
+                          self.artifacts_dir)
+        self.sc.write(self.artifacts_dir + "test_patterndisk2.xml")
+        sc2 = gyoto.core.Scenery.read(self.artifacts_dir
+                                      + "test_patterndisk2.xml")
         self.assertEqual(sc2.screen().dMax(), self.sc.screen().dMax(),
                          "dmax was not conserved when RW XML file")
         self.assertEqual(sc2.tMin(), self.sc.tMin(),
@@ -135,14 +110,12 @@ class TestPatternDisk(unittest.TestCase):
     def test_fio_PatternDisk3_different_path(self):
         os.makedirs(self.artifacts_dir + "fits/", exist_ok=True)
         os.makedirs(self.artifacts_dir + "xml/", exist_ok=True)
-        TestPatternDisk.pd.fitsWrite("!../fits/test_patterndisk3.fits.gz",
-                                     self.artifacts_dir + "xml/")
+        self.pd.fitsWrite("!../fits/test_patterndisk3.fits.gz",
+                          self.artifacts_dir + "xml/")
 
-        gyoto.core.Factory(TestPatternDisk.sc).write(
-            self.artifacts_dir + "xml/test_patterndisk3.xml")
+        TestPatternDisk.sc.write(self.artifacts_dir + "xml/test_patterndisk3.xml")
 
-        gyoto.core.Factory(self.artifacts_dir
-                           + "xml/test_patterndisk3.xml").scenery()
+        gyoto.core.Scenery.read(self.artifacts_dir + "xml/test_patterndisk3.xml")
 
 
 if __name__ == '__main__':

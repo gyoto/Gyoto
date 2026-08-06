@@ -123,13 +123,12 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
             elif cmd[0] == RUN_SIM:
                 end_msg = ('done',)
                 try:
-                    _, sceneryxml, nframes = cmd
+                    _, scenery, nframes = cmd
 
                     stop_event.clear()
                     pause_event.clear()
 
-                    # Rebuild objects from serialized data
-                    scenery = Factory(sceneryxml).scenery()
+                    # Read resolution from Scenery
                     res = scenery.Screen.Resolution
 
                     # Compute step between frames
@@ -742,7 +741,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         # Send simulation command to worker
         self.cmd_queue.put((
             RUN_SIM,
-            str(self.scenery),
+            self.scenery,
             self.controls.nframes.get_value_as_int(),
         ))
 

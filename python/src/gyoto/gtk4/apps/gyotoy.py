@@ -121,18 +121,11 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
             elif cmd[0] == RUN_SIM:
                 end_msg = ('done',)
                 try:
-                    _, particlexml, starttime, endtime, nframes, interp_step = (
+                    _, particle, starttime, endtime, nframes, interp_step = (
                         cmd
                     )
                     stop_event.clear()
                     pause_event.clear()
-
-                    # Rebuild objects from serialized data
-                    f = Factory(particlexml)
-                    if f.kind() == 'Photon':
-                        particle = f.photon()
-                    else:
-                        particle = Star(f.astrobj())
 
                     # Ensure interp_step has same sign as endtime-starttime
                     interp_step = (
@@ -872,7 +865,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         # Send simulation command to worker
         self.cmd_queue.put((
             RUN_SIM,
-            str(self.particle),
+            self.particle,
             self.particle.InitCoord[0],
             self.endtime,
             self.controls.nframes.get_value_as_int(),
