@@ -105,7 +105,9 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
         import numpy
         import time
         from ...core import Factory, Scenery, AstrobjProperties, array_double
-        from ...core import Range, Grid
+        from ...core import Range, Grid, verbose
+
+        verbose(0)
 
         next_update_fraction = 0.
         last_update = time.time()
@@ -140,10 +142,17 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
                     if step * nframes < res:
                         step += 1
 
-                    intensity = numpy.full((res, res), numpy.nan, dtype=float)
-                    aop=AstrobjProperties()
-                    aop.intensity = array_double.fromnumpy2(intensity)
-                    aop.alloc = True
+                    if scenery.Screen and scenery.Screen.Spectrometer:
+                        nsamples = scenery.Screen.Spectrometer.NSamples
+                    else:
+                        nsamples = None
+
+                    aop=AstrobjProperties(scenery.Quantities,
+                                          shape=(res, res),
+                                          nsamples=nsamples,
+                                          alloc=True)
+                    for key in aop.data:
+                        aop.data[key][...] = numpy.inf
 
                     for k in range(nframes):
                         if stop_event.is_set():
@@ -162,24 +171,22 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
                         ii=Range(1, res, 1)
                         jj=Range(first, last, 1)
                         grid=Grid(ii, jj, "\rj = ")
-                        print("raytracing")
                         try:
                             scenery.rayTrace(grid, aop)
                         except GyotoError as e:
                             e.Report()
-                        print("raytracing done")
-                        progress = last / res
 
+                        progress = last / res
                         if (progress >= next_update_fraction
                                 and time.time() - last_update > 0.1):
                             progress_queue.put_nowait(
-                                ('progress', progress, intensity)
+                                ('progress', progress, aop.data)
                             )
                             next_update_fraction = progress + 0.05
                             last_update = time.time()
 
                     progress_queue.put_nowait(
-                        ('progress', progress, intensity)
+                        ('progress', progress, aop.data)
                     )
                     control_queue.put(end_msg)
                 except Exception as e:
@@ -362,6 +369,11 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
     last_focused_widget = None
     connector = None
     filename = None
+
+    # Constants
+    scalar_quantities = ('Intensity', 'EmissionTime', 'MinDistance',
+                         'FirstDistMin', 'Redshift', 'NbCrossEqPlane',
+                         'User1', 'User2', 'User3', 'User4', 'User5')
 
     ####################################################################
     # Construction
@@ -620,10 +632,21 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         self.vertbox1.append(self.paned)
 
         ## First row, left: Viewer2D (2D Matplotlib canvas)
-        self.viewer = Viewer2D()
-        self.paned.set_start_child(self.viewer)
+        self.left = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=6
+        )
+        dropdown = Gtk.DropDown.new_from_strings(self.scalar_quantities)
+        dropdown.connect("notify::selected", self.on_viewers_dropdown_activated)
+        self.left.append(dropdown)
+        self.viewer_frame = Gtk.Frame()
+        self.left.append(self.viewer_frame)
+        self.paned.set_start_child(self.left)
+        self.viewers = {key : Viewer2D() for key in self.scalar_quantities}
+        self.viewer_frame.set_child(self.viewers["Intensity"])
         # Forbid focus to the plot, else shortcuts don't work reliably
-        self.viewer.canvas.set_focusable(False)
+        for key in self.viewers:
+            self.viewers[key].canvas.set_focusable(False)
 
         ## First row, right: vertical box for property editor
         self.right = Gtk.Box(
@@ -764,13 +787,13 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             except queue.Empty:
                 break
         if msg:
-            print(msg)
             if len(msg) >= 3:
-                # Convert lists back to numpy arrays and filter NaN values
-                self.viewer.axes.clear()
-                self.viewer.axes.imshow(msg[2])
-                self.viewer.set_equal()
-                self.viewer.canvas.draw_idle()
+                data = msg[2]
+                for key in data:
+                    self.viewers[key].axes.clear()
+                    self.viewers[key].axes.imshow(data[key])
+                    self.viewers[key].set_equal()
+                    self.viewers[key].canvas.draw_idle()
             self.controls.set_progress(msg[1])
         return True
 
@@ -788,7 +811,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         """
         try:
             msg = self.control_queue.get_nowait()
-            print(msg)
             if msg[0] == 'log':
                 print(msg[1])
             elif msg[0] == 'done':
@@ -1118,6 +1140,18 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         dialog.set_child(scrolled)
         dialog.present()
 
+    def on_viewers_dropdown_activated(self, widget, *args):
+        """Handle dropdown selection changes.
+
+        Shows the viewer corresponding to the selection..
+
+        Args:
+            widget: The Gtk.DropDown that changed
+            *args: Additional arguments
+        """
+        x = widget.get_selected_item().get_string()
+        self.viewer_frame.set_child(self.viewers[x])
+
     def on_reset(self, wdgt):
         """Handle reset button click.
 
@@ -1220,6 +1254,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         sc=Scenery(
             Metric   = Minkowski(
                 Mass = (4e6, "sunmass"),
+                Spherical = True,
             ),
             Astrobj  = FixedStar(
                 Radius = 12,
@@ -1244,7 +1279,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             ),
             Delta    = 1e0,
             MinimumTime = 0.,
-            Quantities = "Intensity",
+            Quantities = " ".join(self.scalar_quantities),
             Adaptive = True,
             NThreads = 8,
         )

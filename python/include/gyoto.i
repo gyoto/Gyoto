@@ -1154,6 +1154,8 @@ def AstrobjProperties___init__(self, *args, **kwargs):
     data = None
     quantities = None
     special_names = {
+        'EmissionTime' : 'time',
+        'MinDistance' : 'distance',
         'FirstDistMin': 'first_dmin',
         'SpectrumStokesQ': 'stokesQ',
         'SpectrumStokesU': 'stokesU',
