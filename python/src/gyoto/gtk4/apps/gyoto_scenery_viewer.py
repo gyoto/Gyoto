@@ -440,6 +440,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         # Actually set self.scenery and build editor
         self.set_scenery(scenery)
 
+        # Set the initial limits
+        self.reset_limits()
+
         # Register window with application
         if application is not None:
             application.windows.append(self)
@@ -636,17 +639,19 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             orientation=Gtk.Orientation.VERTICAL,
             spacing=6
         )
-        dropdown = Gtk.DropDown.new_from_strings(self.scalar_quantities)
-        dropdown.connect("notify::selected", self.on_viewers_dropdown_activated)
-        self.left.append(dropdown)
-        self.viewer_frame = Gtk.Frame()
-        self.left.append(self.viewer_frame)
         self.paned.set_start_child(self.left)
-        self.viewers = {key : Viewer2D() for key in self.scalar_quantities}
-        self.viewer_frame.set_child(self.viewers["Intensity"])
+
+        # drop-down to select the quantioty to display
+        self.quantity_dropdown = Gtk.DropDown.new_from_strings(self.scalar_quantities)
+        self.quantity_dropdown.connect("notify::selected",
+                                       self.on_quantity_dropdown_activated)
+        self.left.append(self.quantity_dropdown)
+
+        # actual plot widget
+        self.viewer = Viewer2D()
+        self.left.append(self.viewer)
         # Forbid focus to the plot, else shortcuts don't work reliably
-        for key in self.viewers:
-            self.viewers[key].canvas.set_focusable(False)
+        self.viewer.canvas.set_focusable(False)
 
         ## First row, right: vertical box for property editor
         self.right = Gtk.Box(
@@ -768,6 +773,31 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             self.controls.nframes.get_value_as_int(),
         ))
 
+    def redraw(self):
+        """Draw the selected quantity from precomputed data"""
+        key = self.quantity_dropdown.get_selected_item().get_string()
+        xlim = self.viewer.axes.get_xlim()
+        ylim = self.viewer.axes.get_ylim()
+        self.viewer.axes.clear()
+        self.viewer.axes.imshow(
+            self.data[key],
+            origin='lower',
+            extent=(self.semifov, -self.semifov, -self.semifov, self.semifov),
+        )
+        self.viewer.axes.set_xlim(xlim)
+        self.viewer.axes.set_ylim(ylim)
+        self.viewer.canvas.draw_idle()
+
+    def reset_limits(self, *args):
+        if self.scenery.Screen:
+            res = self.scenery.Screen.Resolution
+            fov = self.scenery.Screen.fieldOfView("arcsec")
+            delta = fov / res
+            self.semifov = fov/2 + delta/2
+            self.viewer.axes.set_xlim((self.semifov, -self.semifov))
+            self.viewer.axes.set_ylim((-self.semifov, self.semifov))
+            self.viewer.axes.set_aspect('equal', adjustable='box')
+
     def process_progress(self):
         """Process progress updates from the worker.
 
@@ -788,12 +818,8 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 break
         if msg:
             if len(msg) >= 3:
-                data = msg[2]
-                for key in data:
-                    self.viewers[key].axes.clear()
-                    self.viewers[key].axes.imshow(data[key])
-                    self.viewers[key].set_equal()
-                    self.viewers[key].canvas.draw_idle()
+                self.data = msg[2]
+                self.redraw()
             self.controls.set_progress(msg[1])
         return True
 
@@ -1140,17 +1166,23 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         dialog.set_child(scrolled)
         dialog.present()
 
-    def on_viewers_dropdown_activated(self, widget, *args):
+    def on_quantity_dropdown_activated(self, widget, *args):
         """Handle dropdown selection changes.
 
-        Shows the viewer corresponding to the selection..
+        Show the selected quantity..
 
         Args:
             widget: The Gtk.DropDown that changed
             *args: Additional arguments
         """
-        x = widget.get_selected_item().get_string()
-        self.viewer_frame.set_child(self.viewers[x])
+        self.redraw()
+
+    def on_recursive_value_changed(self, widget, path):
+        """Handle property changes"""
+        if path in ("Screen",
+                    "Screen.Resolution",
+                    "Screen.FieldOfView"):
+            self.reset_limits()
 
     def on_reset(self, wdgt):
         """Handle reset button click.
@@ -1231,6 +1263,10 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         self.editor = PropertyEditorBox(
             scenery,
         )
+
+        self.editor.connect("recursive-value-changed",
+                            self.on_recursive_value_changed)
+
         self.editor_scroller.set_child(self.editor)
 
     def get_scenery(self):
