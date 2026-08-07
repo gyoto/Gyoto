@@ -109,9 +109,6 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
 
         verbose(0)
 
-        next_update_fraction = 0.
-        last_update = time.time()
-
         while True:
             try:
                 # Blocks until command arrives or timeout
@@ -152,7 +149,10 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
                                           nsamples=nsamples,
                                           alloc=True)
                     for key in aop.data:
-                        aop.data[key][...] = numpy.inf
+                        aop.data[key][...] = numpy.nan
+
+                    next_update_fraction = 0.
+                    last_update = time.time()
 
                     for k in range(nframes):
                         if stop_event.is_set():

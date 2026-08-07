@@ -105,9 +105,6 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
         from ...core import Factory
         from ...std import Star
 
-        next_update_fraction = 0.
-        last_update = time.time()
-
         while True:
             try:
                 # Blocks until command arrives or timeout
@@ -146,6 +143,9 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
                         x = numpy.full(len(t), numpy.nan, like=t)
                         y = numpy.full(len(t), numpy.nan, like=t)
                         z = numpy.full(len(t), numpy.nan, like=t)
+
+                    next_update_fraction = 0.
+                    last_update = time.time()
 
                     for n in range(len(frametimes) - 1):
                         if stop_event.is_set():
