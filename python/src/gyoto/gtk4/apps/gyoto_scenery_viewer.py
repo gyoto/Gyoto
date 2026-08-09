@@ -58,6 +58,7 @@ from gi.repository import Gtk, Gio, GLib, Gdk
 import sys
 import argparse
 import numpy
+from numpy.typing import ArrayLike
 from multiprocessing import Queue, Event, Process
 import time
 import queue
@@ -122,7 +123,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
             elif cmd[0] == RUN_SIM:
                 end_msg = ('done',)
                 try:
-                    _, scenery, nframes = cmd
+                    _, scenery, ilim, jlim, nframes = cmd
 
                     stop_event.clear()
                     pause_event.clear()
@@ -130,13 +131,44 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
                     # Read resolution from Scenery
                     res = scenery.Screen.Resolution
 
+                    # Transform ilim, jlim to Gyoto pixels and sort them
+                    ilim += 1
+                    jlim += 1
+                    ilim.sort()
+                    jlim.sort()
+
+                    # No transform that to integers, making sure we
+                    # preserve the borders and don't excede the field
+                    ilim[ilim < 0.5] = 0.5
+                    jlim[jlim < 0.5] = 0.5
+                    ilim[ilim > res+0.5] = res + 0.5
+                    jlim[jlim > res+0.5] = res + 0.5
+
+                    ilim = list(ilim)
+                    jlim = list(jlim)
+
+                    ilim[0] = int(ilim[0]+0.5)
+                    upper = ilim[1]+0.5
+                    if int(upper) != upper:
+                        ilim[1] = int(upper)
+                    else:
+                        ilim[1] = int(upper)-1
+
+                    jlim[0] = int(jlim[0]+0.5)
+                    upper = jlim[1]+0.5
+                    if int(upper) != upper:
+                        jlim[1] = int(upper)
+                    else:
+                        jlim[1] = int(upper)-1
+
                     # Compute step between frames
                     if nframes <= 0:
                         nframes = 1
 
-                    step = res // nframes
+                    nrows = (jlim[1]-jlim[0]+1)
+                    step = nrows // nframes
 
-                    if step * nframes < res:
+                    if step * nframes < nrows:
                         step += 1
 
                     if scenery.Screen and scenery.Screen.Spectrometer:
@@ -161,14 +193,14 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
                         while pause_event.is_set() and not stop_event.is_set():
                             time.sleep(0.1)
 
-                        first = k * step + 1
-                        if first > res:
+                        first = k * step + jlim[0]
+                        if first > jlim[1]:
                             break
-                        last = (k+1) * step
-                        if last > res:
-                            last = res
+                        last = first + step
+                        if last > jlim[1]:
+                            last = jlim[1]
 
-                        ii=Range(1, res, 1)
+                        ii=Range(ilim[0], ilim[1], 1)
                         jj=Range(first, last, 1)
                         grid=Grid(ii, jj, "\rj = ")
                         try:
@@ -176,7 +208,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
                         except GyotoError as e:
                             e.Report()
 
-                        progress = last / res
+                        progress = last / nrows
                         if (progress >= next_update_fraction
                                 and time.time() - last_update > 0.1):
                             progress_queue.put_nowait(
@@ -765,11 +797,15 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         self.last_focused_widget = self.get_focus()
         self.right.set_sensitive(False)
 
+        # Determine region to compute
+        xlim = self.viewer.axes.get_xlim()
+        ylim = self.viewer.axes.get_ylim()
+        ilim, jlim = self.angles_to_pixel(xlim, ylim)
 
         # Send simulation command to worker
         self.cmd_queue.put((
             RUN_SIM,
-            self.scenery,
+            self.scenery, ilim, jlim,
             self.controls.nframes.get_value_as_int(),
         ))
 
@@ -1320,6 +1356,92 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             NThreads = 8,
         )
         return sc
+
+    ####################################################################
+    # Helpers
+    ####################################################################
+
+    def pixel_to_angles(self,
+                        i: ArrayLike,
+                        j: ArrayLike,
+                        unit: str='arcsec',
+                        resolution: int=None,
+                        fieldofview: float=None
+                        ) -> tuple[float | numpy.ndarray,
+                                   float | numpy.ndarray]:
+        '''Transform pixel coordinates (i, j) to angle coordinates (x, y)
+
+        Here, i and j are in Python convention (starting at
+        0). Integer values of pixel coordinates correspond to pixel
+        center.
+
+        The arguments may be scalars or array-like objects. Scalar
+        inputs produce scalar outputs; otherwise outputs are NumPy
+        arrays.
+
+        Keywords:
+        unit: unit for angles (x, y and fieldofview)
+        resolution: number of pixels in each direction of the image
+            (which is always square)
+        fieldofview: angular extent of the image (from center of first
+            pixel to center of last pixel).
+
+        '''
+        if fieldofview is None:
+            fieldofview =  self.scenery.Screen.fieldOfView(unit)
+        if resolution is None:
+            resolution = self.scenery.Screen.Resolution
+
+        delta = fieldofview / resolution
+
+        i0 = 0.5 * resolution - 0.5
+        j0 = 0.5 * resolution - 0.5
+
+        x = - (i-i0) * delta
+        y = (j-j0) * delta
+
+        return x, y
+
+    def angles_to_pixel(self,
+                        x: ArrayLike,
+                        y: ArrayLike,
+                        unit: str='arcsec',
+                        resolution: int=None,
+                        fieldofview: float=None
+                        ) -> tuple[float | numpy.ndarray,
+                                   float | numpy.ndarray]:
+        '''Transform angle coordinates (x, y) to pixel coordinates (i, j)
+
+        Here, i and j are in Python convention (starting at
+        0). Integer values of pixel coordinates correspond to pixel
+        center.
+
+        Keywords:
+        unit: unit for angles (x, y and fieldofview)
+        resolution: number of pixels in each direction of the image
+            (which is always square)
+        fieldofview: angular extent of the image (from center of first
+            pixel to center of last pixel).
+
+        '''
+        if fieldofview is None:
+            fieldofview =  self.scenery.Screen.fieldOfView(unit)
+        if resolution is None:
+            resolution = self.scenery.Screen.Resolution
+
+        delta = fieldofview / resolution
+
+        i0 = 0.5 * resolution - 0.5
+        j0 = 0.5 * resolution - 0.5
+
+        i = - numpy.asarray(x) / delta + i0
+        j = numpy.asarray(y) / delta + j0
+
+        if numpy.isscalar(x): i = float(i)
+        if numpy.isscalar(y): j = float(j)
+
+        return i, j
+
 
 # Stand-alone entry point:
 if __name__ == "__main__":
