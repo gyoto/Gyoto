@@ -422,6 +422,11 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         """
         super().__init__(application=application)
 
+        # initialize dict to store images
+        self.data = {}
+        # self.data will be a dict of dicts where individual images
+        # are addressed as self.data[(delta, semifov)][quantity]
+
         # Store connector for set_scenery
         self.connector = connector
 
@@ -811,27 +816,58 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
     def redraw(self):
         """Draw the selected quantity from precomputed data"""
-        key = self.quantity_dropdown.get_selected_item().get_string()
+        quantity = self.quantity_dropdown.get_selected_item().get_string()
         xlim = self.viewer.axes.get_xlim()
         ylim = self.viewer.axes.get_ylim()
         self.viewer.axes.clear()
-        self.viewer.axes.imshow(
-            self.data[key],
-            origin='lower',
-            extent=(self.semifov, -self.semifov, -self.semifov, self.semifov),
-        )
+
+        # first determine vmin and vmax
+        vmin = numpy.inf
+        vmax = -numpy.inf
+        for dico in self.data.values():
+            temp = min(vmin, numpy.nanmin(dico[quantity]))
+            if not numpy.isnan(temp):
+                vmin = temp
+            temp = max(vmax, numpy.nanmax(dico[quantity]))
+            if not numpy.isnan(temp):
+                vmax = temp
+
+        # then show each image, starting with lower resolutions and
+        # larger fields:
+        for (delta, semifov), dico in sorted(self.data.items(), reverse=True):
+            self.viewer.axes.imshow(
+                dico[quantity],
+                origin='lower',
+                extent=(semifov, -semifov, -semifov, semifov),
+                vmin=vmin, vmax=vmax,
+            )
         self.viewer.axes.set_xlim(xlim)
         self.viewer.axes.set_ylim(ylim)
         self.viewer.canvas.draw_idle()
 
     def reset_limits(self, *args):
+        """Reset the limits
+
+        To the largest value needed for already computed images and
+        the current Screen.
+
+        """
+        semifov = 0.
+
+        if len(self.data):
+            semifov = max(semifov for delta, semifov in self.data)
+
         if self.scenery.Screen:
             res = self.scenery.Screen.Resolution
             fov = self.scenery.Screen.fieldOfView("arcsec")
             delta = fov / res
-            self.semifov = fov/2 + delta/2
-            self.viewer.axes.set_xlim((self.semifov, -self.semifov))
-            self.viewer.axes.set_ylim((-self.semifov, self.semifov))
+            semifov2 = fov/2 + delta/2
+            if semifov2 > semifov:
+                semifov = semifov2
+
+        if semifov:
+            self.viewer.axes.set_xlim((semifov, -semifov))
+            self.viewer.axes.set_ylim((-semifov, semifov))
             self.viewer.axes.set_aspect('equal', adjustable='box')
 
     def process_progress(self):
@@ -854,7 +890,25 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 break
         if msg:
             if len(msg) >= 3:
-                self.data = msg[2]
+                # store computed dict is the data dict
+                # with key (delta, semifov)
+                res = self.scenery.Screen.Resolution
+                fov = self.scenery.Screen.fieldOfView("arcsec")
+                delta = fov / res
+                semifov = fov/2 + delta/2
+                key = delta, semifov
+                if key in self.data:
+                    for quantity, d in msg[2].items():
+                        try:
+                            # copy non-nan values into existing arrays
+                            numpy.copyto(self.data[key][quantity], d,
+                                         where=~numpy.isnan(d))
+                        except KeyError:
+                            # this quantity is not yet available
+                            self.data[key] = d
+                else:
+                    self.data[key] = msg[2]
+                #redraw
                 self.redraw()
             self.controls.set_progress(msg[1])
         return True
@@ -1215,22 +1269,24 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
     def on_recursive_value_changed(self, widget, path):
         """Handle property changes"""
+        # placeholder: currently do nothing
         if path in ("Screen",
                     "Screen.Resolution",
                     "Screen.FieldOfView"):
-            self.reset_limits()
+            pass
 
     def on_reset(self, wdgt):
         """Handle reset button click.
 
-        Reinitializes the current scenery and clears the viewer.
+        Deletes the computed images, clears the viewer and reset axes.
 
         Args:
             wdgt: The button that was clicked
 
         """
+        self.data = {}
         self.viewer.axes.clear()
-        self.viewer.set_equal()
+        self.reset_limits()
         self.viewer.canvas.draw_idle()
 
     def on_play_pause(self, wdgt):
