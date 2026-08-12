@@ -71,6 +71,7 @@ from gettext import gettext as _
 from ..widgets.property_editor_box import PropertyEditorBox
 from ..widgets.scientific_spin import ScientificSpin
 from ..widgets.viewer_2d import Viewer2D
+from ..widgets.viewer_3d import Viewer3D
 from ..widgets.simulation_controls import SimulationControls
 from ..utils import show_error_dialog
 from ...utils import readScenery
@@ -239,9 +240,12 @@ class GyotoSceneryViewerApplication(Gtk.Application):
         windows: List of all open GyotoSceneryViewerApplicationWindow instances.
         scenery: the initial scenery (optional)
         connector: Connection for inter-process communication
+        terminating: True when the application is shutting down 
 
 
     """
+
+    terminating = False
 
     def __init__(self, scenery=None, connector=None, *args, **kwargs):
         """Initialize the Gyoto Scenery Viewer( GTK application.
@@ -279,7 +283,6 @@ class GyotoSceneryViewerApplication(Gtk.Application):
                 scenery=self.scenery,
                 connector=self.connector
             )
-            self.windows.append(window)
         for window in self.windows:
             window.present()
 
@@ -295,6 +298,7 @@ class GyotoSceneryViewerApplication(Gtk.Application):
 
     def close_all_windows(self):
         """Close all open windows and quit the application."""
+        self.terminating = True
         for window in self.windows[:]:
             window.close()
 
@@ -393,7 +397,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
     # Default values
     scenery = None
-    viewer = None
+    viewer2d = None
+    viewer3d = None
+    viewer3d_window = None
     editor = None
     endtime = 3000
     worker = None
@@ -680,10 +686,14 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         self.left.append(self.quantity_dropdown)
 
         # actual plot widget
-        self.viewer = Viewer2D()
-        self.left.append(self.viewer)
+        self.viewer2d = Viewer2D()
+        self.left.append(self.viewer2d)
         # Forbid focus to the plot, else shortcuts don't work reliably
-        self.viewer.canvas.set_focusable(False)
+        self.viewer2d.canvas.set_focusable(False)
+        # Get pouse click events
+        self.viewer2d.canvas.mpl_connect("button_press_event", self.on_viewer_click)
+        # Set tooltip text
+        self.viewer2d.canvas.set_tooltip_text("Click to trace photon")
 
         ## First row, right: vertical box for property editor
         self.right = Gtk.Box(
@@ -721,6 +731,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         Cleanly shuts down the worker process, removes the window from
         the application's window list, and allows the window to close.
 
+        This is called when self.close() is called. The actual closing
+        of the window happens because the return value is False.
+
         Args:
             *args: GTK callback arguments
 
@@ -739,6 +752,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
     def on_close(self, *args):
         """Handle close action from menu.
+
+        Calls self.close(), which will call on_close_request before
+        actually closing the window.
 
         Args:
             *args: GTK callback arguments
@@ -799,8 +815,8 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         self.quantity_dropdown.set_sensitive(False)
 
         # Determine region to compute
-        xlim = self.viewer.axes.get_xlim()
-        ylim = self.viewer.axes.get_ylim()
+        xlim = self.viewer2d.axes.get_xlim()
+        ylim = self.viewer2d.axes.get_ylim()
         ilim, jlim = self.angles_to_pixel(xlim, ylim)
 
         # prepare some data for the progress handler
@@ -824,15 +840,15 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         """Draw the selected quantity from precomputed data"""
 
         quantity = self.quantity_dropdown.get_selected_item().get_string()
-        xlim = self.viewer.axes.get_xlim()
-        ylim = self.viewer.axes.get_ylim()
-        self.viewer.axes.clear()
+        xlim = self.viewer2d.axes.get_xlim()
+        ylim = self.viewer2d.axes.get_ylim()
+        self.viewer2d.axes.clear()
         self.image_artists = {}
 
         # show all images
         for key, dico in self.data.items():
             if quantity in dico:
-                self.image_artists[key] = self.viewer.axes.imshow(
+                self.image_artists[key] = self.viewer2d.axes.imshow(
                     dico[quantity],
                     origin='lower',
                     extent=(key[1], -key[1], -key[1], key[1]),
@@ -844,11 +860,11 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         self.reset_clim(quantity)
 
         # reset x/ylim
-        self.viewer.axes.set_xlim(xlim)
-        self.viewer.axes.set_ylim(ylim)
+        self.viewer2d.axes.set_xlim(xlim)
+        self.viewer2d.axes.set_ylim(ylim)
 
         # actually draw
-        self.viewer.canvas.draw_idle()
+        self.viewer2d.canvas.draw_idle()
 
     def reset_clim(self, quantity):
         """Reset vlim and vmax"""
@@ -885,15 +901,15 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 semifov = semifov2
 
         if semifov:
-            self.viewer.axes.set_xlim((semifov, -semifov))
-            self.viewer.axes.set_ylim((-semifov, semifov))
-            self.viewer.axes.set_aspect('equal', adjustable='box')
+            self.viewer2d.axes.set_xlim((semifov, -semifov))
+            self.viewer2d.axes.set_ylim((-semifov, semifov))
+            self.viewer2d.axes.set_aspect('equal', adjustable='box')
 
     def update_or_create_image_artist(self, key, quantity):
         try:
             self.image_artists[key].set_data(self.data[key][quantity])
         except KeyError:
-            self.image_artists[key] = self.viewer.axes.imshow(
+            self.image_artists[key] = self.viewer2d.axes.imshow(
                 self.data[key][quantity],
                 origin='lower',
                 extent=(key[1], -key[1], -key[1], key[1]),
@@ -943,7 +959,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 # new one
                 self.update_or_create_image_artist(key, quantity)
                 self.reset_clim(quantity)
-                self.viewer.canvas.draw_idle()
+                self.viewer2d.canvas.draw_idle()
 
             self.controls.set_progress(msg[1])
 
@@ -1314,6 +1330,21 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         """
         self.redraw()
 
+    def on_viewer_click(self, event):
+        """Process mouse click events in Viewer2D canvas"""
+
+        # ignore event if not inside the axes
+        if event.inaxes is None:
+            return
+
+        # ignore event if figure is in zoom or pan mode
+        if event.inaxes.get_navigate_mode() is not None:
+            return
+
+        print(event.xdata, event.ydata)
+
+        self.show_viewer3d()
+
     def on_recursive_value_changed(self, widget, path):
         """Handle property changes"""
         # placeholder: currently do nothing
@@ -1339,9 +1370,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         # dictionary of artists with same keys
         self.image_artists = {}
 
-        self.viewer.axes.clear()
+        self.viewer2d.axes.clear()
         self.reset_limits()
-        self.viewer.canvas.draw_idle()
+        self.viewer2d.canvas.draw_idle()
 
     def on_play_pause(self, wdgt):
         """Handle play/pause button click.
@@ -1552,6 +1583,208 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         return i, j
 
+    def show_viewer3d(self):
+
+        if self.viewer3d_window is None:
+            self.viewer3d_window =  GyotoSceneryViewer3dWindow(parent=self)
+            self.viewer3d = self.viewer3d_window.viewer3d
+
+        self.viewer3d_window.present()
+
+class GyotoSceneryViewer3dWindow(Gtk.Window):
+
+    def __init__(self, parent=None):
+        """Initialize the 3D viewer window.
+
+        Args:
+            application: Parent Gtk.Application instance
+
+        """
+        self.parent = parent
+        application = parent.get_application()
+
+        super().__init__(application=application)
+
+        self.set_title("Gyoto Scenery Viewer Photon Trajectories")
+        self.set_default_size(1024, 768)
+
+        # Build UI
+        self.build_body()
+        self.build_shortcuts()
+        self.connect("close-request", self.on_close_request)
+
+        # Register window with application
+        if application is not None:
+            application.windows.append(self)
+
+    ####################################################################
+    # UI
+    ####################################################################
+
+    def build_shortcuts(self):
+        """Create keyboard shortcuts.
+
+        Creates keyboard shortcuts for these actions:
+        - New window: Ctrl+N,
+        - Close window: Ctrl+W,
+        - Close all windows and quit: Ctrl+Q,
+        - Open file: Ctrl+O,
+        - Save file: Ctrl+S,
+        - Save file as: Ctrl+Shift+S,
+        - Help: F1,
+        - Compute and redraw: Ctrl+R.
+
+        """
+        action_group = Gio.SimpleActionGroup()
+        self.insert_action_group("win", action_group)
+
+        action_group.add_action_entries([
+            ("new", self.parent.on_new, None),
+            ("open", self.parent.on_open, None),
+            ("save", self.parent.on_save, None),
+            ("save-as", self.parent.on_save_as, None),
+            ("help", self.parent.on_help, None),
+            ("close", self.on_close_request, None),
+            ("quit", self.parent.on_quit, None),
+            ("compute-and-redraw", self.parent.compute_and_draw, None),
+        ])
+
+        controller = Gtk.ShortcutController()
+        self.add_controller(controller)
+
+        controller.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(
+                    keyval=Gdk.KEY_n,
+                    modifiers=Gdk.ModifierType.CONTROL_MASK
+                ),
+                action=Gtk.NamedAction.new("win.new")
+            )
+        )
+
+        controller.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(
+                    keyval=Gdk.KEY_w,
+                    modifiers=Gdk.ModifierType.CONTROL_MASK
+                ),
+                action=Gtk.NamedAction.new("win.close")
+            )
+        )
+
+        controller.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(
+                    keyval=Gdk.KEY_o,
+                    modifiers=Gdk.ModifierType.CONTROL_MASK
+                ),
+                action=Gtk.NamedAction.new("win.open")
+            )
+        )
+
+        controller.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(
+                    keyval=Gdk.KEY_s,
+                    modifiers=Gdk.ModifierType.CONTROL_MASK
+                ),
+                action=Gtk.NamedAction.new("win.save")
+            )
+        )
+
+        controller.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(
+                    keyval=Gdk.KEY_s,
+                    modifiers=(
+                        Gdk.ModifierType.CONTROL_MASK
+                        | Gdk.ModifierType.SHIFT_MASK
+                    )
+                ),
+                action=Gtk.NamedAction.new("win.save-as")
+            )
+        )
+
+        controller.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(
+                    keyval=Gdk.KEY_q,
+                    modifiers=Gdk.ModifierType.CONTROL_MASK
+                ),
+                action=Gtk.NamedAction.new("win.quit")
+            )
+        )
+
+        controller.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(
+                    keyval=Gdk.KEY_F1,
+                    modifiers=0
+                ),
+                action=Gtk.NamedAction.new("win.help")
+            )
+        )
+
+        controller.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(
+                    keyval=Gdk.KEY_r,
+                    modifiers=Gdk.ModifierType.CONTROL_MASK
+                ),
+                action=Gtk.NamedAction.new("win.compute-and-redraw")
+            )
+        )
+
+    def build_body(self):
+        """Build the main window body layout.
+
+        Creates the main layout with:
+        - A Paned window (horizontal) with:
+          * Left: Viewer3D for 3D visualization
+          * Right: List of photons displayed
+
+        """
+        ### First row: paned window (horizontal split)
+        self.paned = Gtk.Paned(
+            orientation=Gtk.Orientation.HORIZONTAL
+        )
+        self.set_child(self.paned)
+
+        ## Left: Viewer3D (3D Matplotlib canvas)
+        self.viewer3d = Viewer3D()
+        self.paned.set_start_child(self.viewer3d)
+        # Forbid focus to the plot, else shortcuts don't work reliably
+        self.viewer3d.canvas.set_focusable(False)
+
+        ## First row, right: vertical box for list of photons
+        self.right = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=6
+        )
+        self.paned.set_end_child(self.right)
+
+        ## dummy
+        label = Gtk.Label()
+        label.set_text("toto")
+        self.right.append(label)
+
+    def on_close_request(self, *args):
+        """Handle window close request.
+
+        Hide window so it can be reopened in the same state later.
+
+        Returns:
+            bool: True to avoid destroying the window
+
+        """
+        # If the application is terminating, return False so the event
+        # handler proceeds to actually close the window.
+        if self.get_application().terminating:
+            return False
+
+        # Else, only hide it and tell the event handler to stop here.
+        self.set_visible(False)
+        return True
 
 # Stand-alone entry point:
 if __name__ == "__main__":
