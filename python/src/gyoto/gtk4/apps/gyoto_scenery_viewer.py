@@ -76,7 +76,7 @@ from ..widgets.simulation_controls import SimulationControls
 from ..utils import show_error_dialog
 from ...utils import readScenery
 from ...core import Factory, Astrobj, Error as GyotoError
-from ...core import Scenery, Screen
+from ...core import Scenery, Screen, Photon
 from ...std import FixedStar, Minkowski, PowerLaw
 
 # --- Commands for worker communication ---
@@ -392,7 +392,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         interpolation_step: Step size for interpolation
         connector: Connection for inter-process communication
         filename: Path to the last file used for this scenery
-
+        closing: this window is closing
     """
 
     # Default values
@@ -401,12 +401,12 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
     viewer3d = None
     viewer3d_window = None
     editor = None
-    endtime = 3000
     worker = None
     simulation_running = False
     last_focused_widget = None
     connector = None
     filename = None
+    closing = False
 
     # Constants
     scalar_quantities = ('Intensity', 'EmissionTime', 'MinDistance',
@@ -477,6 +477,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         # Actually set self.scenery and build editor
         self.set_scenery(scenery)
+
+        # dictionary of Photon data
+        self.photon_data = {}
 
         # Set the initial limits
         self.on_reset()
@@ -748,6 +751,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 self.worker.terminate()
         if self.props.application is not None:
             self.props.application.remove_window(self)
+        self.closing = True
+        if self.viewer3d_window:
+            self.viewer3d_window.close()
         return False
 
     def on_close(self, *args):
@@ -856,6 +862,10 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         # reorder them
         self.reorder_image_artists()
 
+        # replot the photons
+        for pd in self.photon_data.values():
+            pd.draw_marker()
+
         # set common vmin/vmax
         self.reset_clim(quantity)
 
@@ -864,19 +874,20 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         self.viewer2d.axes.set_ylim(ylim)
 
         # actually draw
-        self.viewer2d.canvas.draw_idle()
+        self.viewer2d.draw()
 
     def reset_clim(self, quantity):
         """Reset vlim and vmax"""
         vmin = numpy.inf
         vmax = -numpy.inf
         for dico in self.data.values():
-            temp = min(vmin, numpy.nanmin(dico[quantity]))
-            if not numpy.isnan(temp):
-                vmin = temp
-            temp = max(vmax, numpy.nanmax(dico[quantity]))
-            if not numpy.isnan(temp):
-                vmax = temp
+            if quantity in dico:
+                temp = min(vmin, numpy.nanmin(dico[quantity]))
+                if not numpy.isnan(temp):
+                    vmin = temp
+                temp = max(vmax, numpy.nanmax(dico[quantity]))
+                if not numpy.isnan(temp):
+                    vmax = temp
         for artist in self.image_artists.values():
             artist.set_clim(vmin, vmax)
 
@@ -906,6 +917,8 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             self.viewer2d.axes.set_aspect('equal', adjustable='box')
 
     def update_or_create_image_artist(self, key, quantity):
+        if quantity not in self.data[key]:
+            return
         try:
             self.image_artists[key].set_data(self.data[key][quantity])
         except KeyError:
@@ -951,7 +964,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                                          where=~numpy.isnan(d))
                         except KeyError:
                             # this quantity is not yet available
-                            self.data[key] = d
+                            self.data[key][q] = d
                 else:
                     self.data[key] = msg[2]
 
@@ -959,7 +972,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 # new one
                 self.update_or_create_image_artist(key, quantity)
                 self.reset_clim(quantity)
-                self.viewer2d.canvas.draw_idle()
+                self.viewer2d.draw()
 
             self.controls.set_progress(msg[1])
 
@@ -973,7 +986,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         """
         for zorder, key in enumerate(sorted(self.image_artists, reverse=True)):
-            self.image_artists[key].set_zorder(zorder)
+            self.image_artists[key].set_zorder(zorder*1e-100)
 
     def process_control(self):
         """Process control messages from the worker.
@@ -1341,9 +1354,19 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         if event.inaxes.get_navigate_mode() is not None:
             return
 
-        print(event.xdata, event.ydata)
+        key = event.xdata, event.ydata
+        print(f'{key=}')
 
         self.show_viewer3d()
+
+        self.photon_data[key] = PhotonData(self, *key)
+
+        self.photon_data[key].draw_marker()
+        self.viewer2d.draw()
+
+        self.photon_data[key].draw_line()
+        self.viewer3d.set_equal()
+        self.viewer3d.draw()
 
     def on_recursive_value_changed(self, widget, path):
         """Handle property changes"""
@@ -1370,9 +1393,15 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         # dictionary of artists with same keys
         self.image_artists = {}
 
+        # clear the 2D plot and set its limits
         self.viewer2d.axes.clear()
         self.reset_limits()
-        self.viewer2d.canvas.draw_idle()
+
+        # replot the photons, if any
+        for pd in self.photon_data.values():
+            pd.draw_marker(self.viewer2d.axes)
+
+        self.viewer2d.draw()
 
     def on_play_pause(self, wdgt):
         """Handle play/pause button click.
@@ -1491,6 +1520,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 FieldOfView = (150, "µas"),
             ),
             Delta    = 1e0,
+            DeltaMaxOverR = 0.5,
             MinimumTime = 0.,
             Quantities = " ".join(self.scalar_quantities),
             Adaptive = True,
@@ -1588,6 +1618,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         if self.viewer3d_window is None:
             self.viewer3d_window =  GyotoSceneryViewer3dWindow(parent=self)
             self.viewer3d = self.viewer3d_window.viewer3d
+            self.viewer3d.reset_view(azim=120.)
 
         self.viewer3d_window.present()
 
@@ -1777,14 +1808,84 @@ class GyotoSceneryViewer3dWindow(Gtk.Window):
             bool: True to avoid destroying the window
 
         """
-        # If the application is terminating, return False so the event
-        # handler proceeds to actually close the window.
-        if self.get_application().terminating:
+        # If the application is terminating or if the parent window is
+        # closing, return False so the event handler proceeds to
+        # actually close the window.
+        if self.get_application().terminating or self.parent.closing:
             return False
 
         # Else, only hide it and tell the event handler to stop here.
         self.set_visible(False)
         return True
+
+# Helper class
+
+class PhotonData(object):
+    """Container for a single Photon and associated data in GyotoSceneryViewer
+
+    Attributes:
+        key: (alpha, delta) in arcsec
+        photon: gyoto.core.Photon used for the computation
+        line: matplolib artist in the Viewer3D plot
+        marker: matplotlib artist in the Viewer2D plot
+
+    """
+
+    _arcsec2rad: float = numpy.pi / (180.*3600.)
+
+    def __init__(self,
+                 parent: GyotoSceneryViewerMainWindow,
+                 alpha: float, delta:float):
+        """Initialize self.photon
+
+        Arguments:
+            scenery (gyoto.core.Scenery): the scenery containing the
+                Metric, Astrobj and Screen
+            alpha, delta (float): direction of arrival of the photon
+                on the Screen (arcsec)
+
+        """
+        self.key = alpha, delta
+        alpha = alpha * self._arcsec2rad
+        delta = delta * self._arcsec2rad
+
+        scenery = parent.scenery
+        self.parent = parent
+
+        self.photon = Photon(scenery.Metric, scenery.Astrobj,
+                             scenery.Screen, alpha, delta)
+
+        self.hit = self.photon.hit()
+
+        npoints = self.photon.get_nelements()
+        if npoints < 2:
+            print('This Photon has only {npoints} point')
+
+        self.t = numpy.empty(npoints)
+        self.photon.get_t(self.t)
+        self.x = numpy.empty(npoints, like=self.t)
+        self.y = numpy.empty(npoints, like=self.t)
+        self.z = numpy.empty(npoints, like=self.t)
+        self.r = numpy.sqrt(self.x**2 + self.y**2 + self.z**2)
+        self.photon.getCartesian(self.t, self.x, self.y, self.z)
+
+    def draw_marker(self):
+        self.marker = self.parent.viewer2d.axes.plot(
+            self.key[0], self.key[1], 'o')
+
+    def draw_line(self):
+        rmax = self.photon.Astrobj.rMax()
+        mask = numpy.logical_and(
+            abs(self.x) <= rmax, 
+            abs(self.y) <= rmax,
+            abs(self.z) <= rmax,
+        )
+        print(f'{rmax}')
+        print(mask)
+        print(numpy.max((self.x[mask], self.y[mask], self.z[mask])))
+        print(self.x[mask], self.y[mask], self.z[mask])
+        self.line = self.parent.viewer3d.axes.plot(
+            self.x[mask], self.y[mask], self.z[mask])
 
 # Stand-alone entry point:
 if __name__ == "__main__":

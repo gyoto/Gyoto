@@ -155,7 +155,7 @@ class Viewer3D(Gtk.Box):
         """
         self.canvas.draw_idle()
 
-    def reset_view(self):
+    def reset_view(self, elev=30., azim=-60):
         """Restore the default camera position and orientation.
 
         Sets the view to a standard 3D perspective:
@@ -164,8 +164,8 @@ class Viewer3D(Gtk.Box):
         - Box aspect: (1, 1, 1) for equal scaling on all axes
         """
         self.axes.view_init(
-            elev=30,    # Elevation angle in degrees
-            azim=-60    # Azimuth angle in degrees
+            elev=elev,    # Elevation angle in degrees
+            azim=azim,    # Azimuth angle in degrees
         )
         self.axes.set_box_aspect(
             (1, 1, 1)  # Equal aspect ratio for all axes
