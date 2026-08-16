@@ -73,6 +73,7 @@ from ..widgets.scientific_spin import ScientificSpin
 from ..widgets.viewer_2d import Viewer2D
 from ..widgets.viewer_3d import Viewer3D
 from ..widgets.simulation_controls import SimulationControls
+from ..widgets.mpl_color_button import MplColorButton
 from ..utils import show_error_dialog
 from ...utils import readScenery
 from ...core import Factory, Astrobj, Error as GyotoError
@@ -1372,16 +1373,8 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         self.show_viewer3d()
 
-        self.photon_data[key] = PhotonData(self, *key)
-
-        self.photon_data[key].draw_marker()
-        self.viewer2d.draw()
-
-        self.photon_data[key].draw_line()
-        self.viewer3d.set_equal()
-        self.viewer3d.draw()
-
-        self.photon_data[key].add_row()
+        if key not in self.photon_data:
+            self.photon_data[key] = PhotonData(self, *key)
 
     def on_recursive_value_changed(self, widget, path):
         """Handle property changes"""
@@ -1883,6 +1876,17 @@ class PhotonData(object):
         self.z = numpy.empty(npoints, like=self.t)
         self.photon.getCartesian(self.t, self.x, self.y, self.z)
 
+        self.draw_marker()
+        self.parent.viewer2d.draw()
+        color=self.marker.get_color()
+
+        self.draw_line()
+        self.line.set_color(color)
+        self.parent.viewer3d.set_equal()
+        self.parent.viewer3d.draw()
+
+        self.add_row()
+
     def draw_marker(self):
         self.marker = self.parent.viewer2d.axes.plot(
             self.key[0], self.key[1], 'o')[0]
@@ -1906,12 +1910,29 @@ class PhotonData(object):
             orientation=Gtk.Orientation.HORIZONTAL,
             spacing=6
         )
+
+        # label entry
         entry = Gtk.Entry()
         entry.add_css_class("monospace")
         entry.set_text(self.label)
         entry.set_hexpand(True)
         entry.connect("changed", lambda w: self.set_label(w.get_text()))
         self.widget.append(entry)
+
+        # color button
+        color=self.marker.get_color()
+        color_button = MplColorButton(color=color)
+        color_button.connect("color-changed", self.on_color_changed)
+        color_button.add_css_class("flat")
+        self.widget.append(color_button)
+
+        # button to remove the photon
+        remove_button = Gtk.Button(icon_name="list-remove")
+        remove_button.set_tooltip_text("Remove Photon")
+        remove_button.connect("clicked", lambda *_: self.remove())
+        remove_button.add_css_class("flat")
+        self.widget.append(remove_button)
+
         self.parent.viewer3d_window.right.append(self.widget)
 
     def set_label(self, txt):
@@ -1921,6 +1942,28 @@ class PhotonData(object):
         self.parent.viewer2d.draw()
         self.line.set_label(txt)
         self.parent.viewer3d.axes.legend()
+        self.parent.viewer3d.draw()
+
+    def remove(self):
+        self.marker.remove()
+        self.line.remove()
+        if len(self.parent.photon_data) <= 1:
+            self.parent.viewer2d.axes.get_legend().remove()
+            self.parent.viewer3d.axes.get_legend().remove()
+        else:
+            self.parent.viewer2d.axes.legend()
+            self.parent.viewer3d.axes.legend()
+        self.parent.viewer2d.draw()
+        self.parent.viewer3d.draw()
+        self.parent.viewer3d_window.right.remove(self.widget)
+        del self.parent.photon_data[self.key]
+
+    def on_color_changed(self, widget, color):
+        self.marker.set_color(color)
+        self.line.set_color(color)
+        self.parent.viewer2d.axes.legend()
+        self.parent.viewer3d.axes.legend()
+        self.parent.viewer2d.draw()
         self.parent.viewer3d.draw()
 
 # Stand-alone entry point:
