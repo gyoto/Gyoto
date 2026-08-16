@@ -271,6 +271,20 @@ class GyotoSceneryViewerApplication(Gtk.Application):
         if connector is not None:
             GLib.timeout_add(50, self.check_connector)
 
+        # CSS classes
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data("""
+        entry.monospace {
+            font-family: monospace;
+        }
+        """.encode())
+
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        )
+
     def do_activate(self):
         """Called by GTK when the application starts.
 
@@ -1355,7 +1369,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             return
 
         key = event.xdata, event.ydata
-        print(f'{key=}')
 
         self.show_viewer3d()
 
@@ -1367,6 +1380,8 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         self.photon_data[key].draw_line()
         self.viewer3d.set_equal()
         self.viewer3d.draw()
+
+        self.photon_data[key].add_row()
 
     def on_recursive_value_changed(self, widget, path):
         """Handle property changes"""
@@ -1794,10 +1809,7 @@ class GyotoSceneryViewer3dWindow(Gtk.Window):
         )
         self.paned.set_end_child(self.right)
 
-        ## dummy
-        label = Gtk.Label()
-        label.set_text("toto")
-        self.right.append(label)
+        self.paned.set_position(660)
 
     def on_close_request(self, *args):
         """Handle window close request.
@@ -1846,6 +1858,9 @@ class PhotonData(object):
 
         """
         self.key = alpha, delta
+
+        self.label = f'({alpha: .2e}, {delta:+.2e})'
+
         alpha = alpha * self._arcsec2rad
         delta = delta * self._arcsec2rad
 
@@ -1866,12 +1881,13 @@ class PhotonData(object):
         self.x = numpy.empty(npoints, like=self.t)
         self.y = numpy.empty(npoints, like=self.t)
         self.z = numpy.empty(npoints, like=self.t)
-        self.r = numpy.sqrt(self.x**2 + self.y**2 + self.z**2)
         self.photon.getCartesian(self.t, self.x, self.y, self.z)
 
     def draw_marker(self):
         self.marker = self.parent.viewer2d.axes.plot(
-            self.key[0], self.key[1], 'o')
+            self.key[0], self.key[1], 'o')[0]
+        self.marker.set_label(self.label)
+        self.parent.viewer2d.axes.legend()
 
     def draw_line(self):
         rmax = self.photon.Astrobj.rMax()
@@ -1880,12 +1896,32 @@ class PhotonData(object):
             abs(self.y) <= rmax,
             abs(self.z) <= rmax,
         )
-        print(f'{rmax}')
-        print(mask)
-        print(numpy.max((self.x[mask], self.y[mask], self.z[mask])))
-        print(self.x[mask], self.y[mask], self.z[mask])
         self.line = self.parent.viewer3d.axes.plot(
-            self.x[mask], self.y[mask], self.z[mask])
+            self.x[mask], self.y[mask], self.z[mask])[0]
+        self.line.set_label(self.label)
+        self.parent.viewer3d.axes.legend()
+
+    def add_row(self):
+        self.widget = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=6
+        )
+        entry = Gtk.Entry()
+        entry.add_css_class("monospace")
+        entry.set_text(self.label)
+        entry.set_hexpand(True)
+        entry.connect("changed", lambda w: self.set_label(w.get_text()))
+        self.widget.append(entry)
+        self.parent.viewer3d_window.right.append(self.widget)
+
+    def set_label(self, txt):
+        self.label = txt
+        self.marker.set_label(txt)
+        self.parent.viewer2d.axes.legend()
+        self.parent.viewer2d.draw()
+        self.line.set_label(txt)
+        self.parent.viewer3d.axes.legend()
+        self.parent.viewer3d.draw()
 
 # Stand-alone entry point:
 if __name__ == "__main__":
