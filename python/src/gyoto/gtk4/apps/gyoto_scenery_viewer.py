@@ -1051,6 +1051,10 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 else:
                     self.data[key] = msg[2]
 
+                if quantity not in self.data[key]:
+                    quantity = next(iter(self.data[key]), quantity)
+                    self.set_quantity_dropdown_item(quantity)
+
                 # replace the existing image for this key, or create
                 # new one
                 self.update_or_create_image_artist(key, quantity)
@@ -1060,6 +1064,17 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             self.controls.set_progress(msg[1])
 
         return True
+
+    def set_quantity_dropdown_item(self, quantity):
+        model = self.quantity_dropdown.get_model()
+
+        for i in range(model.get_n_items()):
+            item = model.get_item(i).get_string()
+            if item == quantity:
+                self.quantity_dropdown.set_selected(i)
+                return
+
+        raise ValueError(f"{quantity!r} not found")
 
     def reorder_image_artists(self):
         """Reorder the iamge artists
