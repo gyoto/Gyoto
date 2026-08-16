@@ -77,7 +77,7 @@ from ..widgets.mpl_color_button import MplColorButton
 from ..utils import show_error_dialog
 from ...utils import readScenery
 from ...core import Factory, Astrobj, Error as GyotoError
-from ...core import Scenery, Screen, Photon
+from ...core import Scenery, Screen, Spectrometer, Photon
 from ...std import FixedStar, Minkowski, PowerLaw
 
 # --- Commands for worker communication ---
@@ -428,6 +428,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                          'FirstDistMin', 'Redshift', 'NbCrossEqPlane',
                          'User1', 'User2', 'User3', 'User4', 'User5')
 
+    spectral_quantities = ('Spectrum', 'SpectrumStokesQ', 'SpectrumStokesU',
+                           'SpectrumStokesV', 'BinSpectrum')
+
     ####################################################################
     # Construction
     ####################################################################
@@ -697,11 +700,29 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         )
         self.paned.set_start_child(self.left)
 
+        top = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=6
+        )
+        self.left.append(top)
+
         # drop-down to select the quantioty to display
-        self.quantity_dropdown = Gtk.DropDown.new_from_strings(self.scalar_quantities)
+        self.quantity_dropdown = Gtk.DropDown.new_from_strings(
+            self.scalar_quantities +
+            self.spectral_quantities +
+            ("ImpactCoords",))
         self.quantity_dropdown.connect("notify::selected",
                                        self.on_quantity_dropdown_activated)
-        self.left.append(self.quantity_dropdown)
+        self.quantity_dropdown.set_hexpand(True)
+        top.append(self.quantity_dropdown)
+
+        self.quantity_plane = Gtk.SpinButton()
+        adjustment = self.quantity_plane.get_adjustment()
+        adjustment.set_step_increment(1.0)
+        top.append(self.quantity_plane)
+        self.quantity_plane.set_sensitive(False)
+        self.quantity_plane.set_numeric(True)
+        self.quantity_plane.connect("changed", self.redraw)
 
         # actual plot widget
         self.viewer2d = Viewer2D()
@@ -857,7 +878,32 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             self.controls.nframes.get_value_as_int(),
         ))
 
-    def redraw(self):
+    def get_image(self, key, quantity):
+        try:
+            dico = self.data[key]
+        except KeyError:
+            return None
+        if quantity not in dico:
+            return None
+        if quantity in self.scalar_quantities:
+            image = dico[quantity]
+        elif quantity in self.spectral_quantities:
+            cube = dico[quantity]
+            plane = self.quantity_plane.get_value_as_int()
+            if plane < 0: plane = 0
+            if plane >= cube.shape[0]: plane = cube.shape[0]-1
+            image = cube[plane, ...]
+        elif quantity == "ImpactCoords":
+            cube = dico[quantity]
+            plane = self.quantity_plane.get_value_as_int()
+            if plane < 0: plane =0
+            if plane >= cube.shape[-1]: plane = cube.shape[-1]-1
+            image = cube[..., plane]
+        mask = image == numpy.finfo(numpy.float64).max
+        image[mask] = numpy.nan
+        return image
+
+    def redraw(self, *args):
         """Draw the selected quantity from precomputed data"""
 
         quantity = self.quantity_dropdown.get_selected_item().get_string()
@@ -868,12 +914,14 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         # show all images
         for key, dico in self.data.items():
-            if quantity in dico:
+            image = self.get_image(key, quantity)
+            if image is not None:
                 self.image_artists[key] = self.viewer2d.axes.imshow(
-                    dico[quantity],
+                    image,
                     origin='lower',
                     extent=(key[1], -key[1], -key[1], key[1]),
                 )
+
         # reorder them
         self.reorder_image_artists()
 
@@ -895,12 +943,14 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         """Reset vlim and vmax"""
         vmin = numpy.inf
         vmax = -numpy.inf
-        for dico in self.data.values():
+        idx = -1 if quantity == "ImpactCoords" else 0
+        for key, dico in self.data.items():
             if quantity in dico:
-                temp = min(vmin, numpy.nanmin(dico[quantity]))
+                image = self.get_image(key, quantity)
+                temp = min(vmin, numpy.nanmin(image))
                 if not numpy.isnan(temp):
                     vmin = temp
-                temp = max(vmax, numpy.nanmax(dico[quantity]))
+                temp = max(vmax, numpy.nanmax(image))
                 if not numpy.isnan(temp):
                     vmax = temp
         for artist in self.image_artists.values():
@@ -932,13 +982,31 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             self.viewer2d.axes.set_aspect('equal', adjustable='box')
 
     def update_or_create_image_artist(self, key, quantity):
-        if quantity not in self.data[key]:
+        dico = self.data[key]
+        if quantity not in dico:
             return
+
+        if quantity in self.scalar_quantities:
+            image = dico[quantity]
+        elif quantity in self.spectral_quantities:
+            cube = dico[quantity]
+            plane = self.quantity_plane.get_value_as_int()
+            if plane < 0: plane =0
+            if plane >= cube.shape[0]: plane = cube.shape[0]-1
+            image = cube[plane, ...]
+        elif quantity == "ImpactCoords":
+            cube = dico[quantity]
+            plane = self.quantity_plane.get_value_as_int()
+            if plane < 0: plane =0
+            if plane >= cube.shape[-1]: plane = cube.shape[-1]-1
+            image = cube[..., plane]
+        masked = numpy.ma.masked_equal(image, numpy.finfo(numpy.float64).max)
+
         try:
-            self.image_artists[key].set_data(self.data[key][quantity])
+            self.image_artists[key].set_data(masked)
         except KeyError:
             self.image_artists[key] = self.viewer2d.axes.imshow(
-                self.data[key][quantity],
+                masked,
                 origin='lower',
                 extent=(key[1], -key[1], -key[1], key[1]),
             )
@@ -1356,6 +1424,20 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             widget: The Gtk.DropDown that changed
             *args: Additional arguments
         """
+        quantity = widget.get_selected_item().get_string()
+
+        if quantity in self.scalar_quantities:
+            self.quantity_plane.set_sensitive(False)
+        else:
+            self.quantity_plane.set_sensitive(True)
+            nplanes = 0
+            idx = -1 if quantity == "ImpactCoords" else 0
+            for key in self.data:
+                if quantity in self.data[key]:
+                    n = self.data[key][quantity].shape[idx]
+                    if n > nplanes: nplanes = n
+            self.quantity_plane.set_range(0, nplanes-1)
+
         self.redraw()
 
     def on_viewer_click(self, event):
@@ -1510,11 +1592,11 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 Radius = 12,
                 Position = (0., 0., 0.),
                 Spectrum = PowerLaw(
-                    Exponent = 0.,
+                    Exponent = 1.,
                     Constant = 0.01,
                 ),
                 Opacity = PowerLaw(
-                    Exponent = 0.,
+                    Exponent = 1.,
                     Constant = 0.01,
                 ),
                 OpticallyThin = True,
@@ -1526,11 +1608,17 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 Inclination = (90., "degree"),
                 PALN        = 0.,
                 FieldOfView = (150, "µas"),
+                Spectrometer = Spectrometer(
+                    'freq',
+                    NSamples = 5,
+                    Band = (1., 5.),
+                ),
             ),
             Delta    = 1e0,
             DeltaMaxOverR = 0.5,
             MinimumTime = 0.,
-            Quantities = " ".join(self.scalar_quantities),
+            Quantities = " ".join(self.scalar_quantities +
+                                  ("Spectrum", "ImpactCoords")),
             Adaptive = True,
             NThreads = 8,
         )
