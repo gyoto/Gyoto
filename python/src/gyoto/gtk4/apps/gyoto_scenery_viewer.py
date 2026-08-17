@@ -77,7 +77,7 @@ from ..widgets.mpl_color_button import MplColorButton
 from ..utils import show_error_dialog
 from ...utils import readScenery
 from ...core import Factory, Astrobj, Error as GyotoError
-from ...core import Scenery, Screen, Spectrometer, Photon
+from ...core import Scenery, Screen, Spectrometer, Photon, AstrobjProperties
 from ...std import FixedStar, Minkowski, PowerLaw
 
 # --- Commands for worker communication ---
@@ -1929,17 +1929,22 @@ class GyotoSceneryViewer3dWindow(Gtk.Window):
 # Helper class
 
 class PhotonData(object):
-    """Container for a single Photon and associated data in GyotoSceneryViewer
+    """Container for a single Photon and associated data
 
     Attributes:
         key: (alpha, delta) in arcsec
         photon: gyoto.core.Photon used for the computation
-        line: matplolib artist in the Viewer3D plot
+        line: matplolib artist showing trajectory in the Viewer3D plot
+        impacts: matplolib artist showing impacts in the Viewer3D plot
         marker: matplotlib artist in the Viewer2D plot
+        color: color of all the artists
+        widget: Gtk container in the list view
 
     """
 
     _arcsec2rad: float = numpy.pi / (180.*3600.)
+
+    color = None
 
     def __init__(self,
                  parent: GyotoSceneryViewerMainWindow,
@@ -1953,21 +1958,29 @@ class PhotonData(object):
                 on the Screen (arcsec)
 
         """
+        # store key as (alpha, delta)
         self.key = alpha, delta
 
+        # initial label is based on key
         self.label = f'({alpha: .2e}, {delta:+.2e})'
 
+        # convert to radians
         alpha = alpha * self._arcsec2rad
         delta = delta * self._arcsec2rad
 
+        # store parent
         scenery = parent.scenery
         self.parent = parent
 
+        # initialize photon
         self.photon = Photon(scenery.Metric, scenery.Astrobj,
                              scenery.Screen, alpha, delta)
 
-        self.hit = self.photon.hit()
+        # integrate photon
+        aop = AstrobjProperties()
+        self.hit = self.photon.hit(aop)
 
+        # get worldline in Cartesian compact-object-centered coordinates
         npoints = self.photon.get_nelements()
         if npoints < 2:
             print('This Photon has only {npoints} point')
@@ -1979,20 +1992,32 @@ class PhotonData(object):
         self.z = numpy.empty(npoints, like=self.t)
         self.photon.getCartesian(self.t, self.x, self.y, self.z)
 
+        # store whether each point touches the object
+        self.impact = numpy.zeros(npoints, dtype=bool)
+        for i in range(npoints-1):
+            self.impact[i] = scenery.Astrobj.Impact(
+                self.photon,
+                i + self.photon.getImin(),
+                None
+            )
+
+        # draw marker on 2D view
         self.draw_marker()
         self.parent.viewer2d.draw()
-        color=self.marker.get_color()
 
+        # draw trajectory and impacts on 3D view
         self.draw_line()
-        self.line.set_color(color)
+        self.draw_impacts()
         self.parent.viewer3d.set_equal()
         self.parent.viewer3d.draw()
 
+        # add widgets in list view
         self.add_row()
 
     def draw_marker(self):
         self.marker = self.parent.viewer2d.axes.plot(
-            self.key[0], self.key[1], 'o')[0]
+            self.key[0], self.key[1], 'o', color=self.color)[0]
+        self.color=self.marker.get_color()
         self.marker.set_label(self.label)
         self.parent.viewer2d.axes.legend()
 
@@ -2004,9 +2029,20 @@ class PhotonData(object):
             abs(self.z) <= rmax,
         )
         self.line = self.parent.viewer3d.axes.plot(
-            self.x[mask], self.y[mask], self.z[mask])[0]
+            self.x[mask], self.y[mask], self.z[mask], color=self.color)[0]
+        self.color=self.line.get_color()
         self.line.set_label(self.label)
         self.parent.viewer3d.axes.legend()
+
+    def draw_impacts(self):
+        self.impacts = self.parent.viewer3d.axes.plot(
+            self.x[self.impact],
+            self.y[self.impact],
+            self.z[self.impact],
+            ' o',
+            color=self.color,
+        )[0]
+        self.color=self.impacts.get_color()
 
     def add_row(self):
         self.widget = Gtk.Box(
@@ -2050,6 +2086,7 @@ class PhotonData(object):
     def remove(self):
         self.marker.remove()
         self.line.remove()
+        self.impacts.remove()
         if len(self.parent.photon_data) <= 1:
             self.parent.viewer2d.axes.get_legend().remove()
             self.parent.viewer3d.axes.get_legend().remove()
@@ -2064,6 +2101,7 @@ class PhotonData(object):
     def on_color_changed(self, widget, color):
         self.marker.set_color(color)
         self.line.set_color(color)
+        self.impacts.set_color(color)
         self.parent.viewer2d.axes.legend()
         self.parent.viewer3d.axes.legend()
         self.parent.viewer2d.draw()
