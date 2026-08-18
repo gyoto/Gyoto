@@ -25,7 +25,6 @@ Description
 -----------
 
 - **Left Panel**: 2D Matplotlib viewer displaying the scenery
-    observable quantities.
 - **Right Panel**: Property editor for adjusting scenery parameters.
 - **Bottom Controls**: Play/pause/stop buttons, integration
     settings, and status display.
@@ -243,13 +242,12 @@ class GyotoSceneryViewerApplication(Gtk.Application):
         connector: Connection for inter-process communication
         terminating: True when the application is shutting down 
 
-
     """
 
     terminating = False
 
     def __init__(self, scenery=None, connector=None, *args, **kwargs):
-        """Initialize the Gyoto Scenery Viewer( GTK application.
+        """Initialize the Gyoto Scenery Viewer GTK application.
 
         Args:
             scenery: Initial scenery to display
@@ -383,7 +381,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
     This window contains:
     - A 2D Matplotlib viewer (left panel) for visualizing ray-traced
       quantities
-        - A property editor (right panel) for adjusting the scenery
+    - A property editor (right panel) for adjusting the scenery
       parameters
     - Control widgets (bottom) for running/stopping simulations and
       setting parameters
@@ -518,6 +516,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         - Open...
         - Save
         - Save As...
+        - Display 3D window
         - Help
         - Close
         - Quit
@@ -1353,79 +1352,68 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             modal=False
         )
         dialog.set_default_size(600, 400)
-
         help_text = (
-            "Gyotoy - Gyoto Geodesic Integration Visualizer\n"
+            "Gyoto Scenery Viewer\n"
             "\n"
             "OVERVIEW:\n"
-            "Gyotoy is a GTK4 application for simulating and visualizing\n"
-            "geodesics (time-like or null) in spacetimes supported by the\n"
-            "Gyoto library. It provides an interactive 3D view of particle\n"
-            "trajectories. Each window handles exactly one particle (Star\n"
-            "or Photon).\n"
+            "Gyoto Scenery Viewer is a GTK4 application for simulating and\n"
+            "visualizing ray-traced sceneries in spacetimes supported by the\n"
+            "Gyoto library. It provides an interactive 2D view of observable\n"
+            "quantities from astrophysical sceneries. Each window handles\n"
+            "exactly one scenery.\n"
             "\n"
             "UI LAYOUT:\n"
-            "- Left Panel: 3D Matplotlib viewer displaying particle\n"
-            "  trajectory. Use mouse to rotate (left-click+drag), and\n"
-            "  pan (middle-click+drag). Use plot toolbar for other actions\n"
-            "  including saving the plot.\n"
-            "- Right Panel: Property editor for adjusting metric and\n"
-            "  particle parameters. Changes trigger automatic\n"
-            "  recomputation.\n"
+            "- Left Panel: 2D Matplotlib viewer displaying ray-traced\n"
+            "  quantities from the scenery. Use mouse to zoom and pan.\n"
+            "  Use plot toolbar for other actions including saving the\n"
+            "  plot.\n"
+            "- Right Panel: Property editor for adjusting scenery\n"
+            "  parameters: Metric, Astrobj, Screen, and other properties.\n"
             "- Bottom: Simulation controls (play/pause/stop/reset),\n"
-            "  interpolation settings, and status display.\n"
+            "  number of frames, and status display.\n"
             "\n"
             "MENU BUTTONS:\n"
-            "- New -> Star: Open new window with default Star (Ctrl+N)\n"
-            "- New -> Photon: Open new window with default Photon\n"
-            "  (Ctrl+Shift+N)\n"
-            "- Open (Ctrl+O): Load an XML particle configuration file.\n"
-            "- Save (Ctrl+S): Save current particle to last used file.\n"
-            "- Save As (Ctrl+Shift+S): Save current particle to a new file.\n"
+            "- New (Ctrl+N): Open new window with default scenery.\n"
+            "- Open (Ctrl+O): Load an XML scenery configuration file.\n"
+            "- Save (Ctrl+S): Save current scenery to last used file.\n"
+            "- Save As (Ctrl+Shift+S): Save current scenery to a new file.\n"
+            "- Display 3D window (Ctrl+D): Open 3D viewer for photon\n"
+            "  trajectories.\n"
             "- Help (F1): Show this help dialog.\n"
             "- Close (Ctrl+W): Close current window.\n"
             "- Quit (Ctrl+Q): Close all windows and quit the application.\n"
             "\n"
-            "OTHER KEYBOARD SHORTCUTS:\n"
-            "- Ctrl+R: Compute and redraw trajectory.\n"
+            "KEYBOARD SHORTCUTS:\n"
+            "- Ctrl+R: Compute and redraw the scenery.\n"
             "- Escape: Close active dialog window (error, help...).\n"
             "\n"
-            "PROPERTY EDITOR:\n"
-            "- Edit particle parameters: position, velocity, metric\n"
-            "  properties...\n"
-            "- All parameter changes immediately trigger a computation\n"
-            "  and redraw unless the stop (■) at the bottom right of the\n"
-            "  window is activated.\n"
-            "- The InitCoord vector is by default displayed with 7 cells\n"
-            "  corresponding to 4-position and 3-velocity (derivatives of\n"
-            "  the space coordinates with respect to time coordinate).\n"
-            "  Use the '3-velocity' and '4-velocity' radio buttons to\n"
-            "  switch between this view and the 8-coordinate view\n"
-            "  corresponding to 4-position and 4-velocity. By default, the\n"
-            "  4-velocity is renormalized (according to mass of the\n"
-            "  particle) at each keystroke. Click on the stop (■) button\n"
-            "  immediately below the coordinates to temporarily inhibit\n"
-            "  this behavior. Click this button again to finalize input.\n"
-            "\n"
             "SIMULATION CONTROLS:\n"
-            "- Reset: Reinitialize integration and clear viewer.\n"
+            "- Reset: Clear the viewer and reset limits.\n"
             "- Play/Pause: Start or pause the simulation.\n"
-            "- Stop: Stop the integration and inhibit/enable\n"
-            "  recomputation.\n"
-            "- N. frames: Number of intermediate frames to display\n"
+            "- Stop: Stop the integration.\n"
+            "- N. frames: Number of intermediate frames to compute\n"
             "  (default: 100).\n"
-            "- End time: Final time for integration.\n"
-            "- Interpolation step: Step size for interpolation (0 for no\n"
-            "  interpolation, adaptive step used instead).\n"
+            "\n"
+            "QUANTITY SELECTION:\n"
+            "- Use the dropdown at the top of the left panel to select\n"
+            "  which quantity to display: scalar quantities (Intensity,\n"
+            "  EmissionTime, etc.), spectral quantities (Spectrum, etc.),\n"
+            "  or ImpactCoords.\n"
+            "- For spectral and ImpactCoords quantities, use the spin button\n"
+            "  to select the plane/slice to display.\n"
             "\n"
             "WORKFLOW:\n"
-            "1. If needed, open file or create new particle (Star or\n"
-            "   Photon).\n"
+            "1. If needed, open file or create new scenery.\n"
             "2. Adjust properties in the editor.\n"
-            "3. Click Play or press Ctrl+R to compute trajectory.\n"
-            "4. Use 3D viewer to inspect the result.\n"
-            "5. Save particle description with Save/Save As.\n"
+            "3. Click Play or press Ctrl+R to compute and display.\n"
+            "4. Use 2D viewer to inspect the result.\n"
+            "5. If needed, zoom on details and increase resolution to\n"
+            "   recompute this part of the image, then click home button.\n"
+            "6. Click on the 2D plot to trace a photon.\n"
+            "7. Save scenery description with Save/Save As or plots using\n"
+            "   the toolbar buttons.\n"
         )
+
 
         label = Gtk.Label(
             label=help_text,
@@ -1937,8 +1925,8 @@ class PhotonData(object):
     Attributes:
         key: (alpha, delta) in arcsec
         photon: gyoto.core.Photon used for the computation
-        line: matplolib artist showing trajectory in the Viewer3D plot
-        impacts: matplolib artist showing impacts in the Viewer3D plot
+        line: matplotlib artist showing trajectory in the Viewer3D plot
+        impacts: matplotlib artist showing impacts in the Viewer3D plot
         marker: matplotlib artist in the Viewer2D plot
         color: color of all the artists
         widget: Gtk container in the list view
@@ -1950,15 +1938,14 @@ class PhotonData(object):
     color = None
 
     def __init__(self,
-                 parent: GyotoSceneryViewerMainWindow,
+                 parent: GyotoSceneryViewerApplicationWindow,
                  alpha: float, delta:float):
-        """Initialize self.photon
+        """Initialize PhotonData.
 
-        Arguments:
-            scenery (gyoto.core.Scenery): the scenery containing the
-                Metric, Astrobj and Screen
-            alpha, delta (float): direction of arrival of the photon
-                on the Screen (arcsec)
+        Args:
+            parent: Parent GyotoSceneryViewerApplicationWindow instance
+            alpha: Alpha coordinate (float) in arcsec
+            delta: Delta coordinate (float) in arcsec
 
         """
         # store key as (alpha, delta)

@@ -147,6 +147,10 @@ Object.edit = edit
 def view_scenery(self=None):
     """A GTK4 window for viewing a Gyoto Scenery.
 
+    This application provides a graphical interface for simulating and
+    visualizing ray-traced sceneries in spacetimes supported by the
+    Gyoto library.
+
     Parameters:
         self: The Gyoto Scenery to view
 
