@@ -36,7 +36,7 @@ Note:
 """
 
 # Public API
-__all__ = ['gyotoy']
+__all__ = ['gyotoy', 'view_scenery', 'edit']
 
 from .utils import gui_launcher
 
@@ -120,7 +120,7 @@ def edit(self=None):
     The application runs in a separate process in a non-blocking fashion.
 
     Parameters:
-        obj: The Gyoto object to edit
+        self: The Gyoto object to edit
 
     Note:
         The GUI runs in a separate process.
@@ -129,9 +129,9 @@ def edit(self=None):
 
     from .utils import recursive_value_changed_pipe_receiver
 
-    def gtk_process(connector, obj):
+    def gtk_process(connector, scenery):
         from .apps.gyoto_object_editor import GyotoObjectEditorApplication
-        GyotoObjectEditorApplication.run_app(obj=obj,
+        GyotoObjectEditorApplication.run_app(obj=self,
                                              connector=connector)
 
     gui_launcher(gtk_process,
@@ -141,6 +141,34 @@ def edit(self=None):
 # Monkey-patch the edit method onto gyoto.core.Object
 from ..core import Object
 Object.edit = edit
+
+# Add edit() method to gyoto.core.Object for convenient property editing
+# Note: This should ideally be achieved using SWIG's extend mechanism
+def view_scenery(self=None):
+    """A GTK4 window for viewing a Gyoto Scenery.
+
+    Parameters:
+        self: The Gyoto Scenery to view
+
+    Note:
+        The GUI runs in a separate process.
+
+    """
+
+    from .utils import recursive_value_changed_pipe_receiver
+
+    def gtk_process(connector, obj):
+        from .apps.gyoto_scenery_viewer import GyotoSceneryViewerApplication
+        GyotoSceneryViewerApplication.run_app(scenery=self,
+                                              connector=connector)
+
+    gui_launcher(gtk_process,
+                 recursive_value_changed_pipe_receiver,
+                 self)
+
+# Monkey-patch the view method onto gyoto.core.Scenery
+from ..core import Scenery
+Object.view = view_scenery
 
 # Autoload submodules on demand
 def __getattr__(name):

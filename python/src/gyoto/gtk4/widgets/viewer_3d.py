@@ -201,7 +201,7 @@ class Viewer3D(Gtk.Box):
             self._on_roll_changed,
             value=self.axes.roll
         )
-        self.box_size_spin = self._make_spin(
+        self.box_size_spin = self._make_sspin(
             "Box Size",
             "Set the size of the 3D view box.",
             self._on_box_size_changed,
@@ -317,6 +317,29 @@ class Viewer3D(Gtk.Box):
     ####################################################################
 
     def _make_spin(self, name, tooltip, callback, value):
+        adjustment = Gtk.Adjustment(
+            value=value,
+            lower=-180,
+            upper=180,
+            step_increment=1,
+            page_increment=10,
+            page_size=0,
+        )
+
+        spin = Gtk.SpinButton(
+            adjustment=adjustment,
+            climb_rate=1,
+            digits=0,
+        )
+        spin.set_wrap(True)
+        spin.set_numeric(True)
+        spin.set_hexpand(True)
+        spin.set_tooltip_text(tooltip)
+        spin.connect("value-changed", callback)
+
+        return spin
+
+    def _make_sspin(self, name, tooltip, callback, value):
         spin = ScientificSpin(value=value, with_unit=False)
         spin.set_hexpand(True)
         spin.set_tooltip_text(tooltip)
@@ -399,10 +422,15 @@ class Viewer3D(Gtk.Box):
 
         self._updating_view = True
         try:
-            self.azim_spin.set_value(state[0])
-            self.elev_spin.set_value(state[1])
-            self.roll_spin.set_value(state[2])
-            self.box_size_spin.set_value(state[3])
+            for i, spin in enumerate((
+                    self.azim_spin,
+                    self.elev_spin,
+                    self.roll_spin,
+                    self.box_size_spin,
+            )):
+                val = spin.get_value()
+                if val != state[i]:
+                    spin.set_value(state[i])
         finally:
             self._updating_view = False
 

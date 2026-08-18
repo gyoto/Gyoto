@@ -537,14 +537,17 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         menu_section2.append(_("Save"), "win.save")
         menu_section2.append(_("Save As…"), "win.save-as")
         menu_section3 = Gio.Menu()
-        menu_section3.append(_("Help"), "win.help")
-        menu_section3.append(_("Close"), "win.close")
-        menu_section3.append(_("Quit"), "win.quit")
+        menu_section3.append(_("Display 3D window"), "win.display-3d")
+        menu_section4 = Gio.Menu()
+        menu_section4.append(_("Help"), "win.help")
+        menu_section4.append(_("Close"), "win.close")
+        menu_section4.append(_("Quit"), "win.quit")
 
         # Main menu items
         menu.append_section(None, menu_section1)
         menu.append_section(None, menu_section2)
         menu.append_section(None, menu_section3)
+        menu.append_section(None, menu_section4)
 
         # Create menu button
         menu_button = Gtk.MenuButton(
@@ -564,6 +567,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             ("open", self.on_open, None),
             ("save", self.on_save, None),
             ("save-as", self.on_save_as, None),
+            ("display-3d", self.show_viewer3d, None),
             ("help", self.on_help, None),
             ("close", self.on_close, None),
             ("quit", self.on_quit, None),
@@ -647,6 +651,16 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                     modifiers=Gdk.ModifierType.CONTROL_MASK
                 ),
                 action=Gtk.NamedAction.new("win.quit")
+            )
+        )
+
+        controller.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(
+                    keyval=Gdk.KEY_d,
+                    modifiers=Gdk.ModifierType.CONTROL_MASK
+                ),
+                action=Gtk.NamedAction.new("win.display-3d")
             )
         )
 
@@ -1473,14 +1487,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         if key not in self.photon_data:
             self.photon_data[key] = PhotonData(self, *key)
 
-    def on_recursive_value_changed(self, widget, path):
-        """Handle property changes"""
-        # placeholder: currently do nothing
-        if path in ("Screen",
-                    "Screen.Resolution",
-                    "Screen.FieldOfView"):
-            pass
-
     def on_reset(self, *args):
         """Handle reset button click.
 
@@ -1574,9 +1580,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         self.editor = PropertyEditorBox(
             scenery,
         )
-
-        self.editor.connect("recursive-value-changed",
-                            self.on_recursive_value_changed)
 
         self.editor_scroller.set_child(self.editor)
 
@@ -1724,7 +1727,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         return i, j
 
-    def show_viewer3d(self):
+    def show_viewer3d(self, *args):
 
         if self.viewer3d_window is None:
             self.viewer3d_window =  GyotoSceneryViewer3dWindow(parent=self)
