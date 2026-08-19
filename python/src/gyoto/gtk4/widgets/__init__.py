@@ -19,6 +19,9 @@ The following widgets are available for import:
         astrobjs, spectra, etc.) with a dropdown selector and property
         editor. Supports loading objects from XML files.
 
+    MplColorButton:
+        "A Gtk.ColorDialogButton using Matplotlib color representations.
+
     PropertyEditorBox:
         A panel for editing the properties of Gyoto
         objects. Dynamically creates appropriate editor widgets based
@@ -39,6 +42,10 @@ The following widgets are available for import:
         A widget for editing vectors of floating-point values with
         optional unit display and dynamic resizing. Supports both
         ScientificSpin and Gtk.SpinButton as item classes.
+
+    Viewer2D:
+        A GTK4 widget embedding a Matplotlib 2D view with navigation
+        toolbar.
 
     Viewer3D:
         A GTK4 widget embedding a Matplotlib 3D view with navigation
@@ -67,13 +74,16 @@ gyoto.gtk4.utils : GTK4 utility functions
 
 from .filename_editor import FilenameEditor
 from .gyoto_object_chooser import GyotoObjectChooser
+from .mpl_color_button import MplColorButton
 from .property_editor_box import PropertyEditorBox
 from .scientific_spin import ScientificSpin
 from .simulation_controls import SimulationControls
 from .vector_scientific_spin import VectorScientificSpin
+from .viewer_2d import Viewer2D
 from .viewer_3d import Viewer3D
 
 __all__ = [
-    'FilenameEditor', 'GyotoObjectChooser', 'PropertyEditorBox',
-    'ScientificSpin', 'SimulationControls', 'VectorScientificSpin', 'Viewer3D'
+    'FilenameEditor', 'GyotoObjectChooser', 'MplColorButton',
+    'PropertyEditorBox', 'ScientificSpin', 'SimulationControls',
+    'VectorScientificSpin', 'Viewer2D', 'Viewer3D'
 ]
