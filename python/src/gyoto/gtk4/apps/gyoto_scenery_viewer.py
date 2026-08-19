@@ -55,6 +55,7 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib, Gdk
 
 import sys
+import os.path
 import argparse
 import numpy
 from numpy.typing import ArrayLike
@@ -245,6 +246,7 @@ class GyotoSceneryViewerApplication(Gtk.Application):
     """
 
     terminating = False
+    _next_wid = 0
 
     def __init__(self, scenery=None, connector=None, *args, **kwargs):
         """Initialize the Gyoto Scenery Viewer GTK application.
@@ -375,6 +377,22 @@ class GyotoSceneryViewerApplication(Gtk.Application):
             pass
         return True
 
+    def get_new_wid(self):
+        """Get identification number for new window
+
+        This method should be called be new application windows to
+        determine their identification number.
+
+        Side effects:
+           Increment _next_wid
+
+        Returns:
+           int: identification number for new window
+        """
+        wid = self._next_wid
+        self._next_wid += 1
+        return wid
+
 class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
     """Main application window for the Gyoto Scenery Viewer.
 
@@ -420,6 +438,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
     connector = None
     filename = None
     closing = False
+    wid = 0
 
     # Constants
     scalar_quantities = ('Intensity', 'EmissionTime', 'MinDistance',
@@ -457,7 +476,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         if scenery is None:
             scenery = self.default_scenery()
 
-        self.set_title("Gyoto Scenery Viewer")
         self.set_default_size(1024, 768)
 
         # Build UI
@@ -503,6 +521,10 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         # Register window with application
         if application is not None:
             application.windows.append(self)
+            self.id = application.get_new_wid()
+
+        # set title according to available information
+        self.set_title()
 
     ####################################################################
     # UI
@@ -843,6 +865,22 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             scenery=self.default_scenery()
         )
         new_window.present()
+
+    def set_title(self, *args):
+        """Set window title according to attributes
+
+        The window title includes the ID number and filename.
+        """
+        if len(args):
+            super().set_title(*args)
+        title = ""
+        if self.get_application():
+            title += f"[{self.id}] "
+        if self.filename:
+            title += f"{os.path.basename(self.filename)}"
+        else:
+            title += "Gyoto Scenery Viewer"
+        super().set_title(title)
 
     ####################################################################
     # Compute and redraw
@@ -1329,6 +1367,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         try:
             Factory(self.scenery).write(file.get_path())
             self.filename = file.get_path()
+            self.set_title()
         except GyotoError as e:
             show_error_dialog(
                 message=f"Error writing XML file {file.get_path()}:",
@@ -1739,7 +1778,8 @@ class GyotoSceneryViewer3dWindow(Gtk.Window):
 
         super().__init__(application=application)
 
-        self.set_title("Gyoto Scenery Viewer Photon Trajectories")
+        id_txt = f"[{parent.id}] " if application else ""
+        self.set_title(id_txt + "Gyoto Scenery Viewer Photon Trajectories")
         self.set_default_size(1024, 768)
 
         # Build UI

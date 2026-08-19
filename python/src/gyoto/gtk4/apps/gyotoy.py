@@ -51,6 +51,7 @@ from __future__ import annotations
 __all__ = ['GyotoyApplication', 'GyotoyApplicationWindow', 'gyotoy']
 
 import gi
+import os.path
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib, Gdk
 
@@ -242,6 +243,8 @@ class GyotoyApplication(Gtk.Application):
 
     """
 
+    _next_wid = 0
+
     def __init__(self, particle=None, connector=None, *args, **kwargs):
         """Initialize the Gyotoy GTK application.
 
@@ -357,6 +360,22 @@ class GyotoyApplication(Gtk.Application):
             pass
         return True
 
+    def get_new_wid(self):
+        """Get identification number for new window
+
+        This method should be called be new application windows to
+        determine their identification number.
+
+        Side effects:
+           Increment _next_wid
+
+        Returns:
+           int: identification number for new window
+        """
+        wid = self._next_wid
+        self._next_wid += 1
+        return wid
+
 class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     """Main application window for Gyotoy.
 
@@ -403,6 +422,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     interpolation_step = 1.
     connector = None
     filename = None
+    wid = 0
 
     ####################################################################
     # Construction
@@ -437,7 +457,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         if particle is None:
             particle = self.default_star()
 
-        self.set_title("Gyotoy")
         self.set_default_size(1024, 768)
 
         # Build UI
@@ -480,6 +499,10 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         # Register window with application
         if application is not None:
             application.windows.append(self)
+            self.wid = application.get_new_wid()
+
+        # set title according to available information
+        self.set_title()
 
     ####################################################################
     # UI
@@ -834,6 +857,22 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         )
         new_window.present()
 
+    def set_title(self, *args):
+        """Set window title according to attributes
+
+        The window title includes the ID number and filename.
+        """
+        if len(args):
+            super().set_title(*args)
+        title = ""
+        if self.get_application():
+            title += f"[{self.wid}] "
+        if self.filename:
+            title += f"{os.path.basename(self.filename)}"
+        else:
+            title += "Gyotoy"
+        super().set_title(title)
+
     ####################################################################
     # Compute and redraw
     ####################################################################
@@ -1137,6 +1176,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         try:
             Factory(self.particle).write(file.get_path())
             self.filename = file.get_path()
+            self.set_title()
         except GyotoError as e:
             show_error_dialog(
                 message=f"Error writing XML file {file.get_path()}:",

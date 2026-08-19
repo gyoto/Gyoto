@@ -17,6 +17,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, GLib, Gio, Gdk, GObject, Pango
 
+import os.path
 import argparse
 import sys
 import traceback
@@ -52,6 +53,8 @@ class GyotoObjectEditorApplication(Gtk.Application):
     application structure.
 
     """
+
+    _next_wid = 0
 
     def __init__(self, obj=None, connector=None, *args, **kwargs):
         """Initialize the Gyoto Object Editor GTK application.
@@ -164,6 +167,22 @@ class GyotoObjectEditorApplication(Gtk.Application):
             traceback.print_exc()
         return True
 
+    def get_new_wid(self):
+        """Get identification number for new window
+
+        This method should be called be new application windows to
+        determine their identification number.
+
+        Side effects:
+           Increment _next_wid
+
+        Returns:
+           int: identification number for new window
+        """
+        wid = self._next_wid
+        self._next_wid += 1
+        return wid
+
 # Main application window class
 class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
     """A GTK4 window for editing Gyoto object properties.
@@ -187,6 +206,8 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
     """
 
     filename = None
+    wid = 0
+    type = 'undefined'
 
     def __init__(self, application=None, obj=None, objtype='', connector=None):
         """Initialize the GyotoObjectEditorApplicationWindow window.
@@ -221,6 +242,12 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
             obj = self.default_obj()
             if self.type is None:
                 self.type = 'Scenery/'
+        elif isinstance(obj, Photon):
+            self.type = 'Photon'
+        elif isinstance(obj, Screen):
+            self.type = 'Screen'
+        elif isinstance(obj, Scenery):
+            self.type = 'Scenery'
         else:
             if self.type is None:
                 for nspace, generic in {
@@ -234,8 +261,6 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
                         break
 
         self.obj = obj
-
-        self.set_title()
 
         self.connect("close-request", self.on_close_request)
 
@@ -262,20 +287,23 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         # Register with application
         if application:
             application.windows.append(self)
+            self.wid = application.get_new_wid()
 
-    def set_title(self, title=None):
-        """Set the window title based on the object type and filename.
+        self.set_title()
 
-        Args:
-            title (str, optional): If provided, sets the window title
-                directly. If None, constructs the title from
-                `self.type` and `self.filename`.
+    def set_title(self, *args):
+        """Set window title according to attributes
 
+        The window title includes the ID number and filename.
         """
-        if title is None:
-            title = self.type
-            if self.filename is not None:
-                title += f' ({self.filename})'
+        if len(args):
+            super().set_title(*args)
+        title = ""
+        if self.get_application():
+            title += f"[{self.wid}] "
+        title += self.type
+        if self.filename:
+            title += f": {os.path.basename(self.filename)}"
         super().set_title(title)
 
     ####################################################################
