@@ -158,27 +158,22 @@ def recursive_value_changed_pipe_receiver(connector, cleanup, obj):
             if connector.poll(0.01):  # non-blocking check
                 try:
                     event = connector.recv()
-                    print(f"event received: {event}")  # or call a callback
                     cmd = event[0]
                     if cmd == 'update':
                         ppath = event[1]
                         value = event[2]
-                        print(f'updating {ppath} to {value}') 
                         descendents = ppath.split('.')
                         subobj = obj
                         pname = descendents[0]
-                        print (pname)
                         for i in range(1, len(descendents)):
                             subobj = subobj.get(pname)
                             pname = descendents[i]
-                            print (pname)
                         prop = subobj.property(pname)
                         if prop.type in (Property.astrobj_t, Property.metric_t,
                                          Property.screen_t, Property.spectrometer_t,
                                          Property.spectrum_t):
                             factory = Factory(value)
                             value = getattr(factory, factory.kind().lower())()
-                        print(f'setting {pname} to {value}')
                         subobj.set(pname, value)
                 except GyotoError as e:
                     warnings.warn(f"Gyoto object editor triggered a Gyoto error:\n{e.get_message()}")
@@ -211,7 +206,6 @@ def gui_launcher_default_handler(connector, cleanup, *args):
             if connector.poll(0.01):  # non-blocking check
                 try:
                     event = connector.recv()
-                    print(f"event received: {event}")  # or call a callback
                 except GyotoError as e:
                     warnings.warn(f"Gyoto object editor triggered a Gyoto error:\n{e.get_message()}")
                 except EOFError:

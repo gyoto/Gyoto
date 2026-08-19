@@ -51,7 +51,7 @@ __all__ = ['PropertyEditorBox']
 
 import gi
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, GLib, GObject
+from gi.repository import Gtk, GLib, GObject, Gdk
 
 from functools import wraps
 import ctypes
@@ -139,7 +139,7 @@ class PropertyEditorBox(Gtk.Box):
         return wrapper
 
     def __init__(self, obj, hide=[], first=[], connector=None,
-                 *args, **kwargs):
+                 search=True, *args, **kwargs):
         """Initialize the PropertyEditorBox widget.
 
         Args:
@@ -151,6 +151,10 @@ class PropertyEditorBox(Gtk.Box):
             connector (multiprocessing.Connection or None): If the
                 editor runs in a separate process, this is used to
                 send updates back to the caller.
+            search: Whether to add a parameter filter bar (default:
+                True).  Nested PropertyEditorBox instances
+                automatically hide their own search bar and are
+                searched by their parent.
             *args: Additional positional arguments for Gtk.Box
             **kwargs: Additional keyword arguments for Gtk.Box
 
@@ -163,11 +167,103 @@ class PropertyEditorBox(Gtk.Box):
         self.obj = obj
         self.hide = hide
         self.first = first
+        self._search_enabled = search
+        self._search_matches = []
+        self._frames = {}
+
+        if search:
+            self._make_search_bar()
+
         self.populate_properties()
+
+
         if connector is not None:
             self.connect('recursive-value-changed',
                          self.on_recursive_value_changed_pipe_sender,
                          connector)
+
+    def _make_search_bar(self):
+        self.search_entry = Gtk.SearchEntry()
+        self.search_entry.set_hexpand(True)
+        self.search_entry.set_placeholder_text("Filter parameters")
+        self.search_entry.connect("search-changed", self._on_search_changed)
+
+        self.prepend(self.search_entry)
+
+        controller = Gtk.EventControllerKey()
+        controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        controller.connect("key-pressed", self._on_search_key_pressed)
+        self.add_controller(controller)
+        self._search_key_controller = controller
+
+    def _on_search_key_pressed(self, controller, keyval, keycode, state):
+        if (keyval in (ord('f'), ord('F')) and
+                state & Gdk.ModifierType.CONTROL_MASK):
+            self.search_entry.grab_focus()
+            self.search_entry.select_region(0, -1)
+            return True
+        return False
+
+    def _on_search_changed(self, entry):
+        text = entry.get_text()
+        self._search_matches = self._find_matches(text)
+
+        # The filter is always applied from the outermost PropertyEditorBox.
+        root = self
+        while root.get_parent() is not None:
+            parent = root.get_parent()
+            if isinstance(parent, GyotoObjectChooser):
+                root = parent
+                continue
+            if isinstance(parent, PropertyEditorBox):
+                root = parent
+                continue
+            break
+
+        # A chooser is deliberately transparent to the search hierarchy:
+        # its own frame is controlled by the PropertyEditorBox containing it.
+        if isinstance(root, GyotoObjectChooser):
+            root = root.get_parent()
+        if isinstance(root, PropertyEditorBox):
+            root._apply_filter(text)
+
+    def _find_matches(self, text):
+        if not text:
+            return []
+        matches = []
+        self._collect_search_matches(text.casefold(), matches)
+        return matches
+
+    def _collect_search_matches(self, text, matches):
+        for name, frame, editor in self._frames.values():
+            if text in name.casefold():
+                matches.append((self, name, frame, editor))
+            if isinstance(editor, GyotoObjectChooser):
+                editor._collect_search_matches(text, matches)
+
+    def _apply_filter(self, text, force_visible=False):
+        """Apply *text* recursively and return the number of matches."""
+        text = text.casefold()
+        count = 0
+
+        for name, frame, editor in self._frames.values():
+            own_match = bool(text) and text in name.casefold()
+
+            if isinstance(editor, GyotoObjectChooser):
+                child_count = editor._apply_filter(
+                    text, force_visible=force_visible or own_match)
+                count += child_count
+                visible = (not text or force_visible or own_match or
+                           child_count > 0)
+            else:
+                visible = (not text or force_visible or own_match)
+
+            if own_match:
+                count += 1
+
+            frame.set_visible(visible)
+
+        return count
 
     def populate_properties(self):
         """Generate editor widgets for all object properties.
@@ -344,6 +440,7 @@ class PropertyEditorBox(Gtk.Box):
                 self.widgets[name] = chooser
 
             self.append(frame)
+            self._frames[name] = (name, frame, self.widgets[name])
 
             # Special case: InitCoord property
             if name == 'InitCoord':
@@ -419,7 +516,6 @@ class PropertyEditorBox(Gtk.Box):
             *args: Additional arguments
 
         """
-        print(f'PropertyEditorBox emitting child-mutated {name}')
         self.emit('child-mutated', pname, name)
 
     @gtk_callback
@@ -463,7 +559,6 @@ class PropertyEditorBox(Gtk.Box):
         if isinstance(value, Object):
             value = str(value)
         connector.send(['update', ppath, value])
-        print(f'event sent: {ppath} == {value}')
 
     @gtk_callback
     def on_parameter_changed(self, widget, name, *args):

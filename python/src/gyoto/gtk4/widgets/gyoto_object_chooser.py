@@ -159,10 +159,29 @@ class GyotoObjectChooser(Gtk.Box):
         if self.obj is not None:
             # Lazy import to break dependency cycle
             from .property_editor_box import PropertyEditorBox
-            box = PropertyEditorBox(self.obj, hide=['Metric'])
+            box = PropertyEditorBox(self.obj, hide=['Metric'], search=False)
             self.frame.set_child(box)
             box.connect("value-changed", self.on_child_value_changed)
             box.connect("recursive-value-changed", self.on_child_recursive_value_changed)
+
+    def _apply_filter(self, text, force_visible=False):
+        """Filter the nested PropertyEditorBox and return its match count.
+
+        The chooser itself is kept visible by the PropertyEditorBox that owns
+        it whenever either the chooser name or one of its child parameters
+        matches. If the chooser name matches, its complete subtree remains
+        visible.
+        """
+        child = self.frame.get_child()
+        if child is None:
+            return 0
+        return child._apply_filter(text, force_visible=force_visible)
+
+    def _collect_search_matches(self, text, matches):
+        """Collect parameter-name matches from the nested editor."""
+        child = self.frame.get_child()
+        if child is not None:
+            child._collect_search_matches(text, matches)
 
     def on_child_value_changed(self, widget, name, *args):
         """Handle value changes from the PropertyEditorBox.
@@ -248,7 +267,7 @@ class GyotoObjectChooser(Gtk.Box):
             from .property_editor_box import PropertyEditorBox
 
             # Create new PropertyEditorBox for the object
-            box = PropertyEditorBox(self.obj, hide=['Metric'])
+            box = PropertyEditorBox(self.obj, hide=['Metric'], search=False)
             self.frame.set_child(box)
             box.connect("value-changed", self.on_child_value_changed)
             box.connect("recursive-value-changed", self.on_child_recursive_value_changed)
@@ -320,7 +339,7 @@ class GyotoObjectChooser(Gtk.Box):
             from .property_editor_box import PropertyEditorBox
 
             # Create PropertyEditorBox for the loaded object
-            box = PropertyEditorBox(self.obj, hide=['Metric'])
+            box = PropertyEditorBox(self.obj, hide=['Metric'], search=False)
             self.frame.set_child(box)
             box.connect("value-changed", self.on_child_value_changed)
             box.connect("recursive-value-changed", self.on_child_recursive_value_changed)
