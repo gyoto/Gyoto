@@ -65,7 +65,7 @@ from .gyoto_object_chooser import GyotoObjectChooser
 
 from ..utils import show_error_dialog
 
-from ...core import Property, Object
+from ...core import Property, Object, Error as GyotoError
 from ... import core, metric, astrobj, spectrum, spectrometer
 
 class PropertyEditorBox(Gtk.Box):
@@ -291,7 +291,10 @@ class PropertyEditorBox(Gtk.Box):
                 continue
 
             prop = self.obj.property(name)
-            value = self.obj.get(prop)
+            try:
+                value = self.obj.get(prop)
+            except GyotoError:
+                value = None
             param_type = prop.type
 
             # Create frame for this property
