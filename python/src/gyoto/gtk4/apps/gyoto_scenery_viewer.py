@@ -209,7 +209,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
                         except GyotoError as e:
                             e.Report()
 
-                        progress = last / nrows
+                        progress = (last - jlim[0] + 1) / nrows
                         if (progress >= next_update_fraction
                                 and time.time() - last_update > 0.1):
                             progress_queue.put_nowait(
