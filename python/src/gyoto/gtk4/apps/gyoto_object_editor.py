@@ -867,32 +867,39 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         dialog.set_default_size(600, 400)
 
         help_text = (
-            "Gyoto Object Editor\n\n"
-            "Keyboard Shortcuts:\n"
-            "  Ctrl+N: Create a new object\n"
-            "  Ctrl+O: Open an object from file\n"
-            "  Ctrl+S: Save the current object\n"
-            "  Ctrl+Shift+S: Save the current object as...\n"
-            "  Ctrl+W: Close the current window\n"
-            "  Ctrl+Q: Quit the application\n"
-            "  F1: Show this help dialog\n\n"
-            "Menu Options:\n"
-            "  New: Create a new object (search and select from available types)\n"
-            "  Open: Load an object from an XML file\n"
-            "  Save: Save the current object to its last used file\n"
-            "  Save As: Save the current object to a new file\n"
-            "  Help: Show this dialog\n"
-            "  Close: Close the current window\n"
-            "  Quit: Close all windows and exit\n"
+            "<span font_weight='bold' size='x-large'>"
+            "Gyoto Object Editor</span>\n"
+            "\n"
+            "<span font_weight='bold' size='large'>"
+            "Keyboard Shortcuts:</span>\n"
+            "<b>•</b> Ctrl+N: Create a new object\n"
+            "<b>•</b> Ctrl+O: Open an object from file\n"
+            "<b>•</b> Ctrl+S: Save the current object\n"
+            "<b>•</b> Ctrl+Shift+S: Save the current object as...\n"
+            "<b>•</b> Ctrl+W: Close the current window\n"
+            "<b>•</b> Ctrl+Q: Quit the application\n"
+            "<b>•</b> F1: Show this help dialog\n"
+            "\n"
+            "<span font_weight='bold' size='large'>"
+            "Menu Options:</span>\n"
+            "<b>•</b> New: Create a new object (search and select from "
+            "available types)\n"
+            "<b>•</b> Open: Load an object from an XML file\n"
+            "<b>•</b> Save: Save the current object to its last used file\n"
+            "<b>•</b> Save As: Save the current object to a new file\n"
+            "<b>•</b> Help: Show this dialog\n"
+            "<b>•</b> Close: Close the current window\n"
+            "<b>•</b> Quit: Close all windows and exit\n"
         )
 
         label = Gtk.Label(
             label=help_text,
             halign=Gtk.Align.START,
             wrap=True,
-            xalign=0.0
+            use_markup=True,
+            xalign=0.0,
+            justify=Gtk.Justification.FILL
         )
-        label.set_width_chars(80)
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_child(label)
