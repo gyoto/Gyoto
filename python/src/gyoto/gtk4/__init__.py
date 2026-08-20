@@ -15,11 +15,13 @@ Module Structure
 
 Main Entry Points
 ----------------
-- gyotoy(): Launch the main Gyotoy application window for geodesic
-  simulation
+- gyotoy(): Application for geodesic vizualization
 
-- gyoto.core.Object.edit(): Window for editing Gyoto object properties,
-  installed as a gyoto.core.Object method
+- edit_object(): Application for editing Gyoto object properties,
+  installed as the gyoto.core.Object.edit() method
+
+- view_scenery(): Application for interactively exploring a Scenery,
+  installed as the gyoto.core.Scenery.view() method.
 
 Note:
     Requires GTK4 and Matplotlib with GTK4Agg backend.
@@ -36,11 +38,13 @@ Note:
 """
 
 # Public API
-__all__ = ['gyotoy', 'view_scenery', 'edit']
+__all__ = ['gyotoy', 'view_scenery', 'edit_object']
+
+# IPython completion
+def __dir__():
+    return __all__
 
 from .utils import gui_launcher
-
-# Re-export main entry point for convenience
 
 # Interactive-session entry point:
 def gyotoy(particle=None):
@@ -111,7 +115,7 @@ def gyotoy(particle=None):
 
 # Add edit() method to gyoto.core.Object for convenient property editing
 # Note: This should ideally be achieved using SWIG's extend mechanism
-def edit(self=None):
+def edit_object(self=None):
     """A GTK4 window for editing Gyoto object properties.
 
     This window provides a scrollable view of all editable properties of a
@@ -139,8 +143,8 @@ def edit(self=None):
                  self)
 
 # Monkey-patch the edit method onto gyoto.core.Object
-from ..core import Object
-Object.edit = edit
+from ..core import Object as Object
+Object.edit = edit_object
 
 # Add edit() method to gyoto.core.Object for convenient property editing
 # Note: This should ideally be achieved using SWIG's extend mechanism
@@ -171,8 +175,8 @@ def view_scenery(self=None):
                  self)
 
 # Monkey-patch the view method onto gyoto.core.Scenery
-from ..core import Scenery
-Object.view = view_scenery
+from ..core import Scenery as Scenery
+Scenery.view = view_scenery
 
 # Autoload submodules on demand
 def __getattr__(name):
