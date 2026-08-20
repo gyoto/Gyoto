@@ -44,6 +44,93 @@ class NewItem(GObject.Object):
         super().__init__()
         self.label = label
 
+
+class StartupWindow(Gtk.ApplicationWindow):
+    """Startup window with Open and New buttons.
+
+    This window is shown when the application starts without an object
+    to edit. It provides buttons to open an existing file or create a
+    new object.
+
+    """
+
+    def __init__(self, application):
+        """Initialize the startup window.
+
+        Args:
+            application: The parent GyotoObjectEditorApplication
+
+        """
+        super().__init__(
+            application=application,
+            title="Gyoto Object Editor"
+        )
+        self.app = application
+
+        self.build_ui()
+        self.setup_actions()
+        self.setup_keyboard()
+
+    def build_ui(self):
+        """Build the startup window UI."""
+        main_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=12
+        )
+        main_box.set_margin_top(12)
+        main_box.set_margin_bottom(12)
+        main_box.set_margin_start(12)
+        main_box.set_margin_end(12)
+        self.set_child(main_box)
+
+        button_box = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=6
+        )
+        button_box.set_halign(Gtk.Align.CENTER)
+
+        open_button = Gtk.Button(label="Open")
+        open_button.set_action_name("win.open")
+        open_button.add_css_class("flat")
+        button_box.append(open_button)
+
+        self.new_button = Gtk.Button(label="New")
+        self.new_button.set_action_name("win.new")
+        self.new_button.add_css_class("flat")
+        button_box.append(self.new_button)
+
+        main_box.append(button_box)
+
+    def setup_actions(self):
+        """Set up actions for this window."""
+        close_action = Gio.SimpleAction.new("close", None)
+        close_action.connect("activate", lambda a, p: self.close())
+        self.add_action(close_action)
+
+        open_action = Gio.SimpleAction.new("open", None)
+        open_action.connect("activate", lambda a, p: self.app.on_open(self))
+        self.add_action(open_action)
+
+        new_action = Gio.SimpleAction.new("new", None)
+        new_action.connect("activate",
+                           lambda a, p: self.app.on_new(self.new_button))
+        self.add_action(new_action)
+
+    def setup_keyboard(self):
+        """Set up keyboard handler for Escape key."""
+        key_controller = Gtk.EventControllerKey()
+        key_controller.connect("key-pressed", self.on_key_pressed)
+        self.add_controller(key_controller)
+
+    def on_key_pressed(self, controller, keyval, keycode, state):
+        """Handle Escape key to close and quit."""
+        if keyval == Gdk.KEY_Escape:
+            self.close()
+            self.app.quit()
+            return True
+        return False
+
+
 # Main application class
 class GyotoObjectEditorApplication(Gtk.Application):
     """Standalone GTK application for the Gyoto Object Editor.
@@ -78,7 +165,7 @@ class GyotoObjectEditorApplication(Gtk.Application):
         if connector is not None:
             GLib.timeout_add(50, self.check_connector)
 
-        # App-level actions (application is a Gio.ActionMap)
+        # App-level actions
         help_action = Gio.SimpleAction.new("help", None)
         help_action.connect("activate", lambda a, p: self.on_help())
         self.add_action(help_action)
@@ -87,13 +174,12 @@ class GyotoObjectEditorApplication(Gtk.Application):
         quit_action.connect("activate", lambda a, p: self.on_quit())
         self.add_action(quit_action)
 
-        # Accelerators for app and win actions
+        # Accelerators
         self.set_accels_for_action("app.help", ["F1"])
         self.set_accels_for_action("app.quit", ["<Primary>Q"])
-
-        self.set_accels_for_action("win.close", ["<Primary>W"])
         self.set_accels_for_action("win.open", ["<Primary>O"])
         self.set_accels_for_action("win.new", ["<Primary>N"])
+        self.set_accels_for_action("win.close", ["<Primary>W"])
         self.set_accels_for_action("win.save", ["<Primary>S"])
         self.set_accels_for_action("win.save-as", ["<Primary><Shift>S"])
 
@@ -104,7 +190,8 @@ class GyotoObjectEditorApplication(Gtk.Application):
         """
         if not self.windows:
             if self.obj is None:
-                self.show_startup_window()
+                window = StartupWindow(self)
+                window.present()
                 return
 
             window = GyotoObjectEditorApplicationWindow(
@@ -112,80 +199,46 @@ class GyotoObjectEditorApplication(Gtk.Application):
                 obj=self.obj,
                 connector=self.connector
             )
-
         for window in self.windows:
             window.present()
 
-    def show_startup_window(self):
-        """Show startup window with Open and New buttons."""
-        self.startup_window = Gtk.ApplicationWindow(
-            title="Gyoto Object Editor",
-            application=self
-        )
+    def on_open(self, window):
+        """Handle win.open action.
 
-        main_box = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL,
-            spacing=12
-        )
-        main_box.set_margin_top(12)
-        main_box.set_margin_bottom(12)
-        main_box.set_margin_start(12)
-        main_box.set_margin_end(12)
-        self.startup_window.set_child(main_box)
+        Opens a file dialog and creates a new editor window with the
+        selected file. Closes the parent window if it's a StartupWindow.
 
-        button_box = Gtk.Box(
-            orientation=Gtk.Orientation.HORIZONTAL,
-            spacing=6
-        )
-        button_box.set_halign(Gtk.Align.CENTER)
+        Args:
+            action: The Gio.Action
+            window: The parent for which the dialog is transient
 
-        # define actions
-        open_action = Gio.SimpleAction.new("open", None)
-        open_action.connect("activate", self.on_startup_open)
-        self.startup_window.add_action(open_action)
-
-        new_action = Gio.SimpleAction.new("new", None)
-        new_action.connect("activate", self.on_startup_new)
-        self.startup_window.add_action(new_action)
-
-        close_action = Gio.SimpleAction.new("close", None)
-        close_action.connect("activate",
-                             lambda a, p: self.startup_window.close())
-        self.startup_window.add_action(close_action)
-
-        # add buttons
-        open_button = Gtk.Button(label="Open")
-        open_button.set_action_name("win.open")
-        open_button.add_css_class("flat")
-        button_box.append(open_button)
-
-        self.new_button = Gtk.Button(label="New")
-        self.new_button.set_action_name("win.new")
-        self.new_button.add_css_class("flat")
-        button_box.append(self.new_button)
-
-        main_box.append(button_box)
-
-        self.startup_window.present()
-
-    def on_startup_open(self, *args):
-        """Handle Open button click in startup window."""
+        """
         dialog = self.create_file_dialog()
         dialog.open(
-            self.startup_window,
+            window,
             None,
-            lambda d, result: self.on_startup_open_file_selected(d, result)
+            lambda d, result: self.on_open_file_selected(
+                d, result, window
+            )
         )
 
-    def on_startup_open_file_selected(self, dialog, result):
-        """Handle file selection from startup window."""
+    def on_open_file_selected(self, dialog, result, parent_window):
+        """Handle file selection from open dialog.
+
+        Args:
+            dialog: The Gtk.FileDialog instance
+            result: The result of the dialog operation
+            parent_window: The window that triggered the open action
+
+        """
         try:
             file = dialog.open_finish(result)
         except GLib.Error:
             return
 
         if file is not None:
-            self.startup_window.close()
+            if isinstance(parent_window, StartupWindow):
+                parent_window.close()
             window = GyotoObjectEditorApplicationWindow(
                 application=self,
                 obj=file.get_path(),
@@ -193,18 +246,53 @@ class GyotoObjectEditorApplication(Gtk.Application):
             )
             window.present()
 
-    def on_startup_new(self, *args):
-        """Handle New button click in startup window."""
-        self.build_startup_new_popover()
+    def on_new(self, widget):
+        """Handle win.new action.
 
-    def build_startup_new_popover(self):
-        """Build New popover for startup window."""
+        Shows a popover for selecting object type, then creates a new
+        editor window. Closes the parent window if it's a StartupWindow.
+
+        Args:
+            action: The Gio.Action
+            parameter: GVariant containing the parent widget for the popover
+
+        """
+        parent_window = self.get_parent_window(widget)
+        self.show_new_popover(widget, parent_window)
+
+    def get_parent_window(self, widget):
+        """Find the toplevel window for a given widget.
+
+        Args:
+            widget: A GTK widget
+
+        Returns:
+            The toplevel Gtk.Window, or None
+
+        """
+        while widget is not None:
+            if isinstance(widget, Gtk.Window):
+                return widget
+            try:
+                widget = widget.get_parent()
+            except AttributeError:
+                return None
+        return None
+
+    def show_new_popover(self, parent_widget, parent_window):
+        """Show the New popover for object type selection.
+
+        Args:
+            parent_widget: Widget to parent the popover to
+            parent_window: Window to close if it's a StartupWindow
+
+        """
         all_new_items = self.get_all_new_items()
 
         # Calculate the minimum width based on the longest label
         min_width = 300
         if all_new_items:
-            layout = Pango.Layout(self.startup_window.get_pango_context())
+            layout = Pango.Layout(parent_widget.get_pango_context())
             for label in all_new_items:
                 layout.set_text(label)
                 width, __ = layout.get_pixel_size()
@@ -213,9 +301,9 @@ class GyotoObjectEditorApplication(Gtk.Application):
             min_width += 50
 
         # Create the popover
-        self.startup_new_popover = Gtk.Popover()
-        self.startup_new_popover.set_parent(self.new_button)
-        self.startup_new_popover.set_autohide(True)
+        popover = Gtk.Popover()
+        popover.set_parent(parent_widget)
+        popover.set_autohide(True)
 
         # Main box
         main_box = Gtk.Box(
@@ -223,7 +311,7 @@ class GyotoObjectEditorApplication(Gtk.Application):
             spacing=6
         )
         main_box.set_size_request(min_width, 400)
-        self.startup_new_popover.set_child(main_box)
+        popover.set_child(main_box)
 
         # Title
         title = Gtk.Label(
@@ -265,8 +353,8 @@ class GyotoObjectEditorApplication(Gtk.Application):
 
         # Create list view
         factory = Gtk.SignalListItemFactory()
-        factory.connect("setup", self.on_startup_new_list_item_setup)
-        factory.connect("bind", self.on_startup_new_list_item_bind)
+        factory.connect("setup", self.on_new_list_item_setup)
+        factory.connect("bind", self.on_new_list_item_bind)
 
         list_view = Gtk.ListView(
             model=selection,
@@ -275,7 +363,6 @@ class GyotoObjectEditorApplication(Gtk.Application):
         list_view.set_hexpand(True)
         list_view.set_vexpand(True)
         list_view.add_css_class("rich-list")
-        list_view.connect("activate", self.on_startup_new_list_activate)
 
         # Add list view to a scrolled window
         scrolled = Gtk.ScrolledWindow()
@@ -297,18 +384,11 @@ class GyotoObjectEditorApplication(Gtk.Application):
         button_box.add_css_class("linked")
 
         cancel_button = Gtk.Button(label=_("Cancel"))
-        cancel_button.connect(
-            "clicked",
-            lambda *_: self.startup_new_popover.popdown()
-        )
+        cancel_button.connect("clicked", lambda *_: popover.popdown())
         button_box.append(cancel_button)
 
         create_button = Gtk.Button(label=_("Create"))
         create_button.add_css_class("suggested-action")
-        create_button.connect(
-            "clicked",
-            self.on_startup_new_create_clicked
-        )
         button_box.append(create_button)
 
         main_box.append(button_box)
@@ -319,24 +399,66 @@ class GyotoObjectEditorApplication(Gtk.Application):
             lambda e: custom_filter.changed(Gtk.FilterChange.DIFFERENT)
         )
 
-        # Store references for callbacks
-        self.startup_new_selection = selection
-        self.startup_new_filter_model = filter_model
-        self.startup_new_list_view = list_view
+        # Define callbacks with closure over local variables
+        def on_create_clicked(*args):
+            if selection.get_selected_item() is None:
+                return
+            selected_item = selection.get_selected_item()
+            label = selected_item.label
+
+            obj = self.create_object_from_label(label)
+
+            popover.popdown()
+            if isinstance(parent_window, StartupWindow):
+                parent_window.close()
+            window = GyotoObjectEditorApplicationWindow(
+                application=self,
+                obj=obj,
+                objtype=label,
+                connector=None
+            )
+            window.present()
+
+        def on_search_key_pressed(controller, keyval, keycode, state):
+            if keyval == Gdk.KEY_Down:
+                list_view.grab_focus()
+                if filter_model.get_n_items() > 0:
+                    selection.set_selected(0)
+                return True
+            return False
+
+        def on_list_key_pressed(controller, keyval, keycode, state):
+            if (
+                    (hasattr(Gdk, 'KEY_Enter') and keyval == Gdk.KEY_Enter)
+                    or (hasattr(Gdk, 'KEY_Return') and keyval == Gdk.KEY_Return)
+            ):
+                on_create_clicked()
+                return True
+            return False
 
         # Add key controller for keyboard navigation
         key_controller = Gtk.EventControllerKey()
-        key_controller.connect("key-pressed", self.on_startup_new_key_pressed)
+        key_controller.connect("key-pressed", on_search_key_pressed)
         search_entry.add_controller(key_controller)
 
         list_key_controller = Gtk.EventControllerKey()
-        list_key_controller.connect("key-pressed", self.on_startup_list_key_pressed)
+        list_key_controller.connect("key-pressed", on_list_key_pressed)
         list_view.add_controller(list_key_controller)
 
-        self.startup_new_popover.popup()
+        popover.popup()
 
-    def on_startup_new_list_item_setup(self, factory, list_item):
-        """Set up the UI for a list item in the startup New popover."""
+
+        create_button.connect("clicked", on_create_clicked)
+        list_view.connect("activate", lambda l, p: on_create_clicked())
+
+    def on_new_list_item_setup(self, factory, list_item):
+        """Set up the UI for a list item in the New popover.
+
+        Args:
+            factory: The Gtk.SignalListItemFactory creating the item.
+            list_item: The Gtk.ListItem to set up.
+
+        """
         box = Gtk.Box(
             orientation=Gtk.Orientation.HORIZONTAL,
             spacing=6
@@ -350,55 +472,17 @@ class GyotoObjectEditorApplication(Gtk.Application):
         label.add_css_class("title")
         box.append(label)
 
-    def on_startup_new_list_item_bind(self, factory, list_item):
-        """Bind the data to a list item in the startup New popover."""
+    def on_new_list_item_bind(self, factory, list_item):
+        """Bind the data to a list item in the New popover.
+
+        Args:
+            factory: The Gtk.SignalListItemFactory binding the item.
+            list_item: The Gtk.ListItem to bind.
+
+        """
         item = list_item.get_item()
         label = list_item.get_child().get_first_child()
         label.set_text(item.label)
-
-    def on_startup_new_list_activate(self, list_view, position):
-        """Handle activation in the startup New popover list."""
-        self.on_startup_new_create_clicked()
-
-    def on_startup_new_key_pressed(self, controller, keyval, keycode, state):
-        """Handle keyboard navigation in startup New popover search entry."""
-        if keyval == Gdk.KEY_Down:
-            self.startup_new_list_view.grab_focus()
-            if self.startup_new_filter_model.get_n_items() > 0:
-                self.startup_new_selection.set_selected(0)
-            return True
-        return False
-
-    def on_startup_list_key_pressed(self, controller, keyval, keycode, state):
-        """Handle keyboard navigation in startup New popover list view."""
-        if (
-                (hasattr(Gdk, 'KEY_Enter') and keyval == Gdk.KEY_Enter)
-                or (hasattr(Gdk, 'KEY_Return') and keyval == Gdk.KEY_Return)
-        ):
-            self.on_startup_new_create_clicked()
-            return True
-        return False
-
-    def on_startup_new_create_clicked(self, *args):
-        """Create the selected item from startup New popover."""
-        if self.startup_new_selection.get_selected_item() is None:
-            return
-
-        selected_item = self.startup_new_selection.get_selected_item()
-        label = selected_item.label
-
-        obj = self.create_object_from_label(label)
-
-        self.startup_new_popover.popdown()
-        self.startup_window.close()
-
-        window = GyotoObjectEditorApplicationWindow(
-            application=self,
-            obj=obj,
-            objtype=label,
-            connector=None
-        )
-        window.present()
 
     def get_all_new_items(self):
         """Return list of all available object types for New popover."""
@@ -449,11 +533,7 @@ class GyotoObjectEditorApplication(Gtk.Application):
 
     def on_help(self, *args):
         """Display the help dialog."""
-        parent = None
-        if hasattr(self, 'startup_window') and self.startup_window:
-            parent = self.startup_window
-        elif self.windows:
-            parent = self.windows[0]
+        parent = self.windows[0] if self.windows else None
 
         dialog = Gtk.Dialog(
             title="Help",
@@ -509,8 +589,6 @@ class GyotoObjectEditorApplication(Gtk.Application):
 
     def on_quit(self, *args):
         """Quit the application."""
-        if hasattr(self, 'startup_window') and self.startup_window:
-            self.startup_window.close()
         self.close_all_windows()
         self.quit()
 
@@ -604,6 +682,7 @@ class GyotoObjectEditorApplication(Gtk.Application):
         wid = self._next_wid
         self._next_wid += 1
         return wid
+
 
 # Main application window class
 class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
@@ -774,320 +853,39 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         )
         menu_button.add_css_class("flat")
         header.pack_end(menu_button)
-        self.menu_button=menu_button
+        self.menu_button = menu_button
 
-        # Build the New popover (parented to the menu button)
-        self.build_new_popover()
-
-        # Connect actions
-        new_action = Gio.SimpleAction.new("new", None)
-        new_action.connect("activate", lambda a, p: self.on_new_menu_item_activated(a, p))
-        self.add_action(new_action)
-
-        open_action = Gio.SimpleAction.new("open", None)
-        open_action.connect("activate", lambda a, p: self.on_open(a, p))
-        self.add_action(open_action)
-
+        # Connect win actions
         save_action = Gio.SimpleAction.new("save", None)
         save_action.connect("activate", lambda a, p: self.on_save(a, p))
         self.add_action(save_action)
 
         save_as_action = Gio.SimpleAction.new("save-as", None)
-        save_as_action.connect("activate", lambda a, p: self.on_save_as(a, p))
+        save_as_action.connect("activate",
+                                lambda a, p: self.on_save_as(a, p))
         self.add_action(save_as_action)
 
         close_action = Gio.SimpleAction.new("close", None)
         close_action.connect("activate", lambda a, p: self.on_close(a, p))
         self.add_action(close_action)
 
-    def build_new_popover(self):
-        """Build the New popover with search and list."""
-        all_new_items = self.props.application.get_all_new_items()
-
-        # Calculate the minimum width based on the longest label
-        min_width = 300
-        if all_new_items:
-            layout = Pango.Layout(self.get_pango_context())
-            for label in all_new_items:
-                layout.set_text(label)
-                width, __ = layout.get_pixel_size()
-                if width > min_width:
-                    min_width = width
-            min_width += 50
-
-        # Create the popover
-        self.new_popover = Gtk.Popover()
-        self.new_popover.set_parent(self.menu_button)
-        self.new_popover.set_autohide(True)
-
-        # Main box
-        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        main_box.set_size_request(min_width, 400)
-        self.new_popover.set_child(main_box)
-
-        # Title
-        title = Gtk.Label(label=_("New File"), halign=Gtk.Align.START)
-        title.add_css_class("h3")
-        main_box.append(title)
-
-        # Search entry
-        self.new_search_entry = Gtk.SearchEntry()
-        self.new_search_entry.set_placeholder_text(_("Search..."))
-        self.new_search_entry.connect("search-changed", self.on_new_search_changed)
-        self.new_search_entry.set_hexpand(True)
-        main_box.append(self.new_search_entry)
-
-        # Create the list model
-        self.new_list_store = Gio.ListStore(item_type=NewItem)
-        for item in all_new_items:
-            self.new_list_store.append(NewItem(label=item))
-
-        # Create a custom filter function
-        def filter_func(item):
-            search_text = self.new_search_entry.get_text().lower()
-            if not search_text:
-                return True
-            return search_text in item.label.lower()
-
-        # Create a custom filter
-        self.custom_filter = Gtk.CustomFilter.new(filter_func)
-
-        # Create filter list model
-        self.new_filter_model = Gtk.FilterListModel(
-            model=self.new_list_store,
-            filter=self.custom_filter
+        open_action = Gio.SimpleAction.new("open", None)
+        open_action.connect(
+            "activate",
+            lambda a, p: self.props.application.on_open(self)
         )
+        self.add_action(open_action)
 
-        # Create selection model
-        self.new_selection = Gtk.SingleSelection(model=self.new_filter_model)
-
-        # Create list view
-        factory = Gtk.SignalListItemFactory()
-        factory.connect("setup", self.on_new_list_item_setup)
-        factory.connect("bind", self.on_new_list_item_bind)
-
-        self.new_list_view = Gtk.ListView(
-            model=self.new_selection,
-            factory=factory
+        new_action = Gio.SimpleAction.new("new", None)
+        new_action.connect(
+            "activate",
+            lambda a, p: self.props.application.on_new(self.menu_button)
         )
-        self.new_list_view.set_hexpand(True)
-        self.new_list_view.set_vexpand(True)
-        self.new_list_view.add_css_class("rich-list")
-        self.new_list_view.connect("activate", self.on_new_list_activate)
-
-        # Add list view to a scrolled window
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.set_policy(
-            Gtk.PolicyType.NEVER,
-            Gtk.PolicyType.AUTOMATIC
-        )
-        scrolled.set_child(self.new_list_view)
-        scrolled.set_hexpand(True)
-        scrolled.set_vexpand(True)
-        scrolled.set_min_content_height(300)
-        main_box.append(scrolled)
-
-        # Buttons
-        button_box = Gtk.Box(
-            orientation=Gtk.Orientation.HORIZONTAL,
-            spacing=6
-        )
-        button_box.add_css_class("linked")
-
-        cancel_button = Gtk.Button(label=_("Cancel"))
-        cancel_button.connect("clicked", lambda *_: self.new_popover.popdown())
-        button_box.append(cancel_button)
-
-        create_button = Gtk.Button(label=_("Create"))
-        create_button.add_css_class("suggested-action")
-        create_button.connect("clicked", self.on_new_create_clicked)
-        button_box.append(create_button)
-
-        main_box.append(button_box)
-
-        # Add key controller to the search entry for keyboard navigation
-        key_controller = Gtk.EventControllerKey()
-        key_controller.connect("key-pressed", self.on_new_key_pressed)
-        self.new_search_entry.add_controller(key_controller)
-
-        # Add key controller to the list view for Up/Down navigation
-        list_key_controller = Gtk.EventControllerKey()
-        list_key_controller.connect("key-pressed", self.on_list_key_pressed)
-        self.new_list_view.add_controller(list_key_controller)
-
-    def filter_new_items(self, item, search_entry):
-        """Filter function for the New items list."""
-        search_text = search_entry.get_text().lower()
-        if not search_text:
-            return True
-        return search_text in item.label.lower()
-
-    def on_new_menu_item_activated(self, action, parameter, *args):
-        """Show the New popover when the New menu item is activated.
-
-        Args:
-          action: The Gio.Action associated with the menu item.
-          parameter: The parameter passed to the action (unused here).
-          *args: Additional arguments (unused).
-
-        """
-        self.new_popover.popup()
-
-    def on_new_button_clicked(self, button, *args):
-        """Show the New popover when triggered by a button or shortcut.
-
-        Args:
-            button: The Gtk.Button that triggered the popover (unused
-                if called via shortcut).
-            *args: Additional arguments (unused).
-
-        """
-        self.new_popover.popup()
-
-    def on_new_search_changed(self, entry):
-        """Update the filter when the search text changes.
-
-        Args:
-            entry: The Gtk.SearchEntry that triggered the event.
-
-        """
-        self.custom_filter.changed(Gtk.FilterChange.DIFFERENT)
-
-    def on_new_list_item_setup(self, factory, list_item):
-        """Set up the UI for a list item in the New popover.
-
-        Args:
-            factory: The Gtk.SignalListItemFactory creating the item.
-            list_item: The Gtk.ListItem to set up.
-        """
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        list_item.set_child(box)
-
-        # Label for the item
-        label = Gtk.Label(halign=Gtk.Align.START, xalign=0)
-        label.add_css_class("title")
-        box.append(label)
-
-    def on_new_list_item_bind(self, factory, list_item):
-        """Bind the data to a list item in the New popover.
-
-        Args:
-            factory: The Gtk.SignalListItemFactory binding the item.
-            list_item: The Gtk.ListItem to bind.
-        """
-        item = list_item.get_item()
-        label = list_item.get_child().get_first_child()
-        label.set_text(item.label)
-
-    def on_new_list_activate(self, list_view, position):
-        """Handle activation (e.g., Enter key) in the New popover list.
-
-        Args:
-            list_view: The Gtk.ListView that received the activation.
-            position: The position of the activated item.
-        """
-        self.on_new_create_clicked()
-
-    def on_new_key_pressed(self, controller, keyval, keycode, state):
-        """Handle keyboard navigation in the New popover's search entry.
-
-        Args:
-            controller: The Gtk.EventControllerKey that received the
-                event.
-            keyval: The key value (e.g., Gdk.KEY_Down).
-            keycode: The hardware keycode (unused).
-            state: The modifier state (unused).
-
-        """
-        if keyval == Gdk.KEY_Down:
-            # Move focus to list view and select first item
-            self.new_list_view.grab_focus()
-            if self.new_filter_model.get_n_items() > 0:
-                self.new_selection.set_selected(0)
-            return True
-        return False
-
-    def on_new_create_clicked(self, *args):
-        """Create the selected item."""
-        if self.new_selection.get_selected_item() is None:
-            return
-
-        selected_item = self.new_selection.get_selected_item()
-        label = selected_item.label
-
-        obj = self.props.application.create_object_from_label(label)
-
-        window = GyotoObjectEditorApplicationWindow(
-            application=self.props.application,
-            obj=obj,
-            objtype=label,
-            connector=None
-        )
-        window.present()
-
-        self.new_popover.popdown()
-
-    def on_list_key_pressed(self, controller, keyval, keycode, state):
-        """Handle keyboard navigation in the New popover's list view.
-
-        Args:
-            controller: The Gtk.EventControllerKey that received the
-                event.
-            keyval: The key value (e.g., Gdk.KEY_Enter).
-            keycode: The hardware keycode (unused).
-            state: The modifier state (unused).
-
-        """
-        if (
-                (hasattr(Gdk, 'KEY_Enter') and keyval == Gdk.KEY_Enter)
-                or (hasattr(Gdk, 'KEY_Return') and keyval == Gdk.KEY_Return)
-        ):
-            self.on_new_create_clicked()
-            return True
-        return False
+        self.add_action(new_action)
 
     ####################################################################
     # Callbacks
     ####################################################################
-
-    def on_open(self, *args):
-        """Open a file dialog to load an object from an XML file.
-
-        Creates a file dialog with XML and All Files filters,
-        defaulting to XML. When a file is selected, it's loaded and
-        the object is openned in a new editor window.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        dialog = self.props.application.create_file_dialog()
-        dialog.open(
-            self,
-            None,
-            lambda d, result: self.on_open_file_selected(d, result)
-        )
-
-    def on_open_file_selected(self, dialog, result):
-        """Handle the selection of a file to open.
-
-        Args:
-            dialog: The Gtk.FileDialog instance
-            result: The result of the dialog operation
-
-        """
-        try:
-            file = dialog.open_finish(result)
-        except GLib.Error:
-            return
-
-        if file is not None:
-            window = GyotoObjectEditorApplicationWindow(
-                application=self.props.application,
-                obj=file.get_path(),
-                connector=None
-            )
-            window.present()
 
     def on_save(self, *args):
         """Save the object in the last XML file used.
