@@ -38,7 +38,7 @@ Run as a standalone application:
     python3 -m gyoto.gtk4.apps.gyotoy [-h] [filename.xml]
 
 Or import and use programmatically:
-    from gyoto.gtk4.apps.gyotoy import gyotoy
+    from gyoto.gtk4 import gyotoy
     gyotoy([particle|'filename.xml'])
 
 An optional particle (gyoto.std.Star or gyoto.core.Photon), or the
@@ -48,7 +48,7 @@ name of an XML file describing such a particle, can be provided.
 
 from __future__ import annotations
 
-__all__ = ['GyotoyApplication', 'GyotoyApplicationWindow', 'gyotoy']
+__all__ = ['GyotoyApplication', 'GyotoyApplicationWindow']
 
 import gi
 import os.path
@@ -269,6 +269,39 @@ class GyotoyApplication(Gtk.Application):
         if connector is not None:
             GLib.timeout_add(50, self.check_connector)
 
+        # App-level actions
+        self.add_action_entries([
+            ("help", self.on_help, None),
+            ("quit", self.on_quit, None),
+            ("new-star", self.on_new_star, None),
+            ("new-photon", self.on_new_photon, None),
+        ])
+
+        # Accelerators
+        self.set_accels_for_action("app.help", ["F1"])
+        self.set_accels_for_action("app.quit", ["<Primary>Q"])
+        self.set_accels_for_action("app.new-star", ["<Primary>N"])
+        self.set_accels_for_action("app.new-photon", ["<Primary><Shift>N"])
+        self.set_accels_for_action("win.close", ["<Primary>W"])
+        self.set_accels_for_action("win.open", ["<Primary>O"])
+        self.set_accels_for_action("win.save", ["<Primary>S"])
+        self.set_accels_for_action("win.save-as", ["<Primary><Shift>S"])
+        self.set_accels_for_action("win.compute-and-redraw",
+                                    ["<Primary>R"])
+
+    def add_action_entries(self, entries):
+        '''Mimick ApplicationWindow.add_action_entries
+
+        For obscure reasons it is missing from Gtk.Application
+        '''
+        for entry in entries:
+            name = entry[0]
+            callback = entry[1]
+            param_type = entry[2] if len(entry) > 2 else None
+            action = Gio.SimpleAction.new(name, param_type)
+            action.connect("activate", callback)
+            self.add_action(action)
+
     def do_activate(self):
         """Called by GTK when the application starts.
 
@@ -376,6 +409,184 @@ class GyotoyApplication(Gtk.Application):
         self._next_wid += 1
         return wid
 
+    def on_help(self, *args):
+        """Display the help dialog."""
+        parent = self.windows[0] if self.windows else None
+        if parent is None:
+            return
+
+        dialog = Gtk.Dialog(
+            title="Help",
+            transient_for=parent,
+            modal=False
+        )
+        dialog.set_default_size(600, 400)
+
+        help_text = (
+            "<span font_weight='bold' size='x-large'>"
+            "Gyotoy - Gyoto Geodesic Integration Visualizer</span>\n"
+            "\n"
+            "<span font_weight='bold' size='large'>OVERVIEW:</span>\n"
+            "Gyotoy is a GTK4 application for simulating and visualizing "
+            "geodesics (time-like or null) in spacetimes supported by the Gyoto "
+            "library. It provides an interactive 3D view of particle "
+            "trajectories. Each window handles exactly one particle (Star or "
+            "Photon).\n"
+            "\n"
+            "<span font_weight='bold' size='large'>UI LAYOUT:</span>\n"
+            "<b>•</b> Left Panel: 3D Matplotlib viewer displaying particle "
+            "trajectory. Use mouse to rotate (left-click+drag), and pan "
+            "(middle-click+drag). Use plot toolbar for other actions including "
+            "saving the plot.\n"
+            "<b>•</b> Right Panel: Property editor for adjusting metric and "
+            "particle parameters. Changes trigger automatic recomputation.\n"
+            "<b>•</b> Bottom: Simulation controls (play/pause/stop/reset), "
+            "interpolation settings, and status display.\n"
+            "\n"
+            "<span font_weight='bold' size='large'>MENU BUTTONS:</span>\n"
+            "<b>•</b> New -> Star (Ctrl+N): Open new window with default Star\n"
+            "<b>•</b> New -> Photon (Ctrl+Shift+N): Open new window with "
+            "default Photon\n"
+            "<b>•</b> Open (Ctrl+O): Load an XML particle configuration file.\n"
+            "<b>•</b> Save (Ctrl+S): Save current particle to last used file.\n"
+            "<b>•</b> Save As (Ctrl+Shift+S): Save current particle to a new "
+            "file.\n"
+            "<b>•</b> Help (F1): Show this help dialog.\n"
+            "<b>•</b> Close (Ctrl+W): Close current window.\n"
+            "<b>•</b> Quit (Ctrl+Q): Close all windows and quit the "
+            "application.\n"
+            "\n"
+            "<span font_weight='bold' size='large'>"
+            "OTHER KEYBOARD SHORTCUTS:</span>\n"
+            "<b>•</b> Ctrl+R: Compute and redraw trajectory.\n"
+            "<b>•</b> Escape: Close active dialog window (error, help...).\n"
+            "\n"
+            "<span font_weight='bold' size='large'>PROPERTY EDITOR:</span>\n"
+            "<b>•</b> Edit particle parameters: position, velocity, metric "
+            "properties...\n"
+            "<b>•</b> All parameter changes immediately trigger a computation and "
+            "redraw unless the stop (■) at the bottom right of the window is "
+            "activated.\n"
+            "<b>•</b> The InitCoord vector is by default displayed with 7 cells "
+            "corresponding to 4-position and 3-velocity (derivatives of the space "
+            "coordinates with respect to time coordinate). Use the '3-velocity' "
+            "and '4-velocity' radio buttons to switch between this view and the "
+            "8-coordinate view corresponding to 4-position and 4-velocity. By "
+            "default, the 4-velocity is renormalized (according to mass of the "
+            "particle) at each keystroke. Click on the stop (■) button "
+            "immediately below the coordinates to temporarily inhibit this "
+            "behavior. Click this button again to finalize input.\n"
+            "\n"
+            "<span font_weight='bold' size='large'>"
+            "SIMULATION CONTROLS:</span>\n"
+            "<b>•</b> Reset: Reinitialize integration and clear viewer.\n"
+            "<b>•</b> Play/Pause: Start or pause the simulation.\n"
+            "<b>•</b> Stop: Stop the integration and inhibit/enable "
+            "recomputation.\n"
+            "<b>•</b> N. frames: Number of intermediate frames to display "
+            "(default: 100).\n"
+            "<b>•</b> End time: Final time for integration.\n"
+            "<b>•</b> Interpolation step: Step size for interpolation (0 for no "
+            "interpolation, adaptive step used instead).\n"
+            "\n"
+            "<span font_weight='bold' size='large'>WORKFLOW:</span>\n"
+            "1. If needed, open file or create new particle (Star or Photon).\n"
+            "2. Adjust properties in the editor.\n"
+            "3. Click Play or press Ctrl+R to compute trajectory.\n"
+            "4. Use 3D viewer to inspect the result.\n"
+            "5. Save particle description with Save/Save As.\n"
+        )
+
+        label = Gtk.Label(
+            label=help_text,
+            halign=Gtk.Align.START,
+            wrap=True,
+            use_markup=True,
+            xalign=0.0,
+            justify=Gtk.Justification.FILL
+        )
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_child(label)
+        scrolled.set_policy(
+            Gtk.PolicyType.AUTOMATIC,
+            Gtk.PolicyType.AUTOMATIC
+        )
+
+        dialog.set_child(scrolled)
+        dialog.present()
+
+    def on_quit(self, *args):
+        """Quit the application."""
+        self.close_all_windows()
+
+    def on_new_star(self, *args):
+        """Create a new window with a default Star particle."""
+        new_window = GyotoyApplicationWindow(
+            application=self,
+            particle=default_star()
+        )
+        new_window.present()
+
+    def on_new_photon(self, *args):
+        """Create a new window with a default Photon particle."""
+        new_window = GyotoyApplicationWindow(
+            application=self,
+            particle=default_photon()
+        )
+        new_window.present()
+
+    def on_open(self, window, *args):
+        """Handle open action."""
+        dialog = self.create_file_dialog()
+        dialog.open(
+            window,
+            None,
+            lambda d, result: self.on_open_file_selected(d, result, window)
+        )
+
+    def on_open_file_selected(self, dialog, result, parent_window):
+        """Handle file selection from open dialog."""
+        try:
+            file = dialog.open_finish(result)
+        except GLib.Error:
+            return
+
+        if file is not None:
+            new_window = GyotoyApplicationWindow(
+                application=self,
+                particle=file.get_path(),
+                connector=None
+            )
+            new_window.present()
+
+    def create_file_dialog(self):
+        """Create and return a configured file dialog."""
+        dialog = Gtk.FileDialog()
+
+        # Create XML filter
+        xml_filter = Gtk.FileFilter()
+        xml_filter.set_name("XML files")
+        xml_filter.add_suffix('xml')
+        xml_filter.add_pattern('*.xml')
+
+        # Create All Files filter
+        all_filter = Gtk.FileFilter()
+        all_filter.set_name("All files")
+        all_filter.add_pattern('*')
+
+        # Create list model for filters
+        filter_list = Gio.ListStore.new(Gtk.FileFilter)
+        filter_list.append(xml_filter)
+        filter_list.append(all_filter)
+
+        # Set filters and default
+        dialog.set_filters(filter_list)
+        dialog.set_property('default-filter', xml_filter)
+
+        return dialog
+
+
 class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     """Main application window for Gyotoy.
 
@@ -455,14 +666,13 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             particle = Star(particle)
 
         if particle is None:
-            particle = self.default_star()
+            particle = default_star()
 
         self.set_default_size(1024, 768)
 
         # Build UI
         self.build_headerbar()
         self.build_body()
-        self.build_shortcuts()
         self.connect("close-request", self.on_close_request)
 
         # Prepare computation process
@@ -532,8 +742,8 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
         # New submenu
         new_menu = Gio.Menu()
-        new_menu.append(_("Star"), "win.new-star")
-        new_menu.append(_("Photon"), "win.new-photon")
+        new_menu.append(_("Star"), "app.new-star")
+        new_menu.append(_("Photon"), "app.new-photon")
 
         menu_section1 = Gio.Menu()
         menu_section1.append_submenu(_("New"), new_menu)
@@ -542,9 +752,9 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         menu_section2.append(_("Save"), "win.save")
         menu_section2.append(_("Save As…"), "win.save-as")
         menu_section3 = Gio.Menu()
-        menu_section3.append(_("Help"), "win.help")
+        menu_section3.append(_("Help"), "app.help")
         menu_section3.append(_("Close"), "win.close")
-        menu_section3.append(_("Quit"), "win.quit")
+        menu_section3.append(_("Quit"), "app.quit")
 
         # Main menu items
         menu.append_section(None, menu_section1)
@@ -561,134 +771,13 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         header.pack_end(menu_button)
 
         # Connect actions
-        action_group = Gio.SimpleActionGroup()
-        self.insert_action_group("win", action_group)
-
-        action_group.add_action_entries([
-            ("new-star", self.on_new_star, None),
-            ("new-photon", self.on_new_photon, None),
-            ("open", self.on_open, None),
+        self.add_action_entries([
+            ("open", lambda *args: self.props.application.on_open(self), None),
             ("save", self.on_save, None),
             ("save-as", self.on_save_as, None),
-            ("help", self.on_help, None),
-            ("close", self.on_close, None),
-            ("quit", self.on_quit, None),
+            ("close", lambda *args: self.close(), None),
             ("compute-and-redraw", self.compute_and_redraw, None),
         ])
-
-    def build_shortcuts(self):
-        """Create keyboard shortcuts.
-
-        Creates keyboard shortcuts for these actions:
-        - New Star window: Ctrl+N,
-        - New Photon window: Ctrl+Shift+N,
-        - Close window: Ctrl+W,
-        - Close all windows and quit: Ctrl+Q,
-        - Open file: Ctrl+O,
-        - Save file: Ctrl+S,
-        - Save file as: Ctrl+Shift+S,
-        - Help: F1,
-        - Compute and redraw: Ctrl+R.
-
-        """
-        controller = Gtk.ShortcutController()
-        self.add_controller(controller)
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_n,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.new-star")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_n,
-                    modifiers=(
-                        Gdk.ModifierType.CONTROL_MASK
-                        | Gdk.ModifierType.SHIFT_MASK
-                    )
-                ),
-                action=Gtk.NamedAction.new("win.new-photon")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_w,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.close")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_o,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.open")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_s,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.save")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_s,
-                    modifiers=(
-                        Gdk.ModifierType.CONTROL_MASK
-                        | Gdk.ModifierType.SHIFT_MASK
-                    )
-                ),
-                action=Gtk.NamedAction.new("win.save-as")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_q,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.quit")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_F1,
-                    modifiers=0
-                ),
-                action=Gtk.NamedAction.new("win.help")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_r,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.compute-and-redraw")
-            )
-        )
 
     def build_body(self):
         """Build the main window body layout.
@@ -816,46 +905,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
         """
         self.close()
-
-    def on_quit(self, *args):
-        """Handle quit all action.
-
-        Closes all windows and quits the application.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        if self.props.application is not None:
-            self.props.application.close_all_windows()
-        else:
-            self.close()
-
-    def on_new_star(self, *args):
-        """Create a new window with a default Star particle.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        new_window = GyotoyApplicationWindow(
-            application=self.props.application,
-            particle=self.default_star()
-        )
-        new_window.present()
-
-    def on_new_photon(self, *args):
-        """Create a new window with a default Photon particle.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        new_window = GyotoyApplicationWindow(
-            application=self.props.application,
-            particle=self.default_photon()
-        )
-        new_window.present()
 
     def set_title(self, *args):
         """Set window title according to attributes
@@ -1036,66 +1085,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     # Callbacks
     ####################################################################
 
-    def on_open(self, *args):
-        """Open a file dialog to load an XML particle configuration.
-
-        Creates a file dialog with XML and All Files filters,
-        defaulting to XML. When a file is selected, it's loaded and
-        the particle is updated.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        dialog = Gtk.FileDialog()
-
-        # Create XML filter
-        xml_filter = Gtk.FileFilter()
-        xml_filter.set_name("XML files")
-        xml_filter.add_suffix('xml')
-        xml_filter.add_pattern('*.xml')
-
-        # Create All Files filter
-        all_filter = Gtk.FileFilter()
-        all_filter.set_name("All files")
-        all_filter.add_pattern('*')
-
-        # Create list model for filters
-        filter_list = Gio.ListStore.new(Gtk.FileFilter)
-        filter_list.append(xml_filter)
-        filter_list.append(all_filter)
-
-        # Set filters and default
-        dialog.set_filters(filter_list)
-        dialog.set_property('default-filter', xml_filter)
-
-        dialog.open(
-            self,
-            None,
-            lambda dialog, result: self.on_open_file_selected(dialog, result)
-        )
-
-    def on_open_file_selected(self, dialog, result):
-        """Handle the selection of a file to open.
-
-        Args:
-            dialog: The Gtk.FileDialog instance
-            result: The result of the dialog operation
-
-        """
-        try:
-            file = dialog.open_finish(result)
-        except GLib.Error:
-            return
-
-        if file is not None:
-            window = GyotoyApplicationWindow(
-                application=self.props.application,
-                particle=file.get_path(),
-                connector=None
-            )
-            window.present()
-
     def on_save(self, *args):
         """Save the current particle in the last XML file used.
 
@@ -1129,27 +1118,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             *args: GTK callback arguments
 
         """
-        dialog = Gtk.FileDialog()
-
-        # Create XML filter
-        xml_filter = Gtk.FileFilter()
-        xml_filter.set_name("XML files")
-        xml_filter.add_suffix('xml')
-        xml_filter.add_pattern('*.xml')
-
-        # Create All Files filter
-        all_filter = Gtk.FileFilter()
-        all_filter.set_name("All files")
-        all_filter.add_pattern('*')
-
-        # Create list model for filters
-        filter_list = Gio.ListStore.new(Gtk.FileFilter)
-        filter_list.append(xml_filter)
-        filter_list.append(all_filter)
-
-        # Set filters and default
-        dialog.set_filters(filter_list)
-        dialog.set_property('default-filter', xml_filter)
+        dialog = self.props.application.create_file_dialog()
 
         dialog.save(
             self,
@@ -1183,116 +1152,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                 detail=e.get_message(),
                 window=self
             )
-
-    def on_help(self, *args):
-        """Display the help dialog.
-
-        Shows a dialog with comprehensive usage information including
-        keyboard shortcuts and menu button descriptions.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        dialog = Gtk.Dialog(
-            title="Help",
-            transient_for=self,
-            modal=False
-        )
-        dialog.set_default_size(600, 400)
-
-        help_text = (
-            "<span font_weight='bold' size='x-large'>"
-            "Gyotoy - Gyoto Geodesic Integration Visualizer</span>\n"
-            "\n"
-            "<span font_weight='bold' size='large'>OVERVIEW:</span>\n"
-            "Gyotoy is a GTK4 application for simulating and visualizing "
-            "geodesics (time-like or null) in spacetimes supported by the Gyoto "
-            "library. It provides an interactive 3D view of particle "
-            "trajectories. Each window handles exactly one particle (Star or "
-            "Photon).\n"
-            "\n"
-            "<span font_weight='bold' size='large'>UI LAYOUT:</span>\n"
-            "<b>•</b> Left Panel: 3D Matplotlib viewer displaying particle "
-            "trajectory. Use mouse to rotate (left-click+drag), and pan "
-            "(middle-click+drag). Use plot toolbar for other actions including "
-            "saving the plot.\n"
-            "<b>•</b> Right Panel: Property editor for adjusting metric and "
-            "particle parameters. Changes trigger automatic recomputation.\n"
-            "<b>•</b> Bottom: Simulation controls (play/pause/stop/reset), "
-            "interpolation settings, and status display.\n"
-            "\n"
-            "<span font_weight='bold' size='large'>MENU BUTTONS:</span>\n"
-            "<b>•</b> New -> Star: Open new window with default Star (Ctrl+N)\n"
-            "<b>•</b> New -> Photon: Open new window with default Photon "
-            "(Ctrl+Shift+N)\n"
-            "<b>•</b> Open (Ctrl+O): Load an XML particle configuration file.\n"
-            "<b>•</b> Save (Ctrl+S): Save current particle to last used file.\n"
-            "<b>•</b> Save As (Ctrl+Shift+S): Save current particle to a new "
-            "file.\n"
-            "<b>•</b> Help (F1): Show this help dialog.\n"
-            "<b>•</b> Close (Ctrl+W): Close current window.\n"
-            "<b>•</b> Quit (Ctrl+Q): Close all windows and quit the application.\n"
-            "\n"
-            "<span font_weight='bold' size='large'>"
-            "OTHER KEYBOARD SHORTCUTS:</span>\n"
-            "<b>•</b> Ctrl+R: Compute and redraw trajectory.\n"
-            "<b>•</b> Escape: Close active dialog window (error, help...).\n"
-            "\n"
-            "<span font_weight='bold' size='large'>PROPERTY EDITOR:</span>\n"
-            "<b>•</b> Edit particle parameters: position, velocity, metric "
-            "properties...\n"
-            "<b>•</b> All parameter changes immediately trigger a computation and "
-            "redraw unless the stop (■) at the bottom right of the window is "
-            "activated.\n"
-            "<b>•</b> The InitCoord vector is by default displayed with 7 cells "
-            "corresponding to 4-position and 3-velocity (derivatives of the space "
-            "coordinates with respect to time coordinate). Use the '3-velocity' "
-            "and '4-velocity' radio buttons to switch between this view and the "
-            "8-coordinate view corresponding to 4-position and 4-velocity. By "
-            "default, the 4-velocity is renormalized (according to mass of the "
-            "particle) at each keystroke. Click on the stop (■) button "
-            "immediately below the coordinates to temporarily inhibit this "
-            "behavior. Click this button again to finalize input.\n"
-            "\n"
-            "<span font_weight='bold' size='large'>"
-            "SIMULATION CONTROLS:</span>\n"
-            "<b>•</b> Reset: Reinitialize integration and clear viewer.\n"
-            "<b>•</b> Play/Pause: Start or pause the simulation.\n"
-            "<b>•</b> Stop: Stop the integration and inhibit/enable "
-            "recomputation.\n"
-            "<b>•</b> N. frames: Number of intermediate frames to display "
-            "(default: 100).\n"
-            "<b>•</b> End time: Final time for integration.\n"
-            "<b>•</b> Interpolation step: Step size for interpolation (0 for no "
-            "interpolation, adaptive step used instead).\n"
-            "\n"
-            "<span font_weight='bold' size='large'>WORKFLOW:</span>\n"
-            "1. If needed, open file or create new particle (Star or Photon).\n"
-            "2. Adjust properties in the editor.\n"
-            "3. Click Play or press Ctrl+R to compute trajectory.\n"
-            "4. Use 3D viewer to inspect the result.\n"
-            "5. Save particle description with Save/Save As.\n"
-        )
-
-        label = Gtk.Label(
-            label=help_text,
-            halign=Gtk.Align.START,
-            wrap=True,
-            use_markup=True,
-            xalign=0.0,
-            justify=Gtk.Justification.FILL
-        )
-
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.set_child(label)
-        scrolled.set_policy(
-            Gtk.PolicyType.AUTOMATIC,
-            Gtk.PolicyType.AUTOMATIC
-        )
-
-        dialog.set_child(scrolled)
-        dialog.present()
 
     def on_value_changed(self, widget, name, *args):
         """Handle property value changes from the editor.
@@ -1493,66 +1352,51 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         self.editor.widgets['InitCoord:veltype'].set_active(True)
         self.compute_and_redraw()
 
-    def get_particle(self):
-        """Get the current particle.
+def default_star():
+    """Create a default Star particle.
 
-        Returns:
-            The current particle (Star or Photon)
-        """
-        return self.particle
+    Returns:
+        A Star particle
 
-    ####################################################################
-    # Default values
-    ####################################################################
+    """
+    return Star(
+        Metric=KerrBL(
+            Spin=0.995,
+        ),
+        InitCoord=(
+            0., 10.791, 1.570796326794866, 0.,
+            1.1264111886458281, 0., 0., 0.018770516047594082
+        ),
+        Delta = 0.01,
+    )
 
-    def default_metric(self):
-        """Create a default KerrBL metric with high spin.
+def default_photon():
+    """Create a default Photon particle.
 
-        Returns:
-            KerrBL: A KerrBL metric instance with Spin=0.995
-        """
-        metric = KerrBL()
-        metric.Spin = 0.995
-        return metric
+    Returns:
+        A Photon particle
 
-    def default_star(self):
-        """Create a default Star particle.
-
-        Returns:
-            Star: A Star particle with default coordinates and metric
-        """
-        particle = Star()
-        particle.Metric = self.default_metric()
-        particle.initCoord(
-            (0., 10.791, 1.570796326794866, 0.,
-             1.1264111886458281, 0., 0., 0.018770516047594082)
-        )
-        particle.Delta = 0.01
-        return particle
-
-    def default_photon(self):
-        """Create a default Photon particle.
-
-        Returns:
-            Photon: A Photon particle with default coordinates and
-                metric
-
-        """
-        particle = Photon()
-        particle.Metric = self.default_metric()
-        r = 2. * (1 + numpy.cos(2./3. * numpy.acos(-particle.Metric.Spin)))
-        spherical = (
-            particle.Metric.coordKind() == GYOTO_COORDKIND_SPHERICAL
-        )
-        coord = (
-            0., r, 0.5*numpy.pi if spherical else 0., 0.,
-            1., 0., 0. if spherical else 1., 1./r if spherical else 0.
-        )
-        coord = numpy.array(coord)
-        particle.Metric.nullifyCoord(coord)
-        particle.initCoord(coord)
-        return particle
+    """
+    particle = Photon(
+        Metric=KerrBL(
+            Spin=0.995,
+        ),
+    )
+    r = 2. * (1 + numpy.cos(2./3. * numpy.acos(-particle.Metric.Spin)))
+    spherical = (
+        particle.Metric.coordKind() == GYOTO_COORDKIND_SPHERICAL
+    )
+    coord = (
+        0., r, 0.5*numpy.pi if spherical else 0., 0.,
+        1., 0., 0. if spherical else 1., 1./r if spherical else 0.
+    )
+    coord = numpy.array(coord)
+    particle.Metric.nullifyCoord(coord)
+    particle.initCoord(coord)
+    return particle
 
 # Stand-alone entry point:
 if __name__ == "__main__":
-    raise SystemExit(GyotoyApplication.run_app(parsecliargs=True))
+    raise SystemExit(
+        GyotoyApplication.run_app(parsecliargs=True)
+    )

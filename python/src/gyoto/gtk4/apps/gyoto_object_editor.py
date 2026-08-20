@@ -166,13 +166,10 @@ class GyotoObjectEditorApplication(Gtk.Application):
             GLib.timeout_add(50, self.check_connector)
 
         # App-level actions
-        help_action = Gio.SimpleAction.new("help", None)
-        help_action.connect("activate", lambda a, p: self.on_help())
-        self.add_action(help_action)
-
-        quit_action = Gio.SimpleAction.new("quit", None)
-        quit_action.connect("activate", lambda a, p: self.on_quit())
-        self.add_action(quit_action)
+        self.add_action_entries([
+            ("help", self.on_help, None),
+            ("quit", self.on_quit, None),
+        ])
 
         # Accelerators
         self.set_accels_for_action("app.help", ["F1"])
@@ -182,6 +179,19 @@ class GyotoObjectEditorApplication(Gtk.Application):
         self.set_accels_for_action("win.close", ["<Primary>W"])
         self.set_accels_for_action("win.save", ["<Primary>S"])
         self.set_accels_for_action("win.save-as", ["<Primary><Shift>S"])
+
+    def add_action_entries(self, entries):
+        '''Mimick ApplicationWindow.add_action_entries
+
+        For obscure reasons it is missing from Gtk.Application
+        '''
+        for entry in entries:
+            name = entry[0]
+            callback = entry[1]
+            param_type = entry[2] if len(entry) > 2 else None
+            action = Gio.SimpleAction.new(name, param_type)
+            action.connect("activate", callback)
+            self.add_action(action)
 
     def do_activate(self):
         """Called by GTK when the application starts.
@@ -856,32 +866,14 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         self.menu_button = menu_button
 
         # Connect win actions
-        save_action = Gio.SimpleAction.new("save", None)
-        save_action.connect("activate", lambda a, p: self.on_save(a, p))
-        self.add_action(save_action)
-
-        save_as_action = Gio.SimpleAction.new("save-as", None)
-        save_as_action.connect("activate",
-                                lambda a, p: self.on_save_as(a, p))
-        self.add_action(save_as_action)
-
-        close_action = Gio.SimpleAction.new("close", None)
-        close_action.connect("activate", lambda a, p: self.on_close(a, p))
-        self.add_action(close_action)
-
-        open_action = Gio.SimpleAction.new("open", None)
-        open_action.connect(
-            "activate",
-            lambda a, p: self.props.application.on_open(self)
-        )
-        self.add_action(open_action)
-
-        new_action = Gio.SimpleAction.new("new", None)
-        new_action.connect(
-            "activate",
-            lambda a, p: self.props.application.on_new(self.menu_button)
-        )
-        self.add_action(new_action)
+        self.add_action_entries([
+            ("save", self.on_save, None),
+            ("save-as", self.on_save_as, None),
+            ("close", lambda *args: self.close(), None),
+            ("open", lambda *args: self.props.application.on_open(self), None),
+            ("new", lambda *args:
+             self.props.application.on_new(self.menu_button), None),
+        ])
 
     ####################################################################
     # Callbacks
@@ -992,15 +984,6 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         if self.props.application is not None:
             self.props.application.remove_window(self)
         return False
-
-    def on_close(self, *args):
-        """Handle close action from menu.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        self.close()
 
     def default_obj(self):
         """Return default object

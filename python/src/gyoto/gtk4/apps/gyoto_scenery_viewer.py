@@ -295,17 +295,11 @@ class GyotoSceneryViewerApplication(Gtk.Application):
         )
 
         # App-level actions
-        help_action = Gio.SimpleAction.new("help", None)
-        help_action.connect("activate", lambda a, p: self.on_help())
-        self.add_action(help_action)
-
-        quit_action = Gio.SimpleAction.new("quit", None)
-        quit_action.connect("activate", lambda a, p: self.on_quit())
-        self.add_action(quit_action)
-
-        new_action = Gio.SimpleAction.new("new", None)
-        new_action.connect("activate", self.on_new)
-        self.add_action(new_action)
+        self.add_action_entries([
+            ("help", self.on_help, None),
+            ("quit", self.on_quit, None),
+            ("new", self.on_new, None),
+        ])
 
         # Accelerators for all actions
         self.set_accels_for_action("app.help", ["F1"])
@@ -317,6 +311,19 @@ class GyotoSceneryViewerApplication(Gtk.Application):
         self.set_accels_for_action("win.save-as", ["<Primary><Shift>S"])
         self.set_accels_for_action("win.display-3d", ["<Primary>D"])
         self.set_accels_for_action("win.compute-and-redraw", ["<Primary>R"])
+
+    def add_action_entries(self, entries):
+        '''Mimick ApplicationWindow.add_action_entries
+
+        For obscure reasons it is missing from Gtk.Application
+        '''
+        for entry in entries:
+            name = entry[0]
+            callback = entry[1]
+            param_type = entry[2] if len(entry) > 2 else None
+            action = Gio.SimpleAction.new(name, param_type)
+            action.connect("activate", callback)
+            self.add_action(action)
 
     def do_activate(self):
         """Called by GTK when the application starts.
@@ -769,19 +776,13 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         # Connect actions
         self.add_action_entries([
+            ("open", lambda *args: self.props.application.on_open(self), None),
             ("save", self.on_save, None),
             ("save-as", self.on_save_as, None),
             ("display-3d", self.show_viewer3d, None),
-            ("close", self.on_close, None),
+            ("close", lambda *args: self.close(), None),
             ("compute-and-redraw", self.compute_and_draw, None),
         ])
-
-        open_action = Gio.SimpleAction.new("open", None)
-        open_action.connect(
-            "activate",
-            lambda a, p: self.props.application.on_open(self)
-        )
-        self.add_action(open_action)
 
     def build_body(self):
         """Build the main window body layout.
@@ -902,18 +903,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         if self.viewer3d_window:
             self.viewer3d_window.close()
         return False
-
-    def on_close(self, *args):
-        """Handle close action from menu.
-
-        Calls self.close(), which will call on_close_request before
-        actually closing the window.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        self.close()
 
     def set_title(self, *args):
         """Set window title according to attributes
