@@ -80,6 +80,14 @@ from ...core import Factory, Astrobj, Error as GyotoError
 from ...core import Scenery, Screen, Spectrometer, Photon, AstrobjProperties
 from ...std import FixedStar, Minkowski, PowerLaw
 
+# Constants
+scalar_quantities = ('Intensity', 'EmissionTime', 'MinDistance',
+                     'FirstDistMin', 'Redshift', 'NbCrossEqPlane',
+                     'User1', 'User2', 'User3', 'User4', 'User5')
+
+spectral_quantities = ('Spectrum', 'SpectrumStokesQ', 'SpectrumStokesU',
+                       'SpectrumStokesV', 'BinSpectrum')
+
 # --- Commands for worker communication ---
 RUN_SIM = 'run'
 QUIT = 'quit'
@@ -286,6 +294,30 @@ class GyotoSceneryViewerApplication(Gtk.Application):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
         )
 
+        # App-level actions
+        help_action = Gio.SimpleAction.new("help", None)
+        help_action.connect("activate", lambda a, p: self.on_help())
+        self.add_action(help_action)
+
+        quit_action = Gio.SimpleAction.new("quit", None)
+        quit_action.connect("activate", lambda a, p: self.on_quit())
+        self.add_action(quit_action)
+
+        new_action = Gio.SimpleAction.new("new", None)
+        new_action.connect("activate", self.on_new)
+        self.add_action(new_action)
+
+        # Accelerators for all actions
+        self.set_accels_for_action("app.help", ["F1"])
+        self.set_accels_for_action("app.quit", ["<Primary>Q"])
+        self.set_accels_for_action("app.new", ["<Primary>N"])
+        self.set_accels_for_action("win.close", ["<Primary>W"])
+        self.set_accels_for_action("win.open", ["<Primary>O"])
+        self.set_accels_for_action("win.save", ["<Primary>S"])
+        self.set_accels_for_action("win.save-as", ["<Primary><Shift>S"])
+        self.set_accels_for_action("win.display-3d", ["<Primary>D"])
+        self.set_accels_for_action("win.compute-and-redraw", ["<Primary>R"])
+
     def do_activate(self):
         """Called by GTK when the application starts.
 
@@ -393,6 +425,171 @@ class GyotoSceneryViewerApplication(Gtk.Application):
         self._next_wid += 1
         return wid
 
+    def on_help(self, *args):
+        """Display the help dialog."""
+        parent = self.windows[0] if self.windows else None
+        if parent is None:
+            return
+
+        dialog = Gtk.Dialog(
+            title="Help",
+            transient_for=parent,
+            modal=False
+        )
+        dialog.set_default_size(600, 400)
+
+        help_text = (
+            "<span font_weight='bold' size='x-large'>"
+            "Gyoto Scenery Viewer</span>\n\n"
+            "<span font_weight='bold' size='large'>OVERVIEW:</span>\n"
+            "Gyoto Scenery Viewer is a GTK4 application for simulating and "
+            "visualizing ray-traced sceneries in spacetimes supported by the "
+            "Gyoto library.\n\n"
+            "<span font_weight='bold' size='large'>MENU BUTTONS:</span>\n"
+            "<b>• New (Ctrl+N):</b> Open new window with default scenery.\n"
+            "<b>• Open (Ctrl+O):</b> Load an XML scenery configuration file.\n"
+            "<b>• Save (Ctrl+S):</b> Save current scenery to last used file.\n"
+            "<b>• Save As (Ctrl+Shift+S):</b> Save current scenery to a new "
+            "file.\n"
+            "<b>• Display 3D window (Ctrl+D):</b> Open 3D viewer for photon "
+            "trajectories.\n"
+            "<b>• Help (F1):</b> Show this help dialog.\n"
+            "<b>• Close (Ctrl+W):</b> Close current window.\n"
+            "<b>• Quit (Ctrl+Q):</b> Close all windows and quit the "
+            "application.\n\n"
+            "<span font_weight='bold' size='large'>KEYBOARD SHORTCUTS:</span>\n"
+            "<b>• Ctrl+R:</b> Compute and redraw the scenery.\n"
+        )
+
+        label = Gtk.Label(
+            label=help_text,
+            halign=Gtk.Align.START,
+            wrap=True,
+            use_markup=True,
+            xalign=0.0,
+            justify=Gtk.Justification.FILL
+        )
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_child(label)
+        scrolled.set_policy(
+            Gtk.PolicyType.AUTOMATIC,
+            Gtk.PolicyType.AUTOMATIC
+        )
+
+        dialog.set_child(scrolled)
+        dialog.present()
+
+    def on_quit(self, *args):
+        """Quit the application."""
+        self.close_all_windows()
+
+    def on_new(self, *args):
+        """Create a new window with a default Scenery."""
+        new_window = GyotoSceneryViewerApplicationWindow(
+            application=self,
+            scenery=self.default_scenery(),
+            connector=None
+        )
+        new_window.present()
+
+    def on_open(self, window, *args):
+        """Handle open action."""
+        dialog = self.create_file_dialog()
+        dialog.open(
+            window,
+            None,
+            lambda d, result: self.on_open_file_selected(d, result, window)
+        )
+
+    def on_open_file_selected(self, dialog, result, parent_window):
+        """Handle file selection from open dialog."""
+        try:
+            file = dialog.open_finish(result)
+        except GLib.Error:
+            return
+
+        if file is not None:
+            new_window = GyotoSceneryViewerApplicationWindow(
+                application=self,
+                scenery=file.get_path(),
+                connector=None
+            )
+            new_window.present()
+
+    def create_file_dialog(self):
+        """Create and return a configured file dialog."""
+        dialog = Gtk.FileDialog()
+
+        # Create XML filter
+        xml_filter = Gtk.FileFilter()
+        xml_filter.set_name("XML files")
+        xml_filter.add_suffix('xml')
+        xml_filter.add_pattern('*.xml')
+
+        # Create All Files filter
+        all_filter = Gtk.FileFilter()
+        all_filter.set_name("All files")
+        all_filter.add_pattern('*')
+
+        # Create list model for filters
+        filter_list = Gio.ListStore.new(Gtk.FileFilter)
+        filter_list.append(xml_filter)
+        filter_list.append(all_filter)
+
+        # Set filters and default
+        dialog.set_filters(filter_list)
+        dialog.set_property('default-filter', xml_filter)
+
+        return dialog
+
+    def default_scenery(self):
+        """Create a default Scenery.
+
+        Returns:
+            A Scenery
+        """
+        sc=Scenery(
+            Metric   = Minkowski(
+                Mass = (4e6, "sunmass"),
+                Spherical = True,
+            ),
+            Astrobj  = FixedStar(
+                Radius = 12,
+                Position = (0., 0., 0.),
+                Spectrum = PowerLaw(
+                    Exponent = 1.,
+                    Constant = 0.01,
+                ),
+                Opacity = PowerLaw(
+                    Exponent = 1.,
+                    Constant = 0.01,
+                ),
+                OpticallyThin = True,
+            ),
+            Screen   = Screen(
+                Distance    = (8, "kpc"),
+                Time        = (30e3, "yr"),
+                Resolution  = 64,
+                Inclination = (90., "degree"),
+                PALN        = 0.,
+                FieldOfView = (150, "µas"),
+                Spectrometer = Spectrometer(
+                    'freq',
+                    NSamples = 5,
+                    Band = (1., 5.),
+                ),
+            ),
+            Delta    = 1e0,
+            DeltaMaxOverR = 0.5,
+            MinimumTime = 0.,
+            Quantities = " ".join(scalar_quantities +
+                                  ("Spectrum", "ImpactCoords")),
+            Adaptive = True,
+            NThreads = 8,
+        )
+        return sc
+
 class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
     """Main application window for the Gyoto Scenery Viewer.
 
@@ -440,14 +637,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
     closing = False
     wid = 0
 
-    # Constants
-    scalar_quantities = ('Intensity', 'EmissionTime', 'MinDistance',
-                         'FirstDistMin', 'Redshift', 'NbCrossEqPlane',
-                         'User1', 'User2', 'User3', 'User4', 'User5')
-
-    spectral_quantities = ('Spectrum', 'SpectrumStokesQ', 'SpectrumStokesU',
-                           'SpectrumStokesV', 'BinSpectrum')
-
     ####################################################################
     # Construction
     ####################################################################
@@ -474,14 +663,13 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             scenery = Factory(scenery).scenery()
 
         if scenery is None:
-            scenery = self.default_scenery()
+            scenery = application.default_scenery()
 
         self.set_default_size(1024, 768)
 
         # Build UI
         self.build_headerbar()
         self.build_body()
-        self.build_shortcuts()
         self.connect("close-request", self.on_close_request)
 
         # Prepare computation process
@@ -552,7 +740,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         menu = Gio.Menu()
 
         menu_section1 = Gio.Menu()
-        menu_section1.append(_("New"), "win.new")
+        menu_section1.append(_("New"), "app.new")
         menu_section2 = Gio.Menu()
         menu_section2.append(_("Open…"), "win.open")
         menu_section2.append(_("Save"), "win.save")
@@ -560,9 +748,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         menu_section3 = Gio.Menu()
         menu_section3.append(_("Display 3D window"), "win.display-3d")
         menu_section4 = Gio.Menu()
-        menu_section4.append(_("Help"), "win.help")
+        menu_section4.append(_("Help"), "app.help")
         menu_section4.append(_("Close"), "win.close")
-        menu_section4.append(_("Quit"), "win.quit")
+        menu_section4.append(_("Quit"), "app.quit")
 
         # Main menu items
         menu.append_section(None, menu_section1)
@@ -580,130 +768,20 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         header.pack_end(menu_button)
 
         # Connect actions
-        action_group = Gio.SimpleActionGroup()
-        self.insert_action_group("win", action_group)
-
-        action_group.add_action_entries([
-            ("new", self.on_new, None),
-            ("open", self.on_open, None),
+        self.add_action_entries([
             ("save", self.on_save, None),
             ("save-as", self.on_save_as, None),
             ("display-3d", self.show_viewer3d, None),
-            ("help", self.on_help, None),
             ("close", self.on_close, None),
-            ("quit", self.on_quit, None),
             ("compute-and-redraw", self.compute_and_draw, None),
         ])
 
-    def build_shortcuts(self):
-        """Create keyboard shortcuts.
-
-        Creates keyboard shortcuts for these actions:
-        - New window: Ctrl+N,
-        - Close window: Ctrl+W,
-        - Close all windows and quit: Ctrl+Q,
-        - Open file: Ctrl+O,
-        - Save file: Ctrl+S,
-        - Save file as: Ctrl+Shift+S,
-        - Help: F1,
-        - Compute and redraw: Ctrl+R.
-
-        """
-        controller = Gtk.ShortcutController()
-        self.add_controller(controller)
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_n,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.new")
-            )
+        open_action = Gio.SimpleAction.new("open", None)
+        open_action.connect(
+            "activate",
+            lambda a, p: self.props.application.on_open(self)
         )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_w,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.close")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_o,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.open")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_s,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.save")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_s,
-                    modifiers=(
-                        Gdk.ModifierType.CONTROL_MASK
-                        | Gdk.ModifierType.SHIFT_MASK
-                    )
-                ),
-                action=Gtk.NamedAction.new("win.save-as")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_q,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.quit")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_d,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.display-3d")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_F1,
-                    modifiers=0
-                ),
-                action=Gtk.NamedAction.new("win.help")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_r,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.compute-and-redraw")
-            )
-        )
+        self.add_action(open_action)
 
     def build_body(self):
         """Build the main window body layout.
@@ -743,9 +821,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         # drop-down to select the quantioty to display
         self.quantity_dropdown = Gtk.DropDown.new_from_strings(
-            self.scalar_quantities +
-            self.spectral_quantities +
-            ("ImpactCoords",))
+            scalar_quantities + spectral_quantities + ("ImpactCoords",))
         self.quantity_dropdown.connect("notify::selected",
                                        self.on_quantity_dropdown_activated)
         self.quantity_dropdown.set_hexpand(True)
@@ -839,33 +915,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         """
         self.close()
 
-    def on_quit(self, *args):
-        """Handle quit all action.
-
-        Closes all windows and quits the application.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        if self.props.application is not None:
-            self.props.application.close_all_windows()
-        else:
-            self.close()
-
-    def on_new(self, *args):
-        """Create a new window with a default Scenery.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        new_window = GyotoSceneryViewerApplicationWindow(
-            application=self.props.application,
-            scenery=self.default_scenery()
-        )
-        new_window.present()
-
     def set_title(self, *args):
         """Set window title according to attributes
 
@@ -936,9 +985,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             return None
         if quantity not in dico:
             return None
-        if quantity in self.scalar_quantities:
+        if quantity in scalar_quantities:
             image = dico[quantity]
-        elif quantity in self.spectral_quantities:
+        elif quantity in spectral_quantities:
             cube = dico[quantity]
             plane = self.quantity_plane.get_value_as_int()
             if plane < 0: plane = 0
@@ -1037,9 +1086,9 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         if quantity not in dico:
             return
 
-        if quantity in self.scalar_quantities:
+        if quantity in scalar_quantities:
             image = dico[quantity]
-        elif quantity in self.spectral_quantities:
+        elif quantity in spectral_quantities:
             cube = dico[quantity]
             plane = self.quantity_plane.get_value_as_int()
             if plane < 0: plane =0
@@ -1227,66 +1276,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
     # Callbacks
     ####################################################################
 
-    def on_open(self, *args):
-        """Open a file dialog to load an XML scenery configuration.
-
-        Creates a file dialog with XML and All Files filters,
-        defaulting to XML. When a file is selected, it's loaded and
-        the scenery is updated.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        dialog = Gtk.FileDialog()
-
-        # Create XML filter
-        xml_filter = Gtk.FileFilter()
-        xml_filter.set_name("XML files")
-        xml_filter.add_suffix('xml')
-        xml_filter.add_pattern('*.xml')
-
-        # Create All Files filter
-        all_filter = Gtk.FileFilter()
-        all_filter.set_name("All files")
-        all_filter.add_pattern('*')
-
-        # Create list model for filters
-        filter_list = Gio.ListStore.new(Gtk.FileFilter)
-        filter_list.append(xml_filter)
-        filter_list.append(all_filter)
-
-        # Set filters and default
-        dialog.set_filters(filter_list)
-        dialog.set_property('default-filter', xml_filter)
-
-        dialog.open(
-            self,
-            None,
-            lambda dialog, result: self.on_open_file_selected(dialog, result)
-        )
-
-    def on_open_file_selected(self, dialog, result):
-        """Handle the selection of a file to open.
-
-        Args:
-            dialog: The Gtk.FileDialog instance
-            result: The result of the dialog operation
-
-        """
-        try:
-            file = dialog.open_finish(result)
-        except GLib.Error:
-            return
-
-        if file is not None:
-            window = GyotoSceneryViewerApplicationWindow(
-                application=self.props.application,
-                scenery=file.get_path(),
-                connector=None
-            )
-            window.present()
-
     def on_save(self, *args):
         """Save the current scenery in the last XML file used.
 
@@ -1375,103 +1364,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
                 window=self
             )
 
-    def on_help(self, *args):
-        """Display the help dialog.
-
-        Shows a dialog with comprehensive usage information including
-        keyboard shortcuts and menu button descriptions.
-
-        Args:
-            *args: GTK callback arguments
-
-        """
-        dialog = Gtk.Dialog(
-            title="Help",
-            transient_for=self,
-            modal=False
-        )
-        dialog.set_default_size(600, 400)
-
-        help_text = (
-            "<span font_weight='bold' size='x-large'>"
-            "Gyoto Scenery Viewer</span>\n\n"
-            "<span font_weight='bold' size='large'>OVERVIEW:</span>\n"
-            "Gyoto Scenery Viewer is a GTK4 application for simulating and "
-            "visualizing ray-traced sceneries in spacetimes supported by the "
-            "Gyoto library. It provides an interactive 2D view of observable "
-            "quantities from astrophysical sceneries. Each window handles "
-            "exactly one scenery.\n\n"
-            "<span font_weight='bold' size='large'>UI LAYOUT:</span>\n"
-            "<b>• Left Panel:</b> 2D Matplotlib viewer displaying ray-traced "
-            "quantities from the scenery. Use mouse to zoom and pan. Use plot "
-            "toolbar for other actions including saving the plot.\n"
-            "<b>• Right Panel:</b> "
-            "Property editor for adjusting scenery parameters: "
-            "Metric, Astrobj, Screen, and other properties. Changes trigger "
-            "automatic recomputation.\n"
-            "<b>• Bottom:</b> Simulation controls (play/pause/stop/reset), "
-            "number of frames, and status display.\n\n"
-            "<span font_weight='bold' size='large'>MENU BUTTONS:</span>\n"
-            "<b>• New (Ctrl+N):</b> Open new window with default scenery.\n"
-            "<b>• Open (Ctrl+O):</b> Load an XML scenery configuration file.\n"
-            "<b>• Save (Ctrl+S):</b> Save current scenery to last used file.\n"
-            "<b>• Save As (Ctrl+Shift+S):</b> Save current scenery to a new "
-            "file.\n"
-            "<b>• Display 3D window (Ctrl+D):</b> Open 3D viewer for photon "
-            "trajectories.\n"
-            "<b>• Help (F1):</b> Show this help dialog.\n"
-            "<b>• Close (Ctrl+W):</b> Close current window.\n"
-            "<b>• Quit (Ctrl+Q):</b> Close all windows and quit the "
-            "application.\n\n"
-            "<span font_weight='bold' size='large'>KEYBOARD SHORTCUTS:</span>\n"
-            "<b>• Ctrl+R:</b> Compute and redraw the scenery.\n"
-            "<b>• Escape:</b> Close active dialog window (error, help...).\n\n"
-            "<span font_weight='bold' size='large'>PROPERTY EDITOR:</span>\n"
-            "<b>•</b> Edit scenery parameters: Metric, Astrobj, Screen "
-            "properties, and computation settings.\n\n"
-            "<span font_weight='bold' size='large'>SIMULATION CONTROLS:</span>\n"
-            "<b>• Reset:</b> Clear the viewer and reset limits.\n"
-            "<b>• Play/Pause:</b> Start or pause the simulation.\n"
-            "<b>• Stop:</b> Stop the integration.\n"
-            "<b>• N. frames:</b> Number of intermediate frames to compute "
-            "(default: 100).\n\n"
-            "<span font_weight='bold' size='large'>QUANTITY SELECTION:</span>\n"
-            "<b>•</b> Use the dropdown at the top of the left panel to select"
-            "which quantity to display: scalar quantities (Intensity, "
-            "EmissionTime, etc.), spectral quantities (Spectrum, etc.), or "
-            "ImpactCoords.\n"
-            "<b>•</b> For spectral and ImpactCoords quantities, use the spin "
-            "button to select the plane/slice to display.\n\n"
-            "<span font_weight='bold' size='large'>WORKFLOW:</span>\n"
-            "1. If needed, open file or create new scenery.\n"
-            "2. Adjust properties in the editor.\n"
-            "3. Click Play or press Ctrl+R to compute and display.\n"
-            "4. Use 2D viewer to inspect the result.\n"
-            "5. Zoom and set higher resolution to refine part of the image.\n"
-            "5. Click on the 2D plot to trace a photon.\n"
-            "6. Save scenery description with Save/Save As or plots using the "
-            "corresponding toolbar buttons."
-        )
-
-        label = Gtk.Label(
-            label=help_text,
-            halign=Gtk.Align.START,
-            wrap=True,
-            use_markup=True,
-            xalign=0.0,
-            justify=Gtk.Justification.FILL
-        )
-
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.set_child(label)
-        scrolled.set_policy(
-            Gtk.PolicyType.AUTOMATIC,
-            Gtk.PolicyType.AUTOMATIC
-        )
-
-        dialog.set_child(scrolled)
-        dialog.present()
-
     def on_quantity_dropdown_activated(self, widget, *args):
         """Handle dropdown selection changes.
 
@@ -1483,7 +1375,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         """
         quantity = widget.get_selected_item().get_string()
 
-        if quantity in self.scalar_quantities:
+        if quantity in scalar_quantities:
             self.quantity_plane.set_sensitive(False)
         else:
             self.quantity_plane.set_sensitive(True)
@@ -1623,53 +1515,6 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
     # Default values
     ####################################################################
 
-    def default_scenery(self):
-        """Create a default Scenery.
-
-        Returns:
-            A Scenery
-        """
-        sc=Scenery(
-            Metric   = Minkowski(
-                Mass = (4e6, "sunmass"),
-                Spherical = True,
-            ),
-            Astrobj  = FixedStar(
-                Radius = 12,
-                Position = (0., 0., 0.),
-                Spectrum = PowerLaw(
-                    Exponent = 1.,
-                    Constant = 0.01,
-                ),
-                Opacity = PowerLaw(
-                    Exponent = 1.,
-                    Constant = 0.01,
-                ),
-                OpticallyThin = True,
-            ),
-            Screen   = Screen(
-                Distance    = (8, "kpc"),
-                Time        = (30e3, "yr"),
-                Resolution  = 64,
-                Inclination = (90., "degree"),
-                PALN        = 0.,
-                FieldOfView = (150, "µas"),
-                Spectrometer = Spectrometer(
-                    'freq',
-                    NSamples = 5,
-                    Band = (1., 5.),
-                ),
-            ),
-            Delta    = 1e0,
-            DeltaMaxOverR = 0.5,
-            MinimumTime = 0.,
-            Quantities = " ".join(self.scalar_quantities +
-                                  ("Spectrum", "ImpactCoords")),
-            Adaptive = True,
-            NThreads = 8,
-        )
-        return sc
-
     ####################################################################
     # Helpers
     ####################################################################
@@ -1764,7 +1609,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         self.viewer3d_window.present()
 
-class GyotoSceneryViewer3dWindow(Gtk.Window):
+class GyotoSceneryViewer3dWindow(Gtk.ApplicationWindow):
 
     def __init__(self, parent=None):
         """Initialize the 3D viewer window.
@@ -1809,105 +1654,19 @@ class GyotoSceneryViewer3dWindow(Gtk.Window):
         - Compute and redraw: Ctrl+R.
 
         """
-        action_group = Gio.SimpleActionGroup()
-        self.insert_action_group("win", action_group)
-
-        action_group.add_action_entries([
-            ("new", self.parent.on_new, None),
-            ("open", self.parent.on_open, None),
+        self.add_action_entries([
             ("save", self.parent.on_save, None),
             ("save-as", self.parent.on_save_as, None),
-            ("help", self.parent.on_help, None),
-            ("close", self.on_close_request, None),
-            ("quit", self.parent.on_quit, None),
+            ("close", lambda *args: self.close(), None),
             ("compute-and-redraw", self.parent.compute_and_draw, None),
         ])
 
-        controller = Gtk.ShortcutController()
-        self.add_controller(controller)
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_n,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.new")
-            )
+        open_action = Gio.SimpleAction.new("open", None)
+        open_action.connect(
+            "activate",
+            lambda a, p: self.props.application.on_open(self.parent)
         )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_w,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.close")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_o,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.open")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_s,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.save")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_s,
-                    modifiers=(
-                        Gdk.ModifierType.CONTROL_MASK
-                        | Gdk.ModifierType.SHIFT_MASK
-                    )
-                ),
-                action=Gtk.NamedAction.new("win.save-as")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_q,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.quit")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_F1,
-                    modifiers=0
-                ),
-                action=Gtk.NamedAction.new("win.help")
-            )
-        )
-
-        controller.add_shortcut(
-            Gtk.Shortcut(
-                trigger=Gtk.KeyvalTrigger(
-                    keyval=Gdk.KEY_r,
-                    modifiers=Gdk.ModifierType.CONTROL_MASK
-                ),
-                action=Gtk.NamedAction.new("win.compute-and-redraw")
-            )
-        )
+        self.add_action(open_action)
 
     def build_body(self):
         """Build the main window body layout.
