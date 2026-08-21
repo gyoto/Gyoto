@@ -34,11 +34,16 @@ Description
 Usage
 -----
 Run as a standalone application:
-    python3 -m gyoto.gtk4.apps.gyoto_scenery_viewer [-h] [filename.xml]
+    python3 -m gyoto.gtk4.apps.gyoto_scenery_viewer [-h] [xmlfile]
+    gyoto view-scenery [-h] [-d] [xmlfile]
 
 Or import and use programmatically:
     from gyoto.gtk4 import view_scenery
-    view_scenery([scenery|'filename.xml'])
+    view_scenery([scenery|xmlfile])
+of simply:
+    scenery.view()
+since view_scenery() in installed as the view() method of
+gyoto.core.Scenery.
 
 An optional scenery (gyoto.core.Scenery), or the name of an XML file
 describing such a scenery, can be provided.

@@ -34,12 +34,14 @@ Description
 
 Usage
 -----
-Run as a standalone application:
-    python3 -m gyoto.gtk4.apps.gyotoy [-h] [filename.xml]
+Run as a standalone application with one of:
+    python3 -m gyoto.gtk4.apps.gyotoy [-h] [-d] [xmlfile]
+    gyoto gyotoy [-h] [-d] [xmlfile]
+    gyotoy [-h] [-d] [xmlfile]
 
 Or import and use programmatically:
     from gyoto.gtk4 import gyotoy
-    gyotoy([particle|'filename.xml'])
+    gyotoy([particle|xmlfile])
 
 An optional particle (gyoto.std.Star or gyoto.core.Photon), or the
 name of an XML file describing such a particle, can be provided.

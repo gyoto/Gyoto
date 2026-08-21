@@ -3,10 +3,19 @@
 This module provides a GTK4 window for editing the properties of
 Gyoto objects.
 
-Note:
-    The GyotoObjectEditorApplication.run_app() method is wrapped in
-    the edit() method of gyoto.core.Object, allowing:
-        my_object.edit()
+Usage
+-----
+Run as a standalone application with one of:
+    python3 -m gyoto.gtk4.apps.gyoto_object_editor [-h] [-d] [xmlfile]
+    gyoto edit [-h] [-d] [xmlfile]
+
+Or import and use programmatically:
+    from gyoto.gtk4 import edit_object
+    edit_object([object|xmlfile])
+or simply:
+    object.edit()
+since edit_object() method is installed as the edit() method of
+gyoto.core.Object.
 
 """
 

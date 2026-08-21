@@ -191,7 +191,7 @@ static std::unordered_map<std::string, std::string> app_codes = {
     "GyotoObjectEditorApplication.run_app(parsecliargs=True)"
   },
   {
-    "view",
+    "view-scenery",
     "import gyoto.core\n"
     "gyoto.core.Error.setHandler(None)\n"
     "from gyoto.gtk4.apps.gyoto_scenery_viewer import *\n"
