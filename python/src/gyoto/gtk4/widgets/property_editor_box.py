@@ -57,6 +57,7 @@ from functools import wraps
 import ctypes
 import numpy
 from math import isnan
+import warnings
 
 from .filename_editor import FilenameEditor
 from .scientific_spin import ScientificSpin
@@ -611,10 +612,14 @@ class PropertyEditorBox(Gtk.Box):
                             new_value = pos + [tdot] + [x*tdot for x in vel]
 
         # Apply the new value to the object
-        if new_unit is None:
-            self.obj.set(name, new_value)
-        else:
-            self.obj.set(name, new_value, new_unit)
+        try:
+            if new_unit is None:
+                self.obj.set(name, new_value)
+            else:
+                self.obj.set(name, new_value, new_unit)
+        except GyotoError as e:
+            warnings.warn(e.get_message())
+            return
 
         self.emit('value-changed', name)
         self.emit('recursive-value-changed', name)

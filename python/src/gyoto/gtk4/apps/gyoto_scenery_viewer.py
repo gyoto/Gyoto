@@ -76,7 +76,7 @@ from ..widgets.simulation_controls import SimulationControls
 from ..widgets.mpl_color_button import MplColorButton
 from ..utils import show_error_dialog
 from ...utils import readScenery
-from ...core import Factory, Astrobj, Error as GyotoError
+from ...core import Factory, Astrobj, Error as GyotoError, debug
 from ...core import Scenery, Screen, Spectrometer, Photon, AstrobjProperties
 from ...std import FixedStar, Minkowski, PowerLaw
 
@@ -385,9 +385,16 @@ class GyotoSceneryViewerApplication(Gtk.Application):
                 help='XML file containing the description of a '
                 'Gyoto Scenery (optional)'
             )
+            parser.add_argument(
+                '-d', '--debug',
+                action='store_true',
+                help='turn on debug mode'
+            )
             cliargs, remaining = parser.parse_known_args()
             if 'xmlfile' in cliargs:
                 scenery = cliargs.xmlfile
+            if cliargs.debug:
+                debug(True)
 
         app = GyotoSceneryViewerApplication(scenery=scenery, *args, **kwargs)
         return app.run(remaining)

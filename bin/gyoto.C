@@ -178,16 +178,22 @@ static std::unordered_map<std::string, std::string> app_codes = {
   },
   {
     "gyotoy",
+    "import gyoto.core\n"
+    "gyoto.core.Error.setHandler(None)\n"
     "from gyoto.gtk4.apps.gyotoy import GyotoyApplication\n"
     "GyotoyApplication.run_app(parsecliargs=True)"
   },
   {
     "edit",
+    "import gyoto.core\n"
+    "gyoto.core.Error.setHandler(None)\n"
     "from gyoto.gtk4.apps.gyoto_object_editor import *\n"
     "GyotoObjectEditorApplication.run_app(parsecliargs=True)"
   },
   {
     "view",
+    "import gyoto.core\n"
+    "gyoto.core.Error.setHandler(None)\n"
     "from gyoto.gtk4.apps.gyoto_scenery_viewer import *\n"
     "GyotoSceneryViewerApplication.run_app(parsecliargs=True)"
   }

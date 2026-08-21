@@ -73,7 +73,7 @@ from ..widgets.viewer_3d import Viewer3D
 from ..widgets.simulation_controls import SimulationControls
 from ..utils import show_error_dialog
 from ...core import Factory, Astrobj, Error as GyotoError, Photon
-from ...core import GYOTO_COORDKIND_SPHERICAL
+from ...core import GYOTO_COORDKIND_SPHERICAL, debug
 from ...std import Star, KerrBL
 
 # --- Commands for worker communication ---
@@ -362,9 +362,16 @@ class GyotoyApplication(Gtk.Application):
                 help='XML file containing the description of a '
                 'Gyoto Star or Photon (optional)'
             )
+            parser.add_argument(
+                '-d', '--debug',
+                action='store_true',
+                help='turn on debug mode'
+            )
             cliargs, remaining = parser.parse_known_args()
             if 'xmlfile' in cliargs:
                 particle = cliargs.xmlfile
+            if cliargs.debug:
+                debug(True)
 
         app = GyotoyApplication(particle=particle, *args, **kwargs)
         return app.run(remaining)

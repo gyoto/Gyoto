@@ -25,7 +25,7 @@ import traceback
 from gettext import gettext as _
 
 from ..widgets.property_editor_box import PropertyEditorBox
-from ...core import Factory, Scenery, Error as GyotoError, Photon, Screen
+from ...core import Factory, Scenery, Error as GyotoError, Photon, Screen, debug
 from ... import core
 
 # Custom GObject class to hold the label of a 'New >' menu item
@@ -630,9 +630,16 @@ class GyotoObjectEditorApplication(Gtk.Application):
                 'xmlfile', nargs='?',
                 help='XML file containing the description '
                 'of a Gyoto object (optional)')
+            parser.add_argument(
+                '-d', '--debug',
+                action='store_true',
+                help='turn on debug mode'
+            )
             cliargs, remaining = parser.parse_known_args()
             if 'xmlfile' in cliargs:
                 obj=cliargs.xmlfile
+            if cliargs.debug:
+                debug(True)
 
         app = GyotoObjectEditorApplication(obj=obj, *args, **kwargs)
         return app.run(remaining)
