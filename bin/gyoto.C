@@ -156,7 +156,7 @@ void sigint_handler(int sig)
 #define ERROR_INITIALIZING     2
 #define ERROR_READING_SCENERY  3
 #define ERROR_RAYTRACING       4
-#define ERROR_MK_VIDEO 5
+#define ERROR_RUN_APP 5
 
 static std::string curmsg = "";
 static int curretval = 1;
@@ -206,11 +206,14 @@ int main(int argc, char** argv) {
 
   // if first argument is exactly mk-video, make a video!
   if ( (argc>0) && (!strcmp(argv[0], "mk-video")) ) {
+    std::string app_code =
+      "import gyoto.animate\n"
+      "gyoto.animate.main()\n";
     curmsg = "In gyoto.C: in mk-video: ";
-    curretval = ERROR_MK_VIDEO;
+    curretval = ERROR_RUN_APP;
     GYOTO_DEBUG << "trying to load python plugin\n";
     void* handle=NULL;
-    int (*mk_video)(int, char**) = NULL;
+    int (*run_app)(std::string, int, char**) = NULL;
     Gyoto::Register::init(NULL);
     std::vector< std::string > plugnames =
       getenv("GYOTO_PYTHON") ?
@@ -224,14 +227,14 @@ int main(int argc, char** argv) {
       GYOTO_DEBUG << "trying to load plug-in " << plugnames[k] << endl;
       handle = loadPlugin(plugnames[k].c_str(), 2);
       if (handle) {
-	GYOTO_DEBUG << "trying find symbol \"mk_video\" in plug-in " << plugnames[k] << endl;
-	mk_video = (int (*)(int, char**)) dlsym(handle, "mk_video");
-	if (mk_video) break;
+	GYOTO_DEBUG << "trying to find symbol \"run_app\" in plug-in " << plugnames[k] << endl;
+	run_app = (int (*)(std::string, int, char**)) dlsym(handle, "run_app");
+	if (run_app) break;
       }
     }
-    if (!mk_video) GYOTO_ERROR("No Python plug-in containing mk_video() found");
+    if (!run_app) GYOTO_ERROR("No Python plug-in containing run_app() found");
 
-    return mk_video(argc, argv);
+    return run_app(app_code, argc, argv);
   }
 
   // else parse arguments

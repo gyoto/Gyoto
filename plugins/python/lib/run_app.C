@@ -31,14 +31,12 @@
 #include <numpy/arrayobject.h>
 
 #include <iostream>
-extern "C" int mk_video(int argc, char ** argv) {
-  GYOTO_DEBUG << " in mk_video()" << std::endl;
+extern "C" int run_app(std::string code, int argc, char ** argv) {
+  GYOTO_DEBUG_ARRAY(argv, size_t(argc));
+  GYOTO_DEBUG_EXPR(code);
 
   PyStatus status;
   PyConfig config;
-  std::string code =
-    "import gyoto.animate\n"
-    "gyoto.animate.main()\n";
   int retval;
 
   GYOTO_DEBUG << "initializing Python" << std::endl ;
@@ -51,7 +49,7 @@ extern "C" int mk_video(int argc, char ** argv) {
 
   GYOTO_DEBUG << "running Python code" << std::endl << code ;
   retval = PyRun_SimpleString(code.c_str());
-  GYOTO_DEBUG << "exiting mk_video" << std::endl;
+  GYOTO_DEBUG << "exiting run_app" << std::endl;
 
   return retval;
 
