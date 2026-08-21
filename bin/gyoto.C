@@ -51,6 +51,15 @@
 // dlsym
 #include <dlfcn.h>
 
+// std::unordered_map
+#include<unordered_map>
+
+// std::strcpy
+#include <cstring>
+
+// std::string_view
+#include <string_view>
+
 using namespace std;
 using namespace Gyoto;
 
@@ -161,6 +170,29 @@ void sigint_handler(int sig)
 static std::string curmsg = "";
 static int curretval = 1;
 
+static std::unordered_map<std::string, std::string> app_codes = {
+  {
+    "mk-video",
+    "import gyoto.animate\n"
+    "gyoto.animate.main()\n"
+  },
+  {
+    "gyotoy",
+    "from gyoto.gtk4.apps.gyotoy import GyotoyApplication\n"
+    "GyotoyApplication.run_app(parsecliargs=True)"
+  },
+  {
+    "edit",
+    "from gyoto.gtk4.apps.gyoto_object_editor import *\n"
+    "GyotoObjectEditorApplication.run_app(parsecliargs=True)"
+  },
+  {
+    "view",
+    "from gyoto.gtk4.apps.gyoto_scenery_viewer import *\n"
+    "GyotoSceneryViewerApplication.run_app(parsecliargs=True)"
+  }
+};
+
 void gyotoErrorHandler( const Gyoto::Error e ) {
   cerr << curmsg << e << endl;
   if (debug()) abort(); // to keep stack for debugger
@@ -178,6 +210,21 @@ static void gyotoVersion() {
        << "  Classical and Quantum Gravity 28, 225011 (2011) "
        << "[arXiv:1109.4769]"
        << endl << endl;
+}
+
+// Utility functions to manipulate argv[0]
+std::string_view basename(std::string_view path)
+{
+    const auto pos = path.find_last_of('/');
+    return pos == std::string_view::npos
+        ? path
+        : path.substr(pos + 1);
+}
+
+bool starts_with(std::string_view str, std::string_view prefix)
+{
+    return str.size() >= prefix.size()
+        && str.compare(0, prefix.size(), prefix) == 0;
 }
 
 int main(int argc, char** argv) {
@@ -202,14 +249,19 @@ int main(int argc, char** argv) {
     getenv("GYOTO_PLUGINS"):
     GYOTO_DEFAULT_PLUGINS;
 
-  argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
+  // if executable was invoked as gyotoy, call the gyotoy application
+  GYOTO_DEBUG_THIS_EXPR(argv[0]);
+  if (argc && starts_with(basename(argv[0]), "gyotoy")) {
+    std::strcpy(argv[0], "gyotoy");
+    GYOTO_DEBUG_THIS_EXPR(argv[0]);
+  } else {
+    argc-=(argc>0); argv+=(argc>0); // skip program name, next may be app name
+  }
 
   // if first argument is exactly mk-video, make a video!
-  if ( (argc>0) && (!strcmp(argv[0], "mk-video")) ) {
-    std::string app_code =
-      "import gyoto.animate\n"
-      "gyoto.animate.main()\n";
-    curmsg = "In gyoto.C: in mk-video: ";
+  if ( (argc>0) && app_codes.count(argv[0])) {
+    std::string app_code = app_codes[argv[0]];
+    curmsg = "In gyoto.C: in run-app: ";
     curretval = ERROR_RUN_APP;
     GYOTO_DEBUG << "trying to load python plugin\n";
     void* handle=NULL;
