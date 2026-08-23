@@ -1010,6 +1010,123 @@ ExtendArrayNumPy(array_size_t, size_t);
   %}
 }
 %include "GyotoObject.h"
+%pythoncode %{
+# Monkey patch better get and set methods in Object
+def _Object_get(self, name, *args):
+    try:
+        return _core.Object_get(self, name, *args)
+    except Error as original_error:
+        if not isinstance(name, str):
+            raise original_error
+        try:
+            # maybe name looks like identifier.xxx
+            start, end = name.split('.', 1)
+            dot = True
+        except ValueError:
+            try:
+                # maybe name looks like identifier[xxx of [xxx
+                start, end = name.split('[', 1)
+                dot = False
+            except ValueError:
+                raise original_error
+
+    if dot:
+        return self.get(start).get(end, *args)
+
+    if len(start):
+        # name looks like identifier[xxx
+        return self.get(start).get('['+end, *args)
+
+    # name looks like [xxx
+    sindex, end = end.split(']', 1)
+    index = int(sindex)
+    cplx = None
+    from . import astrobj, metric, spectrometer
+    for nspace in astrobj, metric, spectrometer:
+        if isinstance(self, nspace.Generic):
+            cplx = (
+                self if isinstance(self, nspace.Complex)
+                else nspace.Complex(self)
+            )
+            break
+
+    value = cplx[index]
+    if len(end):
+        # there is still something after the subscript (subscript?)
+        return value.get(end)
+
+    return value
+
+_Object_get.__doc__ = (
+    Object.get.__doc__ +
+'''
+pname may be a dot-separated property path including indexing
+operations for Complex nested children, for instance:
+    scenery.get('Astrobj[1].Metric.Mass', 'sunmass')
+is equivalent to:
+    gyoto.astrobj.Complex(scenery.Astrobj)[1].Metric.get(
+        'Mass', 'sunmass')
+'''
+    )
+Object.get = _Object_get
+
+def _Object_set(self, name, *args):
+    try:
+        return _core.Object_set(self, name, *args)
+    except Error as original_error:
+        if not isinstance(name, str):
+            raise original_error
+        try:
+            # maybe name looks like identifier.xxx
+            start, end = name.split('.', 1)
+            dot = True
+        except ValueError:
+            try:
+                # maybe name looks like identifier[xxx of [xxx
+                start, end = name.split('[', 1)
+                dot = False
+            except ValueError:
+                raise original_error
+
+    if dot:
+        return self.get(start).set(end, *args)
+
+    if len(start):
+        # name looks like identifier[xxx
+        return self.get(start).set('['+end, *args)
+
+    # name looks like [xxx
+    sindex, end = end.split(']', 1)
+    index = int(sindex)
+    cplx = None
+    from . import astrobj, metric, spectrometer
+    for nspace in astrobj, metric, spectrometer:
+        if isinstance(self, nspace.Generic):
+            cplx = (
+                self if isinstance(self, nspace.Complex)
+                else nspace.Complex(self)
+            )
+            break
+
+    if len(end):
+        # there is still something after the subscript (subscript?)
+        return cplx[index].set(end, *args)
+
+    cplx[index] = args[0]
+
+_Object_set.__doc__ = (
+    Object.set.__doc__ +
+'''
+pname may be a dot-separated property path including indexing
+operations for Complex nested children, for instance:
+    scenery.set('Astrobj[1].Metric.Mass', 4e6, 'sunmass')
+is equivalent to:
+    gyoto.astrobj.Complex(scenery.Astrobj)[1].Metric.get(
+        'Mass', 4e6, 'sunmass')
+'''
+    )
+Object.set = _Object_set
+%}
 
 %rename(Worldline__IntegState__Generic) Gyoto::Worldline::IntegState::Generic;
 %rename(Worldline__IntegState__Boost) Gyoto::Worldline::IntegState::Boost;
