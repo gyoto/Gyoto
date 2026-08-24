@@ -1039,7 +1039,11 @@ def _Object_get(self, name, *args):
 
     # name looks like [xxx
     sindex, end = end.split(']', 1)
-    index = int(sindex)
+
+    if len(end):
+        # there is still something after the subscript (subscript?)
+        return self.get('[{sindex}]').get(end)
+
     cplx = None
     from . import astrobj, metric, spectrometer
     for nspace in astrobj, metric, spectrometer:
@@ -1050,12 +1054,13 @@ def _Object_get(self, name, *args):
             )
             break
 
-    value = cplx[index]
-    if len(end):
-        # there is still something after the subscript (subscript?)
-        return value.get(end)
+    if sindex == '#':
+        return cplx.getCardinal()
 
-    return value
+    if sindex[0] == '-':
+        return None
+
+    return cplx[int(sindex)]
 
 _Object_get.__doc__ = (
     Object.get.__doc__ +
@@ -1066,6 +1071,9 @@ operations for Complex nested children, for instance:
 is equivalent to:
     gyoto.astrobj.Complex(scenery.Astrobj)[1].Metric.get(
         'Mass', 'sunmass')
+
+Getting '#' in a Complex returns the cardinal of the object; getting a
+negative index returns None.
 '''
     )
 Object.get = _Object_get
@@ -1097,7 +1105,11 @@ def _Object_set(self, name, *args):
 
     # name looks like [xxx
     sindex, end = end.split(']', 1)
-    index = int(sindex)
+
+    if len(end):
+        # there is still something after the subscript (subscript?)
+        return self.get('[{sindex}]').set(end, *args)
+
     cplx = None
     from . import astrobj, metric, spectrometer
     for nspace in astrobj, metric, spectrometer:
@@ -1108,11 +1120,13 @@ def _Object_set(self, name, *args):
             )
             break
 
-    if len(end):
-        # there is still something after the subscript (subscript?)
-        return cplx[index].set(end, *args)
+    if sindex == '#':
+        return cplx.append(args[0])
 
-    cplx[index] = args[0]
+    if sindex[0] == '-':
+        return cplx.remove(int(sindex[1:]))
+
+    cplx[int(sindex)] = args[0]
 
 _Object_set.__doc__ = (
     Object.set.__doc__ +
@@ -1121,8 +1135,12 @@ pname may be a dot-separated property path including indexing
 operations for Complex nested children, for instance:
     scenery.set('Astrobj[1].Metric.Mass', 4e6, 'sunmass')
 is equivalent to:
-    gyoto.astrobj.Complex(scenery.Astrobj)[1].Metric.get(
+    gyoto.astrobj.Complex(scenery.Astrobj)[1].Metric.set(
         'Mass', 4e6, 'sunmass')
+
+Setting '#' in a Complex adds an element; setting a negative index
+remove the opposite element.
+
 '''
     )
 Object.set = _Object_set
