@@ -74,6 +74,7 @@ gyoto.gtk4.utils : GTK4 utility functions
 
 from .filename_editor import FilenameEditor
 from .gyoto_object_chooser import GyotoObjectChooser
+from .vector_gyoto_object_chooser import VectorGyotoObjectChooser
 from .mpl_color_button import MplColorButton
 from .property_editor_box import PropertyEditorBox
 from .scientific_spin import ScientificSpin
