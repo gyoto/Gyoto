@@ -211,7 +211,7 @@ class Gyoto::Metric::Generic
    * coordkind(int coordkind) is protected because, for most Metrics,
    * it should not be changed in runtime.
    */
-  void coordKind(int coordkind); ///< Set coordinate kind
+  virtual void coordKind(int coordkind); ///< Set coordinate kind
 
 
  public:
@@ -235,7 +235,7 @@ class Gyoto::Metric::Generic
 
   // Accessors
 
-  int coordKind() const; ///< Get coordinate kind
+  virtual int coordKind() const; ///< Get coordinate kind
 
   double mass() const;        ///< Get mass used in unitLength()
   double mass(const std::string &unit) const; ///< Get mass used in unitLength()

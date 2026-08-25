@@ -71,6 +71,10 @@ class Gyoto::Metric::Complex
    *  Frees every SmartPointer<Metric::Generic> before freed the array itself.
    */
   virtual ~Complex() ; ///< Destructor
+
+  using Gyoto::Metric::Generic::coordKind;
+  int coordKind() const;
+
   void append(Gyoto::SmartPointer<Gyoto::Metric::Generic> element);
   ///< Add element at the end of the array.
   void remove(size_t i);

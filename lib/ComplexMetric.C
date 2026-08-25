@@ -1,5 +1,5 @@
 /*
-    Copyright 2020 Thibaut Paumard
+    Copyright 2020, 2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -56,9 +56,25 @@ Complex::~Complex()
   if (cardinal_) for (size_t i=0; i< cardinal_; ++i) elements_[i] = NULL;
 }
 
+int Complex::coordKind() const {
+  auto coordkind = GYOTO_COORDKIND_UNSPECIFIED;
+  for (size_t i = 0; i < cardinal_ ; ++i) {
+    if (elements_[i]) {
+      if (coordkind == GYOTO_COORDKIND_UNSPECIFIED) {
+	coordkind = elements_[i]->coordKind();
+      } else if (elements_[i]->coordKind() != coordkind) {
+	GYOTO_SEVERE << "inconsistent use of coordinate kinds" << std::endl;
+      }
+    }
+  }
+  return coordkind;
+}
+
 bool Complex::isThreadSafe() const {
   bool safe = Generic::isThreadSafe();
-  for (size_t i=0; i < cardinal_; ++i) safe &= elements_[i] -> isThreadSafe();
+  for (size_t i=0; i < cardinal_; ++i)
+    if (elements_[i])
+      safe &= elements_[i] -> isThreadSafe();
   return safe;
 }
 
@@ -66,7 +82,6 @@ void Complex::append(SmartPointer<Generic> e)
 {
   GYOTO_DEBUG << std::endl;
   if (cardinal_+1 == 0) GYOTO_ERROR("Complex::append(): OVERFLOW");
-  if (cardinal_ && (e->coordKind() != coordKind())) GYOTO_ERROR("inconsistent coord kind");
   SmartPointer<Generic> * orig = elements_;
   elements_ = new SmartPointer<Generic> [cardinal_+1];
   for (size_t i=0; i< cardinal_; ++i) {
@@ -76,7 +91,6 @@ void Complex::append(SmartPointer<Generic> e)
   delete [] orig; orig = NULL;
   elements_[cardinal_] = e;
   ++cardinal_;
-  coordKind(e->coordKind());
   GYOTO_DEBUG << "done" << std::endl;
 }
 
@@ -106,7 +120,6 @@ void Complex::remove(size_t i) {
     orig[k] = NULL;
   }
   delete [] orig;
-  if (!cardinal_) coordKind(GYOTO_COORDKIND_UNSPECIFIED);
 }
 
 size_t Complex::getCardinal() const {return cardinal_; }
@@ -118,6 +131,7 @@ void Complex::gmunu(double g[4][4], const double x[4]) const {
     for (nu=0; nu<4 ; ++nu)
       g[mu][nu] = 0.;
   for (k=0; k<cardinal_; ++k) {
+    if (!elements_[k]) continue;
     elements_[k]->gmunu(cur, x);
     for (mu=0; mu<4 ; ++mu)
       for (nu=0; nu<4 ; ++nu)
@@ -132,6 +146,7 @@ void Complex::jacobian(double jac[4][4][4], const double x[4]) const {
     for (nu=0; nu<4 ; ++nu)
       for (a=0; a<4; ++a) jac[a][mu][nu] = 0.;
   for (k=0; k<cardinal_; ++k) {
+    if (!elements_[k]) continue;
     elements_[k]->jacobian(cjac, x);
     for (mu=0; mu<4 ; ++mu)
       for (nu=0; nu<4 ; ++nu)
@@ -144,9 +159,13 @@ void Complex::fillElement(FactoryMessenger *fmp) const {
   FactoryMessenger * childfmp=NULL;
 
   for (size_t i=0; i<cardinal_; ++i) {
-    childfmp = fmp -> makeChild ( "SubMetric" );
-    elements_[i] -> fillElement(childfmp);
-    delete childfmp;
+    if (elements_[i]) {
+      childfmp = fmp -> makeChild ( "SubMetric" );
+      elements_[i] -> fillElement(childfmp);
+      delete childfmp;
+    } else {
+      fmp -> setParameter( "SubMetric" );
+    }
   }
 
   Metric::Generic::fillElement(fmp);
@@ -165,7 +184,13 @@ void Complex::setParameters(FactoryMessenger *fmp) {
       content = fmp -> getAttribute("kind");
       plugin  = split(fmp -> getAttribute("plugin"), ",");
       child   = fmp -> getChild();
-      append ((*Metric::getSubcontractor(content, plugin))(child, plugin));
+      GYOTO_DEBUG_EXPR(content);
+      GYOTO_DEBUG_EXPR(plugin.size());
+      if (content == "") {
+	append(nullptr);
+      } else {
+	append((*Metric::getSubcontractor(content, plugin))(child, plugin));
+      }
       delete child;
     } else setParameter(name, content, unit);
   }
@@ -176,7 +201,7 @@ void Complex::setParameters(FactoryMessenger *fmp) {
 
 int Complex::isStopCondition(double const coord[8]) const {
   for (size_t k=0; k<cardinal_; ++k)
-    if (elements_[k]-> isStopCondition(coord))
+    if (elements_[k] && elements_[k]-> isStopCondition(coord))
       return 1;
   return 0;
 }

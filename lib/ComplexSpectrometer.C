@@ -1,5 +1,5 @@
 /*
-    Copyright 2013-2014, 2016 Thibaut Paumard
+    Copyright 2013-2014, 2016, 2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -54,7 +54,8 @@ Complex *Complex::clone() const {return new Complex(*this); }
 
 bool Complex::isThreadSafe() const {
   bool safe = Generic::isThreadSafe();
-  for (size_t i=0; i < cardinal_; ++i) safe &= elements_[i] -> isThreadSafe();
+  for (size_t i=0; i < cardinal_; ++i)
+    if (elements_[i]) safe &= elements_[i] -> isThreadSafe();
   return safe;
 }
 
@@ -76,7 +77,7 @@ void Complex::append(SmartPointer<Generic> e)
   delete [] orig; orig = NULL;
   elements_[cardinal_] = e;
   ++cardinal_;
-  e->hook(this);
+  if (e) e->hook(this);
   GYOTO_DEBUG << "DEBUG: out Complex::append(SmartPointer<Generic> e)" << endl;
   tell(this);
 }
@@ -98,7 +99,7 @@ SmartPointer<Generic> const & Complex::operator[](size_t i) const
 void Complex::remove(size_t i) {
   if (i >= cardinal_)
     GYOTO_ERROR("Complex::remove(size_t i): no such element");
-  elements_[i]->unhook(this);
+  if (elements_[i]) elements_[i]->unhook(this);
   SmartPointer<Generic> * orig = elements_;
   if (--cardinal_) elements_ = new SmartPointer<Generic> [cardinal_];
   else elements_ = NULL;
@@ -118,46 +119,58 @@ void Complex::fillElement(FactoryMessenger *fmp) const {
   FactoryMessenger * childfmp=NULL;
 
   for (size_t i=0; i<cardinal_; ++i) {
-    childfmp = fmp -> makeChild ( "SubSpectrometer" );
-    elements_[i] -> fillElement(childfmp);
-    delete childfmp;
+    GYOTO_DEBUG_EXPR(i);
+    GYOTO_DEBUG_EXPR(elements_[i]);
+    if (elements_[i]) {
+      childfmp = fmp -> makeChild ( "SubSpectrometer" );
+      elements_[i] -> fillElement(childfmp);
+      delete childfmp;
+    } else {
+      fmp -> setParameter( "SubSpectrometer" );
+    }
   }
 
   Spectrometer::Generic::fillElement(fmp);
 }
 
 void Complex::setParameters(FactoryMessenger *fmp) {
-  if (debug())
-    cerr << "DEBUG: in Complex::setParameters()" << endl;
+  GYOTO_DEBUG << endl;
 
   string name="", content="", unit="";
   std::vector<std::string> plugin;
   FactoryMessenger * child = NULL;
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
-    if (debug())
-      cerr << "DEBUG: Spectrometer::Complex::Subcontractor(): name=" << name << endl;
+    GYOTO_DEBUG_EXPR(name);
     if (name=="SubSpectrometer") {
       content = fmp -> getAttribute("kind");
-      child   = fmp -> getChild();
       plugin  = split(fmp -> getAttribute("plugin"), ",");
-      append ((*Spectrometer::getSubcontractor(content, plugin))(child, plugin));
+      child   = fmp -> getChild();
+      GYOTO_DEBUG_EXPR(content);
+      GYOTO_DEBUG_EXPR(plugin.size());
+      if (content == "") {
+	append(nullptr);
+      } else {
+	append ((*Spectrometer::getSubcontractor(content, plugin))(child, plugin));
+      }
       delete child;
     } else setParameter(name, content, unit);
   }
 
-  if (debug())
-    cerr << "DEBUG: out Complex::setParameters()" << endl;
+  GYOTO_DEBUG << "done" << endl;
 }
 #endif
 
 void Complex::tell(Gyoto::Hook::Teller *) {
   // This is called each time an element is added or mutated
   // This is suboptimal, but most straightforward
-  nboundaries_=nsamples_=0;
+
+  GYOTO_DEBUG_THIS << std::endl;
+
+  nboundaries_ = nsamples_ = 0;
   for (size_t i=0; i<cardinal_; ++i) {
-    nsamples_ += elements_[i]->nSamples();
-    nboundaries_ += elements_[i]->getNBoundaries();
+    nsamples_    += elements_[i] ? elements_[i]->nSamples()       : 0;
+    nboundaries_ += elements_[i] ? elements_[i]->getNBoundaries() : 0;
   }
   if (boundaries_) delete [] boundaries_;
   if (widths_)     delete [] widths_;
@@ -171,6 +184,7 @@ void Complex::tell(Gyoto::Hook::Teller *) {
   size_t boffset=0, offset=0;
   size_t const * chanind=0;
   for (size_t i=0; i<cardinal_; ++i) {
+    if (!elements_[i]) continue;
     size_t enb = elements_[i]->getNBoundaries();
     size_t ens = elements_[i]->nSamples();
     memcpy(boundaries_+boffset,
