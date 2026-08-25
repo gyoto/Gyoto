@@ -122,8 +122,10 @@ class GyotoObjectChooser(Gtk.Box):
         if self.namespace == core.Screen:
             self.items = ["-", "built-in/Screen"]
         else:
-            self.items = ["-"] + [x for x in
-                                  namespace.Generic.registeredPluginsSlashKinds()]
+            self.items = (
+                ["-"] +
+                sorted(namespace.Generic.registeredPluginsSlashKinds())
+            )
         self.items.append("Open...")
 
         # Create dropdown with all available kinds
