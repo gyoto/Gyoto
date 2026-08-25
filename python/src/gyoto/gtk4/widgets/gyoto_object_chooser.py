@@ -180,12 +180,6 @@ class GyotoObjectChooser(Gtk.Box):
             return 0
         return child._apply_filter(text, force_visible=force_visible)
 
-    def _collect_search_matches(self, text, matches):
-        """Collect parameter-name matches from the nested editor."""
-        child = self.frame.get_child()
-        if child is not None:
-            child._collect_search_matches(text, matches)
-
     def on_child_value_changed(self, widget, name, *args):
         """Handle value changes from the PropertyEditorBox.
 

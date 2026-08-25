@@ -171,7 +171,6 @@ class PropertyEditorBox(Gtk.Box):
         self.hide = hide
         self.first = first
         self._search_enabled = search
-        self._search_matches = []
         self._frames = {}
 
         if search:
@@ -208,40 +207,7 @@ class PropertyEditorBox(Gtk.Box):
 
     def _on_search_changed(self, entry):
         text = entry.get_text()
-        self._search_matches = self._find_matches(text)
-
-        # The filter is always applied from the outermost PropertyEditorBox.
-        root = self
-        while root.get_parent() is not None:
-            parent = root.get_parent()
-            if isinstance(parent, GyotoObjectChooser):
-                root = parent
-                continue
-            if isinstance(parent, PropertyEditorBox):
-                root = parent
-                continue
-            break
-
-        # A chooser is deliberately transparent to the search hierarchy:
-        # its own frame is controlled by the PropertyEditorBox containing it.
-        if isinstance(root, GyotoObjectChooser):
-            root = root.get_parent()
-        if isinstance(root, PropertyEditorBox):
-            root._apply_filter(text)
-
-    def _find_matches(self, text):
-        if not text:
-            return []
-        matches = []
-        self._collect_search_matches(text.casefold(), matches)
-        return matches
-
-    def _collect_search_matches(self, text, matches):
-        for name, frame, editor in self._frames.values():
-            if text in name.casefold():
-                matches.append((self, name, frame, editor))
-            if isinstance(editor, GyotoObjectChooser):
-                editor._collect_search_matches(text, matches)
+        self._apply_filter(text)
 
     def _apply_filter(self, text, force_visible=False):
         """Apply *text* recursively and return the number of matches."""
@@ -251,12 +217,15 @@ class PropertyEditorBox(Gtk.Box):
         for name, frame, editor in self._frames.values():
             own_match = bool(text) and text in name.casefold()
 
-            if isinstance(editor, GyotoObjectChooser):
+            if isinstance(editor, (GyotoObjectChooser,
+                                   VectorGyotoObjectChooser)):
                 child_count = editor._apply_filter(
                     text, force_visible=force_visible or own_match)
                 count += child_count
-                visible = (not text or force_visible or own_match or
-                           child_count > 0)
+                visible = (not text
+                           or force_visible
+                           or own_match
+                           or child_count)
             else:
                 visible = (not text or force_visible or own_match)
 

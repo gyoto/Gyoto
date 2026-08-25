@@ -38,6 +38,7 @@ from .gyoto_object_chooser import GyotoObjectChooser
 from ...core import Astrobj
 from ...core import Metric
 from ...core import Spectrometer
+from ...core import Error as GyotoError
 from ... import astrobj, metric, spectrometer
 
 class VectorGyotoObjectChooser(Gtk.Box):
@@ -114,6 +115,7 @@ class VectorGyotoObjectChooser(Gtk.Box):
             )
 
         self.dtype = dtype
+        self.choosers = []
         self.items = []
         self.items_box = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL,
@@ -143,6 +145,29 @@ class VectorGyotoObjectChooser(Gtk.Box):
         self._set_object(value)
 
     # private helpers
+    def _apply_filter(self, text, force_visible=False):
+        """Filter the nested PropertyEditorBox and return its match count.
+
+        The chooser itself is kept visible by the PropertyEditorBox that owns
+        it whenever either the chooser name or one of its child parameters
+        matches. If the chooser name matches, its complete subtree remains
+        visible.
+        """
+        count = 0
+
+        for child in self.choosers:
+            if child is None:
+                continue
+
+            child_count = child._apply_filter(text, force_visible=force_visible)
+
+            self.items[self.choosers.index(child)].set_visible(
+                not text or force_visible or child_count)
+
+            count += child_count
+
+        return count
+
     def _set_object(self, value):
         """Set the complext object.
 
@@ -181,6 +206,7 @@ class VectorGyotoObjectChooser(Gtk.Box):
         # Remove all widgets
         #
         while len(self.items) > 0:
+            self.choosers.pop()
             item = self.items.pop()
             self.items_box.remove(item)
 
@@ -227,6 +253,7 @@ class VectorGyotoObjectChooser(Gtk.Box):
         remove.connect("clicked", self.on_remove)
         item.append(remove)
 
+        self.choosers.append(chooser)
         self.items.append(item)
         self.items_box.append(item)
 
@@ -248,6 +275,7 @@ class VectorGyotoObjectChooser(Gtk.Box):
 
         self.obj.remove(index)
 
+        self.choosers.remove(self.choosers[self.items.index(item)])
         self.items.remove(item)
         self.items_box.remove(item)
 
