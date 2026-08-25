@@ -128,6 +128,7 @@ class GyotoObjectChooser(Gtk.Box):
 
         # Create dropdown with all available kinds
         self.dropdown = Gtk.DropDown.new_from_strings(self.items)
+        self.dropdown.set_hexpand(True)
         self.append(self.dropdown)
 
         # Set initial selection based on obj
