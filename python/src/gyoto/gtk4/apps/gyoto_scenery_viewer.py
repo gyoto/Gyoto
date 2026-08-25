@@ -871,7 +871,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         scroll.set_vexpand(True)
         self.right.append(scroll)
         self.editor_scroller = scroll
-        self.editor_scroller.set_min_content_width(365)
+        self.editor_scroller.set_min_content_width(450)
 
         self.paned.set_resize_start_child(True)
         self.paned.set_shrink_start_child(False)
@@ -1500,6 +1500,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         self.editor = PropertyEditorBox(
             scenery,
+            connector = self.connector
         )
 
         self.editor_scroller.set_child(self.editor)
@@ -1696,8 +1697,6 @@ class GyotoSceneryViewer3dWindow(Gtk.ApplicationWindow):
             spacing=6
         )
         self.paned.set_end_child(self.right)
-
-        self.paned.set_position(660)
 
     def on_close_request(self, *args):
         """Handle window close request.

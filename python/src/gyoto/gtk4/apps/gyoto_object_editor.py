@@ -329,7 +329,6 @@ class GyotoObjectEditorApplication(Gtk.Application):
             orientation=Gtk.Orientation.VERTICAL,
             spacing=6
         )
-        main_box.set_size_request(min_width, 400)
         popover.set_child(main_box)
 
         # Title
@@ -750,7 +749,7 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         """
         super().__init__(application=application,
                          title="Gyoto Object Editor")
-        self.set_default_size(400, 600)
+        self.set_default_size(450, 600)
 
         if objtype == '':
             self.type = None
