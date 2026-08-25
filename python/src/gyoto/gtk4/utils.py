@@ -162,21 +162,13 @@ def recursive_value_changed_pipe_receiver(connector, cleanup, obj):
                     if cmd == 'update':
                         ppath = event[1]
                         value = event[2]
-                        descendents = ppath.split('.')
-                        subobj = obj
-                        pname = descendents[0]
-                        for i in range(1, len(descendents)):
-                            subobj = subobj.get(pname)
-                            pname = descendents[i]
-                        prop = subobj.property(pname)
-                        if prop.type in (Property.astrobj_t, Property.metric_t,
-                                         Property.screen_t, Property.spectrometer_t,
-                                         Property.spectrum_t):
-                            factory = Factory(value)
-                            value = getattr(factory, factory.kind().lower())()
-                        subobj.set(pname, value)
+                        obj.set(ppath, value)
+                    else:
+                        raise ValueError(f"unsupported command: '{cmd}'")
+
                 except GyotoError as e:
-                    warnings.warn(f"Gyoto object editor triggered a Gyoto error:\n{e.get_message()}")
+                    warnings.warn(f"Gyoto object editor triggered a " +
+                                  f"Gyoto error:\n{e.get_message()}")
                 except EOFError:
                     # GUI process terminated, exit gracefully
                     break
