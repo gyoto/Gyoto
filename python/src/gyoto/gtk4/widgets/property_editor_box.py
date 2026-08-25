@@ -63,6 +63,8 @@ from .filename_editor import FilenameEditor
 from .scientific_spin import ScientificSpin
 from .vector_scientific_spin import VectorScientificSpin
 from .gyoto_object_chooser import GyotoObjectChooser
+from .vector_gyoto_object_chooser import VectorGyotoObjectChooser
+from ... import astrobj, metric, spectrometer
 
 from ..utils import show_error_dialog
 
@@ -177,7 +179,6 @@ class PropertyEditorBox(Gtk.Box):
 
         self.populate_properties()
 
-
         if connector is not None:
             self.connect('recursive-value-changed',
                          self.on_recursive_value_changed_pipe_sender,
@@ -282,6 +283,35 @@ class PropertyEditorBox(Gtk.Box):
         first_and_parameters = self.first + list(parameters)
 
         self.widgets = dict()
+
+        if self.obj.kind() == "Complex":
+            for namespace, name in ((astrobj, 'SubAstrobjs'),
+                                    (metric, 'SubMetrics'),
+                                    (spectrometer, 'SubSpectrometers')):
+                if isinstance(self.obj, namespace.Generic):
+                    if not isinstance(self.obj, namespace.Complex):
+                        self.obj = namespace.Complex(self.obj)
+                    break
+
+            self.widgets[name] = VectorGyotoObjectChooser(self.obj)
+            self.widgets[name].connect('child-added', self.on_complex_child_added)
+            self.widgets[name].connect('child-changed', self.on_complex_child_changed)
+            self.widgets[name].connect('child-mutated', self.on_complex_child_mutated)
+            self.widgets[name].connect('child-removed', self.on_complex_child_removed)
+            self.widgets[name].connect('recursive_value_changed', self.on_complex_recursive_value_changed)
+
+            # Create frame for the vector
+            frame = Gtk.Frame()
+            frame.set_label(name)
+            frame.set_label_align(0.0)  # Left-align label
+            frame.set_tooltip_text('A collection of children objects')
+
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+            frame.set_child(hbox)
+            hbox.append(self.widgets[name])
+
+            self.append(frame)
+            self._frames[name] = (name, frame, self.widgets[name])
 
         for name in first_and_parameters:
             if name not in parameters:
@@ -555,13 +585,10 @@ class PropertyEditorBox(Gtk.Box):
                 the caller.
 
         """
-        descendents = ppath.split('.')
-        value = self.obj
-        for i in range(len(descendents)):
-            obj = value
-            value = obj.get(descendents[i])
-        if isinstance(value, Object):
-            value = str(value)
+        value = (
+            None if ppath.endswith('[#]')
+            else self.obj.get(ppath)
+        )
         connector.send(['update', ppath, value])
 
     @gtk_callback
@@ -623,6 +650,66 @@ class PropertyEditorBox(Gtk.Box):
 
         self.emit('value-changed', name)
         self.emit('recursive-value-changed', name)
+
+    @gtk_callback
+    def on_complex_child_added(self, widget, *args):
+        """Handle child addition in complex objects
+
+        Args:
+            widget: The editor widget that changed
+            name: The name of the property being edited
+            *args: Additional arguments
+        """
+        self.emit('value-changed', f'[#]')
+        self.emit('recursive-value-changed', f'[#]')
+
+    @gtk_callback
+    def on_complex_child_changed(self, widget, index, *args):
+        """Handle child replacement in complex objects
+
+        Args:
+            widget: The editor widget that changed
+            index: The index of the replaced child
+            *args: Additional arguments
+        """
+        self.emit('value-changed', f'[{index}]')
+        self.emit('recursive-value-changed', f'[{index}]')
+
+    @gtk_callback
+    def on_complex_child_mutated(self, widget, index, name, *args):
+        """Handle child addition and removal in complex objects
+
+        Args:
+            widget: The editor widget that changed
+            index: The index of the mutated child
+            name: The name of the property being edited
+            *args: Additional arguments
+        """
+        self.emit('value-changed', f'[{index}].{name}')
+        self.emit('recursive-value-changed', f'[{index}].{name}')
+
+    @gtk_callback
+    def on_complex_child_removed(self, widget, index, *args):
+        """Handle child addition and removal in complex objects
+
+        Args:
+            widget: The editor widget that changed
+            index: The index of the removed child
+            *args: Additional arguments
+        """
+        self.emit('value-changed', f'[-{index}]')
+        self.emit('recursive-value-changed', f'[-{index}]')
+
+    @gtk_callback
+    def on_complex_recursive_value_changed(self, widget, ppath,  *args):
+        """Handle recursive value changes in children of complex objects
+
+        Args:
+            widget: The editor widget that changed
+            ppath: The path to the property being edited
+            *args: Additional arguments
+        """
+        self.emit('recursive-value-changed', ppath)
 
     @gtk_callback
     def on_file_chooser_clicked(self, button, entry):
