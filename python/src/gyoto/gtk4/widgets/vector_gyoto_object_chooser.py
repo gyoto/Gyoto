@@ -115,8 +115,7 @@ class VectorGyotoObjectChooser(Gtk.Box):
             )
 
         self.dtype = dtype
-        self.choosers = []
-        self.items = []
+        self.choosers = {}
         self.items_box = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL,
             spacing=2
@@ -155,14 +154,13 @@ class VectorGyotoObjectChooser(Gtk.Box):
         """
         count = 0
 
-        for child in self.choosers:
+        for item, child in self.choosers.items():
             if child is None:
                 continue
 
             child_count = child._apply_filter(text, force_visible=force_visible)
 
-            self.items[self.choosers.index(child)].set_visible(
-                not text or force_visible or child_count)
+            item.set_visible(not text or force_visible or child_count)
 
             count += child_count
 
@@ -205,10 +203,9 @@ class VectorGyotoObjectChooser(Gtk.Box):
         #
         # Remove all widgets
         #
-        while len(self.items) > 0:
-            self.choosers.pop()
-            item = self.items.pop()
+        for item in self.choosers:
             self.items_box.remove(item)
+            del self.choosers[item]
 
         #
         # Add widgets
@@ -253,8 +250,7 @@ class VectorGyotoObjectChooser(Gtk.Box):
         remove.connect("clicked", self.on_remove)
         item.append(remove)
 
-        self.choosers.append(chooser)
-        self.items.append(item)
+        self.choosers[item] = chooser
         self.items_box.append(item)
 
         if not self.hold:
@@ -271,12 +267,11 @@ class VectorGyotoObjectChooser(Gtk.Box):
         """
 
         item = button.get_parent()
-        index = self.items.index(item)
+        index = list(self.choosers.keys()).index(item)
 
         self.obj.remove(index)
 
-        self.choosers.remove(self.choosers[self.items.index(item)])
-        self.items.remove(item)
+        del self.choosers[item]
         self.items_box.remove(item)
 
         if not self.hold:
@@ -289,10 +284,10 @@ class VectorGyotoObjectChooser(Gtk.Box):
         Emits 'object-mutated' signal when a property changes.
 
         Args:
-            widget: The PropertyEditorBox that emitted the signal
+            widget: GyotoObjectChooser that emitted the signal
             *args: Additional arguments
         """
-        index = self.items.index(widget.get_parent())
+        index = list(self.choosers.values()).index(widget)
         self.obj[index] = widget.obj
         if isinstance(widget.obj, spectrometer.Generic):
             # gyoto.spectrometer.Complex tries to hook itself to its
@@ -319,7 +314,7 @@ class VectorGyotoObjectChooser(Gtk.Box):
             widget: The PropertyEditorBox that emitted the signal
             *args: Additional arguments
         """
-        index = self.items.index(widget.get_parent())
+        index = list(self.choosers.values()).index(widget)
         self.emit("child-mutated", index, name)
 
     def on_child_recursive_value_changed(self, widget, ppath, *args):
@@ -332,10 +327,8 @@ class VectorGyotoObjectChooser(Gtk.Box):
         Args:
             widget: The PropertyEditorBox that emitted the signal.
             ppath: The full path of the property that changed.
-            item: the member of self.items that contains this
-                property.
             *args: Additional arguments.
 
         """
-        index = self.items.index(widget.get_parent())
+        index = list(self.choosers.values()).index(widget)
         self.emit("recursive-value-changed", f'[{index}].{ppath}')
