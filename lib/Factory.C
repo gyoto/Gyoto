@@ -832,11 +832,14 @@ void Factory::setParameter(std::string name, std::string val, DOMElement *pel) {
 void Factory::setParameter(std::string name, double val[],
 			   size_t n, DOMElement *pel, FactoryMessenger **child){
 
+  char val_string[dvalLength];
   ostringstream ss;
   ss.imbue(Cloc); // set local to 'C'
-  ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[0];
+  d2txt(val_string,val[0]);
+  ss << val_string;
   for (size_t i=1; i<n; ++i) {
-    ss << " " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[i];
+    d2txt(val_string,val[i]);
+    ss << " " << val_string;
   }
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
@@ -853,13 +856,16 @@ void Factory::setParameter(std::string name,
   pel -> appendChild(el);
 
   size_t n=val.size();
+  char val_string[dvalLength];
 
   if (n) {
     ostringstream ss;
     ss.imbue(Cloc); // set local to 'C'
-    ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[0];
+    d2txt(val_string,val[0]);
+    ss << val_string;
     for (size_t i=1; i<n; ++i) {
-      ss << " " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[i];
+      d2txt(val_string,val[i]);
+      ss << " " << val_string;
     }
     el->appendChild( doc_->createTextNode(X(ss.str().c_str())) );
   }
