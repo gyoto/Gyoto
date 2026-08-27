@@ -497,7 +497,7 @@ void Object::setParameter(Property const &p, string const &name,
     val = size_t(strtoul(content.c_str(), NULL, 0));
     break;
   case Property::double_t:
-    val = Gyoto::atof(content.c_str());
+    val = Gyoto::stringToDouble(content.c_str());
     GYOTO_DEBUG << "calling set(p, val, unit)" << std::endl;
     set(p, val, unit);
     return;

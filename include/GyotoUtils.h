@@ -30,6 +30,7 @@
 #include "GyotoDefs.h"
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <glob.h>
 
@@ -82,19 +83,42 @@ namespace Gyoto {
   void convert(double * const x, const std::size_t nelem,
 	       const double mass_sun, const double distance_kpc,
 	       const std::string unit);
-  
-  /// Interpret C string as double
+
+  /// Case-insensitive prefix check for string views
   /**
-   * Wrapper around std::atof() that also interprets DBL_MIN, DBL_MAX,
-   * -DBL_MIN and -DBL_MAX.
+   * Checks if str starts with prefix, ignoring case.
    *
-   * If str starts with "(-)DBL_M" and is not one of the four special
-   * values, then an error is thrown.
-   *
-   * \param[in] str C string to interpret
-   * \return  double valu represented by str.
+   * \param[in] str string to check
+   * \param[in] prefix prefix to match
+   * \return true if str starts with prefix (case-insensitive), false otherwise
    */
-  double atof(const char * str);
+  bool startsWithCaseInsensitive(std::string_view str, std::string_view prefix);
+  
+  /// Interpret C++ string as double
+  /**
+   * Wrapper around std::from_chars() that also interprets (-)DBL_MIN,
+   * (-)DBL_MAX, (-)INF and NaN.
+   *
+   * The special values are case insensitive and "NaN" and "INF" are
+   * matched as prefixes ("infinity" or even "infamous" would match as
+   * well).
+   *
+   * Leading whitespace and '+' signs are ignored.
+   *
+   * \param[in] std::string to interpret
+   * \return  double value represented by str.
+   */
+  double stringToDouble(const std::string &str);
+
+  /// Represent double as a C++ string
+  /**
+   * Wrapper around std::to_chars that formats DBL_MIN, DBL_MAX,
+   * -DBL_MIN and -DBL_MAX as the corresponding string.
+   *
+   * \param[in] double value to represent
+   * \return  std::string representing value
+   */
+  std::string doubleToString(double value);
 
   /// Print help on class
   /**

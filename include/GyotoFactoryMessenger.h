@@ -308,13 +308,23 @@ class Gyoto::FactoryMessenger {
   ///< Output parameter
 
   /**
-   * Convert value to striing "svalue" and create an XML child element
+   * Convert value to string "svalue" and create an XML child element
    * of the form
    * \code
    * <name>svalue</name>
    * \endcode
    */
   void setParameter(std::string name, double value);
+  ///< Output parameter
+
+  /**
+   * Convert value to string "svalue" and create an XML child element
+   * of the form
+   * \code
+   * <name unit="unit">svalue</name>
+   * \endcode
+   */
+  void setParameter(std::string name, double value, std::string unit);
   ///< Output parameter
 
   /**

@@ -105,12 +105,8 @@ Value::operator double() const {
   case Property::size_t_t:
     return double(SizeT);
   case Property::string_t:
-    if (String== "DBL_MAX") return  DBL_MAX;
-    if (String=="-DBL_MAX") return -DBL_MAX;
-    if (String== "DBL_MIN") return  DBL_MIN;
-    if (String=="-DBL_MIN") return -DBL_MIN;
     try {
-	return stod(String);
+      return Gyoto::stringToDouble(String);
     }
     catch (const std::invalid_argument& e) {
       GYOTO_ERROR("This string does not look like a double: '" + String + "'");

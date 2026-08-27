@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2025 Thibaut Paumard
+    Copyright 2011-2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -58,19 +58,6 @@ using namespace std;
 #define dfmt " %.16g "
 
 // support DBL_MIN, DBL_MAX, and put right format
-#define d2txt(txt, val)					\
-  if      (val== DBL_MAX) strcpy(txt,  "DBL_MAX");	\
-  else if (val==-DBL_MAX) strcpy(txt, "-DBL_MAX");	\
-  else if (val== DBL_MIN) strcpy(txt,  "DBL_MIN");	\
-  else if (val==-DBL_MIN) strcpy(txt, "-DBL_MIN");	\
-  else {						\
-    ostringstream ss;					\
-    ss.imbue(Cloc);					\
-    ss << setprecision(GYOTO_PREC)			\
-       << setw(GYOTO_WIDTH) << val;			\
-    strcpy(txt, ss.str().c_str());			\
-  }
-
 #define ifmt " %li "
 #define i2txt(txt, val) sprintf( txt, ifmt, val);
 
@@ -779,104 +766,119 @@ string Factory::format() {
 }
 
 void Factory::setParameter(std::string name, DOMElement *pel) {
+  GYOTO_DEBUG_EXPR(name);
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
+  GYOTO_DEBUG << "done" << std::endl;
 } 
 
 void Factory::setParameter(std::string name, double value, DOMElement *pel) {
+  GYOTO_DEBUG_EXPR(name);
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
-  char val_string[dvalLength];
-  d2txt(val_string,value);
-  el->appendChild(doc_->createTextNode(X(val_string)));
+  std::string val_string = Gyoto::doubleToString(value);
+  GYOTO_DEBUG_EXPR(val_string);
+  el->appendChild(doc_->createTextNode(X(val_string.c_str())));
+  GYOTO_DEBUG << "done" << std::endl;
+}
+
+void Factory::setParameter(std::string name, double value, string unit, DOMElement *pel) {
+  GYOTO_DEBUG_EXPR(name);
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  el->setAttribute(X("unit"), X(unit.c_str()));
+  pel -> appendChild(el);
+  std::string val_string = Gyoto::doubleToString(value);
+  GYOTO_DEBUG_EXPR(val_string);
+  el->appendChild(doc_->createTextNode(X(val_string.c_str())));
+  GYOTO_DEBUG << "done" << std::endl;
 } 
 
 void Factory::setParameter(std::string name, int value, DOMElement *pel) {
+  GYOTO_DEBUG_EXPR(name);
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
   char val_string[dvalLength];
   sprintf( val_string, " %i ", value);
   el->appendChild(doc_->createTextNode(X(val_string)));
+  GYOTO_DEBUG << "done" << std::endl;
 } 
 
 void Factory::setParameter(std::string name, unsigned int value, DOMElement *pel) {
+  GYOTO_DEBUG_EXPR(name);
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
   char val_string[dvalLength];
   sprintf( val_string, " %u ", value);
   el->appendChild(doc_->createTextNode(X(val_string)));
+  GYOTO_DEBUG << "done" << std::endl;
 } 
 
 void Factory::setParameter(std::string name, long value, DOMElement *pel) {
+  GYOTO_DEBUG_EXPR(name);
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
   char val_string[dvalLength];
   sprintf( val_string, " %li ", value);
   el->appendChild(doc_->createTextNode(X(val_string)));
+  GYOTO_DEBUG << "done" << std::endl;
 } 
 
 void Factory::setParameter(std::string name, unsigned long int value, DOMElement *pel) {
+  GYOTO_DEBUG_EXPR(name);
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
   char val_string[dvalLength];
   sprintf( val_string, " %lu ", value);
   el->appendChild(doc_->createTextNode(X(val_string)));
+  GYOTO_DEBUG << "done" << std::endl;
 } 
 
 void Factory::setParameter(std::string name, std::string val, DOMElement *pel) {
+  GYOTO_DEBUG_EXPR(name);
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
   el->appendChild(doc_->createTextNode(X(val.c_str())));
+  GYOTO_DEBUG << "done" << std::endl;
 } 
 
 void Factory::setParameter(std::string name, double val[],
 			   size_t n, DOMElement *pel, FactoryMessenger **child){
-
-  char val_string[dvalLength];
-  ostringstream ss;
-  ss.imbue(Cloc); // set local to 'C'
-  d2txt(val_string,val[0]);
-  ss << val_string;
-  for (size_t i=1; i<n; ++i) {
-    d2txt(val_string,val[i]);
-    ss << " " << val_string;
+  GYOTO_DEBUG_EXPR(name);
+  std::string val_string = "";
+  for (size_t i=0; i<n; ++i) {
+    val_string += " ";
+    val_string += Gyoto::doubleToString(val[i]);
   }
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
-  el->appendChild( doc_->createTextNode(X(ss.str().c_str())) );
+  GYOTO_DEBUG_EXPR(val_string);
+  el->appendChild( doc_->createTextNode(X(val_string.c_str())) );
   if (child) *child = new FactoryMessenger(this, el);
-
+  GYOTO_DEBUG << "done" << std::endl;
 }
 
 void Factory::setParameter(std::string name,
 			   std::vector<double> const &val,
 			   DOMElement *pel, FactoryMessenger **child){
-
+  GYOTO_DEBUG_EXPR(name);
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
 
-  size_t n=val.size();
-  char val_string[dvalLength];
-
-  if (n) {
-    ostringstream ss;
-    ss.imbue(Cloc); // set local to 'C'
-    d2txt(val_string,val[0]);
-    ss << val_string;
-    for (size_t i=1; i<n; ++i) {
-      d2txt(val_string,val[i]);
-      ss << " " << val_string;
-    }
-    el->appendChild( doc_->createTextNode(X(ss.str().c_str())) );
+  std::string val_string = "";
+  for (size_t i=0; i < val.size(); ++i) {
+    val_string += " ";
+    val_string += Gyoto::doubleToString(val[i]);
   }
+  GYOTO_DEBUG_EXPR(val_string);
+  el->appendChild( doc_->createTextNode(X(val_string.c_str())) );
   if (child) *child = new FactoryMessenger(this, el);
-
+  GYOTO_DEBUG << "done" << std::endl;
 }
 
 void Factory::setParameter(std::string name,
 			   std::vector<unsigned long> const &val,
 			   DOMElement *pel, FactoryMessenger **child){
-
+  GYOTO_DEBUG_EXPR(name);
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
 
@@ -892,7 +894,7 @@ void Factory::setParameter(std::string name,
     el->appendChild( doc_->createTextNode(X(ss.str().c_str())) );
   }
   if (child) *child = new FactoryMessenger(this, el);
-
+  GYOTO_DEBUG << "done" << std::endl;
 }
 
 void Factory::setContent(std::string content, DOMElement *el) {
@@ -975,9 +977,8 @@ void FactoryMessenger::setSelfAttribute(std::string attrname,
 
 void FactoryMessenger::setSelfAttribute(std::string attrname,
 					double attrvalue) {
-  char val_string[dvalLength];
-  d2txt(val_string, attrvalue);
-  element_->setAttribute(X(attrname.c_str()), X(val_string));
+  std::string val_string=Gyoto::doubleToString(attrvalue);
+  element_->setAttribute(X(attrname.c_str()), X(val_string.c_str()));
 }
 
 string FactoryMessenger::getAttribute(std::string attrname) const {
@@ -1040,6 +1041,9 @@ void FactoryMessenger::setParameter(std::string name){
 void FactoryMessenger::setParameter(std::string name, double value){
   employer_ -> setParameter(name, value, element_);
 }
+void FactoryMessenger::setParameter(std::string name, double value, string unit){
+  employer_ -> setParameter(name, value, unit, element_);
+}
 void FactoryMessenger::setParameter(std::string name, int value){
   employer_ -> setParameter(name, value, element_);
 }
@@ -1084,7 +1088,7 @@ size_t FactoryMessenger::parseArray(std::string content, double val[], size_t ma
   char * sub = strtok(tc, delim);
 
   while (sub && n<max_tokens) {
-    val[n++] = Gyoto::atof(sub);
+    val[n++] = Gyoto::stringToDouble(sub);
     sub = strtok(NULL, delim);
   }
   
@@ -1108,7 +1112,7 @@ std::vector<double> FactoryMessenger::parseArray(std::string content)
   char * sub = strtok(tc, delim);
 
   while (sub) {
-    result.push_back(Gyoto::atof(sub));
+    result.push_back(Gyoto::stringToDouble(sub));
     sub = strtok(NULL, delim);
   }
   

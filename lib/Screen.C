@@ -1410,7 +1410,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     GYOTO_ENDIF_DEBUG
 #   endif
     if      (name=="Time")
-      {tobs_tmp = Gyoto::atof(tc); tunit=unit; tobs_found=1;}
+      {tobs_tmp = Gyoto::stringToDouble(tc); tunit=unit; tobs_found=1;}
     else if (name=="Position") {
       if (FactoryMessenger::parseArray(content, pos, 4) != 4)
 	GYOTO_ERROR("Screen \"Position\" requires exactly 4 tokens");
@@ -1418,12 +1418,12 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     }
     else if (name=="Distance")    
       {
-	scr -> distance    ( Gyoto::atof(tc), unit );
+	scr -> distance    ( Gyoto::stringToDouble(tc), unit );
 	string dmax = fmp -> getAttribute("dmax");
-	if (dmax != "") scr -> dMax(Gyoto::atof(dmax.c_str()));
+	if (dmax != "") scr -> dMax(Gyoto::stringToDouble(dmax.c_str()));
       }
     else if (name=="FieldOfView") {
-      fov = Gyoto::atof(tc); fov_unit=unit; fov_found=1;
+      fov = Gyoto::stringToDouble(tc); fov_unit=unit; fov_found=1;
     }
     else if (name=="Spectrometer") {
       scr ->
@@ -1432,10 +1432,10 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 		     (fmp->getChild(), plugin));
     }
     else if (name=="Dangle1"){
-      dangle1 = Gyoto::atof(tc); dangle1_found=1; aunit=unit;
+      dangle1 = Gyoto::stringToDouble(tc); dangle1_found=1; aunit=unit;
     }
     else if (name=="Dangle2"){
-      dangle2 = Gyoto::atof(tc); dangle2_found=1; dunit=unit;
+      dangle2 = Gyoto::stringToDouble(tc); dangle2_found=1; dunit=unit;
     }
     else if (name=="SphericalAngles" ||
 	     name=="EquatorialAngles" ||

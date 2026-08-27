@@ -396,7 +396,7 @@ int main(int argc, char** argv) {
       break;
     case BOUNDARIES:
       {
-	double valtest=Gyoto::atof(opt.arg);
+	double valtest=Gyoto::stringToDouble(opt.arg);
 	if (valtest<=0){
 	  cerr << "In gyoto.C: screen indices should be >0" << endl;
 	  return 1;
@@ -459,14 +459,14 @@ int main(int argc, char** argv) {
       if (opt.arg) ipctfile=opt.arg;
       else ipct=1;
       break;
-    case TIME:        screen -> time       (Gyoto::atof(opt.arg)); break;
-    case TMIN:       scenery -> tMin       (Gyoto::atof(opt.arg)); break;
-    case FOV:         screen -> fieldOfView(Gyoto::atof(opt.arg)); break;
+    case TIME:        screen -> time       (Gyoto::stringToDouble(opt.arg)); break;
+    case TMIN:       scenery -> tMin       (Gyoto::stringToDouble(opt.arg)); break;
+    case FOV:         screen -> fieldOfView(Gyoto::stringToDouble(opt.arg)); break;
     case RESOLUTION:  screen -> resolution (       atoi(opt.arg)); break;
-    case DISTANCE:    screen -> distance   (Gyoto::atof(opt.arg)); break;
-    case PALN:        screen -> PALN       (Gyoto::atof(opt.arg)); break;
-    case INCLINATION: screen -> inclination(Gyoto::atof(opt.arg)); break;
-    case ARGUMENT:    screen -> argument   (Gyoto::atof(opt.arg)); break;
+    case DISTANCE:    screen -> distance   (Gyoto::stringToDouble(opt.arg)); break;
+    case PALN:        screen -> PALN       (Gyoto::stringToDouble(opt.arg)); break;
+    case INCLINATION: screen -> inclination(Gyoto::stringToDouble(opt.arg)); break;
+    case ARGUMENT:    screen -> argument   (Gyoto::stringToDouble(opt.arg)); break;
     case NTHREADS:   scenery -> nThreads   (       atoi(opt.arg)); break;
     case NPROCESSES: scenery -> nProcesses (       atoi(opt.arg)); break;
     case UNIT: unit=opt.arg?opt.arg:""; break;

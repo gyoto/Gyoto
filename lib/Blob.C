@@ -104,6 +104,7 @@ UniformSphere("Blob"),
     init4Coord_[ii]=0.;
     init3Velo_[ii]=0.;
   }
+  init4Coord_[2] = M_PI/2.;
   init4Coord_[3]=0.;
 }
 
@@ -223,144 +224,101 @@ string Blob::className_l() const { return  string("blob"); }
 
 double Blob::numberDensity() const {
   // Converts internal cgs central enthalpy to SI
-  double dens=numberDensity_cgs_;
+  return numberDensity("");
+}
+double Blob::numberDensity(string const &unit) const
+{
+  std::string real_unit = unit;
+  double dens = numberDensity_cgs_;
+  if (unit == "") real_unit = "m-3";
 # ifdef HAVE_UDUNITS
-  dens = Units::Converter("cm-3", "m-3")(dens);
+  dens = Units::Converter("cm-3", real_unit)(dens);
 # else
+  dens *= 1e6;
   GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
 		<< endl ;
 # endif
-  return dens; }
-double Blob::numberDensity(string const &unit) const
-{
-  double dens = numberDensity();
-  if (unit != "") {
-# ifdef HAVE_UDUNITS
-    dens = Units::Converter("m-3", unit)(dens);
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
   return dens;
 }
 void Blob::numberDensity(double dens) {
+  numberDensity(dens, "");
+}
+void Blob::numberDensity(double dens, string const &unit) {
+  std::string real_unit = unit;
+  if (unit == "") real_unit = "m3";
 # ifdef HAVE_UDUNITS
-  dens = Units::Converter("m-3", "cm-3")(dens);
+  dens = Units::Converter(real_unit, "cm-3")(dens);
 # else
+  dens *= 1e-6;
   GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
 		<< endl ;
 # endif
-  numberDensity_cgs_=dens;
-}
-void Blob::numberDensity(double dens, string const &unit) {
-  if (unit != "") {
-# ifdef HAVE_UDUNITS
-    dens = Units::Converter(unit, "m-3")(dens);
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
-  numberDensity(dens);
+  numberDensity_cgs_ = dens;
 }
 
 double Blob::temperature() const { return temperature_; }
 void Blob::temperature(double tt) { temperature_ = tt; }
 
-double Blob::timeRef() const {
-  // Converts internal M-unit time to SI
-  double tt=timeRef_M_;
-# ifdef HAVE_UDUNITS
-  if (gg_)
-    tt = Units::ToSeconds(tt,"geometrical_time",gg_);
-  else
-    GYOTO_SEVERE << "Cannot convert to seconds as metric is not set!" << endl;
-# else
-  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		<< endl ;
-# endif
-  return tt; }
+double Blob::timeRef() const { return timeRef("s"); }
+
 double Blob::timeRef(string const &unit) const
 {
-  double tt = timeRef();
-  if (unit != "") {
+  // here we want the user-visible default unit to be "s"
+  // but we store the value in geometrical time
+  double tt = timeRef_M_;
+  string real_unit = unit;
+  if (unit == "") real_unit = "s";
 # ifdef HAVE_UDUNITS
-    tt = Units::Converter("s", unit)(tt);
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
-  return tt;
-}
-void Blob::timeRef(double tt) {
-# ifdef HAVE_UDUNITS
-  tt = Units::ToGeometricalTime(tt, "s", gg_);
+  tt = Gyoto::Units::FromGeometricalTime(tt, real_unit, gg_);
 # else
   GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
 		<< endl ;
 # endif
-  timeRef_M_ = tt; }
-void Blob::timeRef(double tt, string const &unit) {
-  if (unit != "") {
-# ifdef HAVE_UDUNITS
-    if (gg_)
-      tt = Units::ToSeconds(tt,unit,gg_);
-  else
-    GYOTO_SEVERE << "Cannot convert to seconds as metric is not set!" << endl;
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
-  timeRef(tt);
+  return tt;
 }
 
-double Blob::timeSigma() const {
-  // Converts internal M-unit time to SI
-  double tt=timeSigma_M_;
+void Blob::timeRef(double tt) { timeRef(tt, "s"); }
+
+void Blob::timeRef(double tt, string const &unit) {
+  string real_unit = unit;
+  if (unit == "") real_unit = "s";
 # ifdef HAVE_UDUNITS
-  if (gg_)
-    tt = Units::ToSeconds(tt,"geometrical_time",gg_);
-  else
-    GYOTO_SEVERE << "Cannot convert to seconds as metric is not set!" << endl;
+  timeRef_M_ = Gyoto::Units::ToGeometricalTime(tt, unit, gg_);
 # else
   GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
 		<< endl ;
 # endif
-  return tt; }
+}
+
+double Blob::timeSigma() const { return timeSigma("s"); }
+
 double Blob::timeSigma(string const &unit) const
 {
-  double tt = timeSigma();
-  if (unit != "") {
+  // here we want the user-visible default unit to be "s"
+  // but we store the value in geometrical time
+  double tt = timeSigma_M_;
+  string real_unit = unit;
+  if (unit == "") real_unit = "s";
 # ifdef HAVE_UDUNITS
-    tt = Units::Converter("s", unit)(tt);
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
-  return tt;
-}
-void Blob::timeSigma(double tt) {
-# ifdef HAVE_UDUNITS
-  tt = Units::ToGeometricalTime(tt, "s", gg_);
+  tt = Gyoto::Units::FromGeometricalTime(tt, real_unit, gg_);
 # else
   GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
 		<< endl ;
 # endif
-  timeSigma_M_ = tt; }
+  return tt;
+}
+
+void Blob::timeSigma(double tt) { timeSigma(tt, "s"); }
+
 void Blob::timeSigma(double tt, string const &unit) {
-  if (unit != "") {
+  string real_unit = unit;
+  if (unit == "") real_unit = "s";
 # ifdef HAVE_UDUNITS
-    tt = Units::ToSeconds(tt,unit,gg_);
+  timeSigma_M_ = Gyoto::Units::ToGeometricalTime(tt, unit, gg_);
 # else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
+  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		<< endl ;
 # endif
-  }
-  timeSigma(tt);
 }
 
 void Blob::magnetizationParameter(double rr) {
@@ -893,3 +851,15 @@ void Blob::getVelocity(double const pos[4], double vel[4]){
   //cout << "in blob 4u= " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
 
 }
+
+#ifdef GYOTO_USE_XERCES
+void Blob::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
+  if (p.name == "TimeRef")
+    fmp->setParameter(p.name, timeRef("geometrical_time"), "geometrical_time");
+  else if (p.name == "TimeSigma")
+    fmp->setParameter(p.name, timeRef("geometrical_time"), "geometrical_time");
+  else if (p.name == "NumberDensity")
+    fmp->setParameter(p.name, numberDensity_cgs_, "cm-3");
+  else UniformSphere::fillProperty(fmp, p);
+}
+#endif

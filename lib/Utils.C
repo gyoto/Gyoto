@@ -23,6 +23,12 @@
 #include <cmath>
 #include <cstdlib>
 #include <clocale>
+#include <charconv>
+#include <limits>
+#include <cfloat>
+#include <string>
+#include <cctype>
+#include <string_view>
 
 #include "GyotoScenery.h"
 #include "GyotoSpectrum.h"
@@ -97,36 +103,81 @@ void Gyoto::convert(double * const x, const size_t nelem, const double mass_sun,
 
 }
 
-double Gyoto::atof(const char * str)
-{
-  GYOTO_DEBUG << "Gyoto::atof(\"" << str << "\")";
-  ptrdiff_t offset=0;
-  while (isspace(str[offset])) ++offset;
-  bool positive=true;
-  double retval=0.;
-  if (str[offset] == '-') {
-    positive=false;
-    ++offset;
-  }
-  if (str[offset++]=='D' && str[offset++]=='B' && str[offset++]=='L' &&
-      str[offset++]=='_' && str[offset++]=='M') {
-    if (str[offset]=='A' && str[offset+1]=='X') {
-      if (positive) retval = DBL_MAX;
-      else retval = -DBL_MAX;
-    } else if (str[offset]=='I' && str[offset+1]=='N') {
-      if (positive) retval = DBL_MIN;
-      else retval = -DBL_MIN;
-    } else GYOTO_ERROR("unrecognize double representation");
-  } else {
-    std::string loc(setlocale(LC_NUMERIC, NULL));
-    setlocale(LC_NUMERIC, "C");
-    retval = std::atof(str);
-    setlocale(LC_NUMERIC, loc.c_str());
+bool Gyoto::startsWithCaseInsensitive(std::string_view str, std::string_view prefix) {
+    return prefix.size() <= str.size() &&
+           std::equal(prefix.begin(), prefix.end(), str.begin(),
+               [](char a, char b) {
+                   return std::tolower(static_cast<unsigned char>(a)) ==
+                          std::tolower(static_cast<unsigned char>(b));
+               });
+}
+
+double Gyoto::stringToDouble(const std::string& str) {
+    GYOTO_DEBUG_EXPR(str);
+
+    // Skip leading whitespace and '+' for from_chars
+    std::string_view sv(str);
+    auto it = sv.begin();
+    while (it != sv.end() &&
+          (std::isspace(static_cast<unsigned char>(*it)) || *it == '+')) {
+        ++it;
+    }
+    sv = std::string_view(it, sv.end() - it);
+
+    // Try std::from_chars first (C++17: does not support INF/NaN)
+    double retval;
+    auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), retval);
+
+    if (ec == std::errc()) {
+        return retval;  // Success
+    }
+
+    if (ec == std::errc::result_out_of_range) {
+        GYOTO_ERROR("std::from_chars reported an out-of-range error");
+    }
+
+    // Handle special values (case-insensitive)
+    if (startsWithCaseInsensitive(sv, "inf") ||
+        startsWithCaseInsensitive(sv, "infinity")) {
+        return std::numeric_limits<double>::infinity();
+    }
+    if (startsWithCaseInsensitive(sv, "-inf") ||
+        startsWithCaseInsensitive(sv, "-infinity")) {
+        return -std::numeric_limits<double>::infinity();
+    }
+    if (startsWithCaseInsensitive(sv, "+inf")) {
+        return std::numeric_limits<double>::infinity();
+    }
+    if (startsWithCaseInsensitive(sv, "nan")) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+
+    // Handle Gyoto-specific literals (optional)
+    if (startsWithCaseInsensitive(sv, "dbl_max"))  return  DBL_MAX;
+    if (startsWithCaseInsensitive(sv, "-dbl_max")) return -DBL_MAX;
+    if (startsWithCaseInsensitive(sv, "dbl_min"))  return  DBL_MIN;
+    if (startsWithCaseInsensitive(sv, "-dbl_min")) return -DBL_MIN;
+
+    GYOTO_ERROR("Failed to parse double from string: '" + str + "'");
+
+    return 0.; // never reached, avoids compiler warning
+}
+
+std::string Gyoto::doubleToString(double val) {
+  if      (val== DBL_MAX) return  "DBL_MAX";
+  else if (val==-DBL_MAX) return "-DBL_MAX";
+  else if (val== DBL_MIN) return  "DBL_MIN";
+  else if (val==-DBL_MIN) return "-DBL_MIN";
+  char cstr[32];
+
+  auto [ptr, ec] = std::to_chars(cstr, cstr+32, val);
+  if (ec == std::errc::value_too_large) {
+    GYOTO_ERROR("std::to_chars reported value too large error");
+  } else if (ec != std::errc()) {
+    GYOTO_ERROR("std::to_chars reported an unrecognized error");
   }
 
-  GYOTO_DEBUG << "==" << retval << endl;
-
-  return retval;
+  return std::string(cstr, ptr);
 }
 
 void Gyoto::help(std::string class_name) {

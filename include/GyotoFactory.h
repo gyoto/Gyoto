@@ -308,6 +308,20 @@ class Gyoto::Factory
   void setParameter(std::string name, double value,
 		    xercesc::DOMElement *pel);
 
+  /// Create new XML element with double value and unit
+  /**
+   * E.g.
+   * \code
+   * <Radius> 2. </Radius>
+   * \endcode
+   * \param name XML entity name.
+   * \param value Entity content.
+   * \param unit Entity attribute.
+   * \param pel Parent XML element.
+   */
+  void setParameter(std::string name, double value, std::string unit,
+		    xercesc::DOMElement *pel);
+
   /// Create new XML element with integer value
   /**
    * E.g.

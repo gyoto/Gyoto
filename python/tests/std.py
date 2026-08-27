@@ -364,6 +364,69 @@ class TestStdMetric(unittest.TestCase):
             gup=metric.gmunu_up(pos)
             self.assertAlmostEqual(numpy.abs(numpy.linalg.multi_dot((g, gup))-I).max(), 0.)
 
+    @unittest.skip("lots of bugs to fix before this test will pass")
+    def test_xmlio(self):
+        nspace=gyoto.std
+        for classname, cls in inspect.getmembers(nspace):
+            if (self.invalid(classname, cls)):
+                continue
+            with self.subTest():
+                metric=self.metric(cls)
+                a = str(metric)
+                b = str(gyoto.core.Factory(a).metric())
+                self.assertEqual(
+                    a, b,
+                    f"XML roudtrip is not idempotent for class {classname}"
+                )
+
+class TestStdAstrobj(unittest.TestCase):
+
+    default_verbosity=gyoto.core.verbose()
+
+    def setUp(self):
+        gyoto.core.verbose(0)
+
+    def tearDown(self):
+        gyoto.core.verbose(self.default_verbosity)
+
+    def invalid(self, classname, cls):
+        return (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Astrobj))
+
+    @unittest.skip("lots of bugs to fix before this test will pass")
+    def test_xmlio(self):
+        nspace=gyoto.std
+        for classname, cls in inspect.getmembers(nspace):
+            if (self.invalid(classname, cls)):
+                continue
+            if True:
+            # with self.subTest():
+                try:
+                    astrobj=cls()
+                except gyoto.core.Error as e:
+                    raise Exception(
+                        f'unable to instanciate {classname}: \n' +
+                        e.get_message()
+                    )
+                try:
+                    a = str(astrobj)
+                except gyoto.core.Error as e:
+                    raise Exception(
+                        f'unable to describe {classname} as XML: \n' +
+                        e.get_message()
+                    )
+                try:
+                    b = str(gyoto.core.Factory(a).astrobj())
+                except gyoto.core.Error as e:
+                    raise Exception(
+                        f'unable to construct {classname} from XML: \n' +
+                        e.get_message()
+                    )
+                self.assertEqual(
+                    a, b,
+                    f"XML roudtrip is not idempotent for class {classname}"
+                )
+
 class TestBalasinGrumiller(unittest.TestCase):
    def setUp(self):
        """Set up a BalasinGrumiller metric instance before each test"""
