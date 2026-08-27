@@ -21,10 +21,16 @@
 #include "GyotoFactoryMessenger.h"
 #include "GyotoMetric.h"
 #include "GyotoPhoton.h"
+#include "GyotoProperty.h"
 
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+/// Properties
+GYOTO_PROPERTY_START(Gyoto::Astrobj::Complex,
+		     "A container for several objects.")
+GYOTO_PROPERTY_END(Complex, Generic::properties)
 
 Complex::Complex() :
   Generic("Complex"),

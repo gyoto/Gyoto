@@ -93,6 +93,7 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
   double step_max_; ///< Maximum &delta; step inside the Astrobj
 
  public:
+  GYOTO_OBJECT;
   GYOTO_OBJECT_THREAD_SAFETY;
   Complex(); ///< Default constructor.
   Complex(const Complex& ) ; ///< Copy constructor.
