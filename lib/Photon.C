@@ -507,13 +507,13 @@ int Photon::hit(Astrobj::Properties *data) {
     eta = Carter/(p_t*p_t);
     //cout << "eta,lambda= " << eta << " " << lambda << endl;
 
-    if (spin==0.) throwError("Photon::hit: Mino-time formalism derived for spin>0!");
+    if (spin==0.) GYOTO_ERROR("Photon::hit: Mino-time formalism derived for spin>0!");
 
     double delta_th = 0.5*(1.-(eta+lambda*lambda)/spin2);
     //cout<< "delta_th= "<< delta_th << endl;
     uplus = delta_th + sqrt(delta_th*delta_th + eta/spin2);
     uminus = delta_th - sqrt(delta_th*delta_th + eta/spin2);
-    if (uminus==0.) throwError("Photon::hit: uminus is zero and we need "
+    if (uminus==0.) GYOTO_ERROR("Photon::hit: uminus is zero and we need "
 			       "to divide by that number!");
     uratio = uplus/uminus; // note that uratio is always <0 for the
     // cases of interest where Carter>0 (then, uminus<0, uplus>0).
@@ -802,14 +802,14 @@ int Photon::hit(Astrobj::Properties *data) {
 	      omegaminus = pow(-Qrond/2. -
 			       complex<double>(0, sqrt(-delta_cubic)),1./3.);
 	    if (imag(omegaplus)+imag(omegaminus)!=0.)
-	      throwError("Bad cubic roots!");
+	      GYOTO_ERROR("Bad cubic roots!");
 	    xi0 = real(omegaplus) + real(omegaminus) - Arond/3.;
 	  }else{
 	    double omegaplus = pow(-Qrond/2. + sqrt(delta_cubic),1./3.),
 	      omegaminus = pow(-Qrond/2. - sqrt(delta_cubic),1./3.);
 	    xi0 = omegaplus + omegaminus - Arond/3.;
 	  }
-	  if (xi0<0.) throwError("Bad cubic roots!");
+	  if (xi0<0.) GYOTO_ERROR("Bad cubic roots!");
 	  double zquartic = sqrt(xi0/2.),
 	    r1quartic =
 	    -zquartic
@@ -824,7 +824,7 @@ int Photon::hit(Astrobj::Properties *data) {
 	    zquartic
 	    + sqrt(-Arond/2. - zquartic*zquartic - Brond/(4.*zquartic));
 	  if (fabs(r1quartic+r2quartic+r3quartic+r4quartic)>1e-10)
-	    throwError("Bad quartic roots!"); // sum should be zero
+	    GYOTO_ERROR("Bad quartic roots!"); // sum should be zero
 	  
 	  // Here I assume a type-1 radial evolution, ie r1<r2<r<r3<r4
 	  double r32 = r3quartic - r2quartic,
@@ -839,7 +839,7 @@ int Photon::hit(Astrobj::Properties *data) {
 	  
 	  if (kradial<0. || kradial >1. || x2radial_cur<0.
 	      || x2radial_cur>1. ||  x2radial_prev<0. || x2radial_prev>1.)
-	    throwError("Bad radial potential params");
+	    GYOTO_ERROR("Bad radial potential params");
 	  
 	  double F2radial_cur = 2./sqrt(r31*r42)
 	    *boost::math::ellint_1(sqrt(kradial),asin(x2radial_cur)),
@@ -856,7 +856,7 @@ int Photon::hit(Astrobj::Properties *data) {
 	    double F2radial_turn = 0.; //2./sqrt(r31*r42)*boost::math::ellint_1(sqrt(kradial),0.); // at r=r4quartic, x2radial is zero, and asin(0)=0, hence the 0 in second slot, which leads to ellint1=0
 	    dI_radial = 2.*sign_radial_s_cur*F2radial_turn - sign_radial_s_cur*(F2radial_prev + F2radial_cur);
 	  }
-	  if (dI_radial<0.) throwError("radial integral should increase");
+	  if (dI_radial<0.) GYOTO_ERROR("radial integral should increase");
 	  I_radial += dI_radial;
 
 	  // Equatorial plane crossing

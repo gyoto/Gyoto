@@ -311,7 +311,7 @@ double ThinDiskGridIntensity::emission(double /*nu*/, double,
   if (rcyl<GridData2D::rmin() || rcyl>GridData2D::rmax())
     return 0.;
   if (phi<0. or phi>2.*M_PI)
-    throwError("In ThinDiskGridIntensity::radiativeQ: phi is not in 0,2pi!");
+    GYOTO_ERROR("In ThinDiskGridIntensity::radiativeQ: phi is not in 0,2pi!");
   // NB: phi is always in grid, and t might be outside, assuming stationnary
   // disk at t<tmin_ and t>tmax_
 

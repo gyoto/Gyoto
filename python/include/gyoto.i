@@ -423,7 +423,7 @@ GyotoSmPtrTypeMapClassGeneric(Spectrometer);
         Gyoto::Astrobj::getSubcontractor(nm.c_str(), plugin, FALSE)(NULL, plugin);
       Gyoto::Astrobj::Generic * gen = (Gyoto::Astrobj::Generic *)(pgen);
       res = dynamic_cast<Gyoto::Astrobj::ThinDisk *>(gen);
-      if (gen && !res) throwError("Class '"+nm+"' does not derive from Gyoto::Metric::ThinDisk");
+      if (gen && !res) GYOTO_ERROR("Class '"+nm+"' does not derive from Gyoto::Metric::ThinDisk");
 
       // We need to increment refcount, else the object is destroyed
       // when the original smartpoiter is:
@@ -443,7 +443,7 @@ GyotoSmPtrTypeMapClassGeneric(Spectrometer);
         Gyoto::Astrobj::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
       Gyoto::Astrobj::Generic *gen  = (Gyoto::Astrobj::Generic *)(pgen);
       res = dynamic_cast<Gyoto::Astrobj::ThinDisk *>(gen);
-      if (gen && !res) throwError("Class '"+nm+"' does not derive from Gyoto::Metric::ThinDisk");
+      if (gen && !res) GYOTO_ERROR("Class '"+nm+"' does not derive from Gyoto::Metric::ThinDisk");
 
       // We need to increment refcount, else the object is destroyed
       // when the original smartpoiter is:
@@ -467,7 +467,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDisk)
         Gyoto::Astrobj::getSubcontractor(nm.c_str(), plugin, FALSE)(NULL, plugin);
       Gyoto::Astrobj::Generic * gen = (Gyoto::Astrobj::Generic *)(pgen);
       res = dynamic_cast<Gyoto::Astrobj::Standard *>(gen);
-      if (gen && !res) throwError("Class '"+nm+"' does not derive from Gyoto::Metric::Standard");
+      if (gen && !res) GYOTO_ERROR("Class '"+nm+"' does not derive from Gyoto::Metric::Standard");
 
       // We need to increment refcount, else the object is destroyed
       // when the original smartpoiter is:
@@ -487,7 +487,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDisk)
         Gyoto::Astrobj::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
       Gyoto::Astrobj::Generic *gen  = (Gyoto::Astrobj::Generic *)(pgen);
       res = dynamic_cast<Gyoto::Astrobj::Standard *>(gen);
-      if (gen && !res) throwError("Class '"+nm+"' does not derive from Gyoto::Metric::Standard");
+      if (gen && !res) GYOTO_ERROR("Class '"+nm+"' does not derive from Gyoto::Metric::Standard");
 
       // We need to increment refcount, else the object is destroyed
       // when the original smartpoiter is:

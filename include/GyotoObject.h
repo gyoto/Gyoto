@@ -135,7 +135,7 @@ namespace Gyoto {
  * A myobj();
  * Property const *prop=NULL;
  * prop = myobj.property("PropertyName");
- * if (!prop) throwError("No Property by that name in this object");
+ * if (!prop) GYOTO_ERROR("No Property by that name in this object");
  * \endcode
  * It then becomes possible to set or get the Property from or to a
  * Value:

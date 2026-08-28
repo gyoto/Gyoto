@@ -199,7 +199,7 @@ void Blob::blobMotionType(const string &kind) {
   else if (kind == "HelicalCylindrical")
     blobMotionType_ = "HelicalCylindrical";
   else
-    throwError("unknown blob motion type!");
+    GYOTO_ERROR("unknown blob motion type!");
 }
 string Blob::blobMotionType() const {
   return blobMotionType_;
@@ -213,7 +213,7 @@ void Blob::electronDistribution(const string &kind) {
   else if (kind == "PL")
     electronDistrib_ = "PL";
   else
-    throwError("unknown electron distribution!");
+    GYOTO_ERROR("unknown electron distribution!");
 }
 string Blob::electronDistribution() const {
   return electronDistrib_;

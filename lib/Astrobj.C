@@ -1045,7 +1045,7 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
     cerr << "(Ephi.Etheta, Ephi.K, Etheta.K)= " << fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],Ephi,photon_tgvec)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta,photon_tgvec)) << "\n" 
          << "(Ephi.Ephi, Etheta.Etheta, K.K)= " << fabs(gg_->ScalarProd(&cph[0],Ephi,Ephi)-1.) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta,Etheta)-1.) << " " << fabs(gg_->ScalarProd(&cph[0],photon_tgvec,photon_tgvec)) << endl;
          //<< "K: " << photon_tgvec[0] << " " << photon_tgvec[1] << " " << photon_tgvec[2] << " " << photon_tgvec[3] << endl;
-    throwError("Polarization basis is not properly parallel transported!\n Reduce the tolerance values of integration steps (relTol or absTol) or deltaMaxOverR.");
+    GYOTO_ERROR("Polarization basis is not properly parallel transported!\n Reduce the tolerance values of integration steps (relTol or absTol) or deltaMaxOverR.");
   }
 
   // *** Projection into the rest frame of the emitter ***
@@ -1143,7 +1143,7 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
       or fabs(gg_->ScalarProd(&cph[0],Ephi_prime,vel))>test_tol
       or fabs(gg_->ScalarProd(&cph[0],Ephi_prime, Ephi_prime)-1.)>test_tol){
     cerr << "Prod scal Ephi: " << fabs(gg_->ScalarProd(&cph[0],Ephi_prime,photon_tgvec_orthu)) << " " << fabs(gg_->ScalarProd(&cph[0],Ephi_prime,vel)) << " " << fabs(gg_->ScalarProd(&cph[0],Ephi_prime,Ephi_prime)-1.) << endl;
-    throwError("Bad transformation of the polarization basis Ephi!");
+    GYOTO_ERROR("Bad transformation of the polarization basis Ephi!");
   }
   // For checking only: Sch tetrad compo of Ephi:
   double Ephi_r_tetrad=sqrt(grr)*Ephi_prime[1],
@@ -1170,7 +1170,7 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
       or fabs(gg_->ScalarProd(&cph[0],photon_tgvec_orthu,photon_tgvec_orthu)-1.)>test_tol){
   	cerr << "Prod scal Etheta: " << fabs(gg_->ScalarProd(&cph[0],Etheta_prime,photon_tgvec_orthu)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta_prime,vel)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta_prime,Ephi_prime)) << " " << 
   	fabs(gg_->ScalarProd(&cph[0],Etheta_prime,Etheta_prime)-1.) << " " << fabs(gg_->ScalarProd(&cph[0],photon_tgvec_orthu,photon_tgvec_orthu)-1.) << endl;
-    throwError("Bad transformation of the polarization basis Etheta!");
+    GYOTO_ERROR("Bad transformation of the polarization basis Etheta!");
   }
   // For checking only: Sch tetrad compo of Etheta:
   double Etheta_r_tetrad=sqrt(grr)*Etheta_prime[1],

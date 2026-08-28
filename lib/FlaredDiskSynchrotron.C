@@ -454,7 +454,7 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
   if (naxes_dens[0]!=naxes_velo[0] ||
       naxes_dens[1]!=naxes_velo[1] ||
       naxes_dens[2]!=naxes_velo[2])
-    throwError("In FlaredDiskSynchro: density and velocity, dimensions "
+    GYOTO_ERROR("In FlaredDiskSynchro: density and velocity, dimensions "
          "do not agree");
 
   // 4-vector B
@@ -470,7 +470,7 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
     if (naxes_dens[0]!=naxes_velo[0] || naxes_dens[0]!=naxes_Bvec[0] ||
         naxes_dens[1]!=naxes_velo[1] || naxes_dens[1]!=naxes_Bvec[1] ||
         naxes_dens[2]!=naxes_velo[2] || naxes_dens[2]!=naxes_Bvec[2])
-      throwError("In FlaredDiskSynchro: density and B4vector dimensions "
+      GYOTO_ERROR("In FlaredDiskSynchro: density and B4vector dimensions "
   	       "do not agree");
 
   /*cout << "B4vector read= " << endl;
@@ -551,9 +551,9 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
   double tt = coord_ph[0], phi = coord_ph[3];
   
   if (rcyl<GridData2D::rmin() || rcyl>GridData2D::rmax())
-    throwError("In FlaredDiskSynchrotron::radiativeQ: r is not in grid!");
+    GYOTO_ERROR("In FlaredDiskSynchrotron::radiativeQ: r is not in grid!");
   if (phi<0. or phi>2.*M_PI)
-    throwError("In FlaredDiskSynchrotron::radiativeQ: phi is not in 0,2pi!");
+    GYOTO_ERROR("In FlaredDiskSynchrotron::radiativeQ: phi is not in 0,2pi!");
   // NB: phi is always in grid, and t might be outside, assuming stationnary
   // disk at t<tmin_ and t>tmax_
 
@@ -705,9 +705,9 @@ void FlaredDiskSynchrotron::getVelocity(double const pos[4], double vel[4]){
   double tt = pos[0], phi = pos[3];
   
   if (rcyl<GridData2D::rmin() || rcyl>GridData2D::rmax())
-    throwError("In FlaredDiskSynchrotron::getVelocity: r is not in grid!");
+    GYOTO_ERROR("In FlaredDiskSynchrotron::getVelocity: r is not in grid!");
   if (phi<0. or phi>2*M_PI)
-    throwError("In FlaredDiskSynchrotron::getVelocity phi is not in 0;2pi!");
+    GYOTO_ERROR("In FlaredDiskSynchrotron::getVelocity phi is not in 0;2pi!");
   // NB: phi is always in grid, and t might be outside, assuming stationnary
   // disk at t<tmin_ and t>tmax_
 

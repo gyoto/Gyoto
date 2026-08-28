@@ -118,7 +118,7 @@ void ThinDisk::velocityKind(string const &kind) {
   else if (kind == "Keplerian")
     velocitykind_ = KEPLERIAN;
   else
-    throwError("unknown velocity kind");
+    GYOTO_ERROR("unknown velocity kind");
 }
 string ThinDisk::velocityKind() const {
   switch (velocitykind_) {
@@ -127,7 +127,7 @@ string ThinDisk::velocityKind() const {
   case KEPLERIAN:
     return "Keplerian";
   default:
-    throwError("unknown velocity kind tag");
+    GYOTO_ERROR("unknown velocity kind tag");
   }
   return "will not reach here, this line to avoid compiler warning"; 
 }
@@ -187,7 +187,7 @@ void ThinDisk::getVelocity(double const pos[4], double vel[4]) {
     gg_ -> zamoVelocity(pos, vel);
     break;
   default:
-    throwError("unknown velocity kind tag");
+    GYOTO_ERROR("unknown velocity kind tag");
   }
 }
 

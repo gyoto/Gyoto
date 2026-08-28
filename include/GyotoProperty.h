@@ -581,7 +581,7 @@ namespace Gyoto {
  *   for (int i=0; i<5; ++i) member_[i]=tab[i];
  * }
  * void MyClass::arrayMemberVector(std::vector<double> const &vect) {
- *   if (vect.size()!=5) throwError("Please provide 5 elements");
+ *   if (vect.size()!=5) GYOTO_ERROR("Please provide 5 elements");
  *   for (int i=0; i<5; ++i) member_[i]=vect[i];
  * } 
  * double const *  MyClass::arrayMember() const {return member_;}

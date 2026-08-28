@@ -300,7 +300,7 @@ void SphericalAccretion::getVelocity(double const pos[4], double vel[4])
   // double vr_F00 = -delta*sqrt(2.*rr*(rr*rr + spin*spin))/AA,
   //   Omega_F00 = 2.*spin*rr/AA;
   // if (fabs(vr_F00-vel[1]/vel[0])>tol or fabs(Omega_F00-vel[3]/vel[0])>tol)
-  //   throwError("In SphericalAccretion::getVelo different from Falcke+00");
+  //   GYOTO_ERROR("In SphericalAccretion::getVelo different from Falcke+00");
   // --> perfect agreement 210211
   ////////////////////////////////////////////////////////////////////////
 
@@ -310,7 +310,7 @@ void SphericalAccretion::getVelocity(double const pos[4], double vel[4])
 
   if (fabs(u2+1.)>tol or u2!=u2) {
     cerr << " *** 4-velocity squared norm= " << u2 << endl;
-    throwError("In SphericalAccretion: 4vel "
+    GYOTO_ERROR("In SphericalAccretion: 4vel "
 	       "is not properly normalized!");
   }
   

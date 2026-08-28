@@ -351,7 +351,7 @@ void Plasmoid::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
     double theta_mag = get_theta_mag(B4vect, coord_ph, vel);
 
-    if (theta_mag<0. or theta_mag>M_PI) throwError("Blob: bad B angle");
+    if (theta_mag<0. or theta_mag>M_PI) GYOTO_ERROR("Blob: bad B angle");
 
     // Setup interpolation parameters
     int X_params[3] = {nb_time_, nb_freq_, nb_angle_};

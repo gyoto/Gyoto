@@ -342,7 +342,7 @@ void Screen::observerKind(const string &kind) {
   else if(kind == "FullySpecified")
     observerkind_ = GYOTO_OBSKIND_FULLYSPECIFIED;
   else
-    throwError("unknown observer kind");
+    GYOTO_ERROR("unknown observer kind");
 }
 string Screen::observerKind() const {
   switch (observerkind_) {
@@ -357,7 +357,7 @@ string Screen::observerKind() const {
   case GYOTO_OBSKIND_FULLYSPECIFIED:
     return "FullySpecified";
   default:
-    throwError("unknown observer kind tag");
+    GYOTO_ERROR("unknown observer kind tag");
   }
   return "will not reach here, this line to avoid compiler warning";
 }
@@ -567,7 +567,7 @@ void Screen::getRayTriad(double angle1, double angle2,
       coord[3] /= scale;
       break;
     default:
-      throwError("Unimplemented coordkind");
+      GYOTO_ERROR("Unimplemented coordkind");
     }
     angle1 *= scale;
     angle2 *= scale;
@@ -830,7 +830,7 @@ void Screen::getRayTriad(double angle1, double angle2,
               +so*Etheta_screenBasis[1])/sqrt(gphph);
         //cout << "In Screen init Ephi= " << Ephi[0] << " " << Ephi[1] << " " << coord[1]*Ephi[2] << " " << coord[1]*abs(sin(coord[2]))*Ephi[3] << endl;
         //cout << "In Screen init Etheta= " << Etheta[0] << " " << Etheta[1] << " " << coord[1]*Etheta[2] << " " << coord[1]*abs(sin(coord[2]))*Etheta[3] << endl;
-        //throwError("test Eth");
+        //GYOTO_ERROR("test Eth");
           
         // double k_phi = gg_->gmunu(coord,3,3)*coord[7]
         // 	+ gg_->gmunu(coord,0,3)*coord[4]; // phi covariant compo
@@ -879,7 +879,7 @@ void Screen::getRayTriad(double angle1, double angle2,
         GYOTO_ERROR("Non implemented coord kind for polarization");
       }
     }else{
-      throwError("Observer should be at infinity");
+      GYOTO_ERROR("Observer should be at infinity");
     }
   }
 }

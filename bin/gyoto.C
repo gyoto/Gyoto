@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2025 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2026 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -478,7 +478,7 @@ int main(int argc, char** argv) {
 	string val=(pos==string::npos)?"":arg.substr(pos+1);
 	GYOTO_DEBUG << "Setting parameter \"" << name << "\" to value \"" << val << "\" using unit \"" << unit << "\".\n";
 	if(scenery -> setParameter(name, val, unit))
-	  throwError("Unknown parameter");
+	  GYOTO_ERROR("Unknown parameter");
       }
       break;
     case XMLWRITE: Factory(scenery).write(opt.arg); break;
@@ -570,7 +570,7 @@ int main(int argc, char** argv) {
     size_t nbnuobs=0;
     if (quantities & GYOTO_QUANTITY_SPECTRAL) {
       SmartPointer<Spectrometer::Generic> spr = screen -> spectrometer();
-      if (!spr) throwError("Spectral quantity requested but "
+      if (!spr) GYOTO_ERROR("Spectral quantity requested but "
 			   "no spectrometer specified!");
       nbnuobs = spr -> nSamples();
     }

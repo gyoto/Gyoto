@@ -75,7 +75,7 @@ void StochasticThinDisk::equationKind(string const &kind) {
   else if (kind == "AdvectionDiffusion")
     equationkind_ = ADVECTIONDIFFUSION;
   else
-    throwError("StochasticThinDisk: Unknown velocity kind");
+    GYOTO_ERROR("StochasticThinDisk: Unknown velocity kind");
 }
 string StochasticThinDisk::equationKind() const {
   switch (equationkind_) {
@@ -84,7 +84,7 @@ string StochasticThinDisk::equationKind() const {
   case ADVECTIONDIFFUSION:
     return "AdvectionDiffusion";
   default:
-    throwError("StochasticThinDisk: Unknown equation kind tag");
+    GYOTO_ERROR("StochasticThinDisk: Unknown equation kind tag");
   }
   return "will not reach here, this line to avoid compiler warning"; 
 }
@@ -97,7 +97,7 @@ void StochasticThinDisk::motionKind(string const &kind) {
   else if (kind == "Radial")
     motionkind_ = RADIAL;
   else
-    throwError("StochasticThinDisk: Unknown velocity kind");
+    GYOTO_ERROR("StochasticThinDisk: Unknown velocity kind");
 }
 string StochasticThinDisk::motionKind() const {
   switch (motionkind_) {
@@ -108,14 +108,14 @@ string StochasticThinDisk::motionKind() const {
   case RADIAL:
     return "Radial";
   default:
-    throwError("StochasticThinDisk: Unknown velocity kind tag");
+    GYOTO_ERROR("StochasticThinDisk: Unknown velocity kind tag");
   }
   return "will not reach here, this line to avoid compiler warning"; 
 }
 
 void StochasticThinDisk::model_param(std::vector<double> const &v) {
   size_t n = v.size();
-  if (n>NPAR_MAX) throwError("Too many parameters in model_param");
+  if (n>NPAR_MAX) GYOTO_ERROR("Too many parameters in model_param");
   for (size_t i=0; i<n; ++i) model_param_[i]=v[i];
 }
 std::vector<double> StochasticThinDisk::model_param() const {
@@ -364,7 +364,7 @@ void StochasticThinDisk::getVelocity(double const pos[4], double vel[4])
   double u2 = gg_->ScalarProd(pos,vel,vel);
   if (fabs(u2+1.)>tol or u2!=u2) { 
     cerr << " *** 4-velocity squared norm = " << u2 << endl;
-    throwError("In StochasticThinDisk: 4vel is not properly normalized!");
+    GYOTO_ERROR("In StochasticThinDisk: 4vel is not properly normalized!");
   }
   //cout << "4vel = " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3]<< endl;
 }

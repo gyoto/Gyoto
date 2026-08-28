@@ -259,7 +259,7 @@ void ThickDisk::radiativeQ(double Inu[], // output
     *pow(thickDiskInnerRadius_/rr, temperatureSlope_);
     //*pow(thickDiskInnerRadius_/rr, 2.);
   //cout << "params in disk= " << thickDiskInnerRadius_ << " " << densitySlope_<< " " << temperatureSlope_ << " " << temperatureAtInnerRadius_ << " " <<  thickDiskZGaussianSigma_ << " " << magneticConfig_ << " " << endl;
-  //throwError("test disk");
+  //GYOTO_ERROR("test disk");
 
   double // r0 = 4.,
     phi0 = 0., phi = coord_ph[3];
@@ -476,7 +476,7 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
     vel[2] = 0.;
     double Omega = Omega_circ + (1-beta)*(Omega_rad-Omega_circ);
     double normfact = gtt + 2*Omega*gtp + Omega*Omega*gpp;
-    if (normfact>0) throwError("In ThickDisk::getVelocity: velocity "
+    if (normfact>0) GYOTO_ERROR("In ThickDisk::getVelocity: velocity "
   			     "prescription non physical.");
     vel[0] = sqrt(-(1. + grr*vel[1]*vel[1])/normfact);
     vel[3] = Omega*vel[0];
@@ -496,7 +496,7 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
         (normcur!=normcur) ||
         (normcur==normcur+1)) {
       cerr << setprecision(10) << "at rcyl th= " << rcyl << " " << pos[2] << ", u2= " << normcur << endl;
-      throwError("In ThickDisk: 4vel not properly normalized!");
+      GYOTO_ERROR("In ThickDisk: 4vel not properly normalized!");
     }
   }else{
     // Ipole formalism for comparison to Vos+22
@@ -688,7 +688,7 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
   double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,B4vect);
   double theta_mag = acos(lscalb/(lnorm*bnorm));
 
-  if (theta_mag<0. or theta_mag>M_PI) throwError("ThickDisk: bad B angle");
+  if (theta_mag<0. or theta_mag>M_PI) GYOTO_ERROR("ThickDisk: bad B angle");
 
   Eigen::Matrix4d Omat, Pmat;
   Omat << 1, 0, 0, 0,

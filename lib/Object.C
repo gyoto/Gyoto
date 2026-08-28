@@ -419,6 +419,7 @@ void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
 }
 
 void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
+  GYOTO_DEBUG << "fmp=" << fmp << " START processing parameters" << endl;
   string name="", content="", unit="";
   FactoryMessenger * child = NULL;
   if (fmp)
@@ -472,7 +473,7 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	}
       }
     }
-  GYOTO_DEBUG << "Done processing parameters" << endl;
+  GYOTO_DEBUG << "fmp=" << fmp << " DONE processing parameters" << endl;
 }
 
 #endif

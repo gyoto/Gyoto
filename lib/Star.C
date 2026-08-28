@@ -310,7 +310,7 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
       // Copute Magnetic field in KS'
       //cout << "r sth, velBL, ucov KS'= " << co[1] << " " << sin(co[2]) << " " << vel[0] << " " << vel[3] << " " << Ucov_KSm[1] << " " << Ucov_KSm[2] << " " << Ucov_KSm[3] << endl;
-      //throwError("test disk");
+      //GYOTO_ERROR("test disk");
       double B0=B_1*Ucov_KSm[1]+B_2*Ucov_KSm[2]+B_3*Ucov_KSm[3],
         B1=(B_1+B0*Ucon_KSm[1])/Ucon_KSm[0],
         B2=(B_2+B0*Ucon_KSm[2])/Ucon_KSm[0],
