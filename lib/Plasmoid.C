@@ -55,10 +55,9 @@ GYOTO_PROPERTY_END(Plasmoid, UniformSphere::properties)
 Plasmoid::Plasmoid() : 
   FitsRW(), 
   UniformSphere("Plasmoid"),
-  posIni_(NULL),
-  fourveldt_(NULL),
+  posIni_(),
+  fourveldt_(),
   flag_("None"),
-  posSet_(false),
   t_inj_(1.),
   radiusMax_(1.),
   varyRadius_("None"),
@@ -79,9 +78,6 @@ Plasmoid::Plasmoid() :
   GYOTO_DEBUG << "done." << endl;
 # endif
 
-  posIni_= new double[4];
-  fourveldt_= new double[4];
-
   emis_polar_array_ = new double*[4];
   abs_polar_array_  = new double*[4];
   rot_polar_array_  = new double*[3];
@@ -100,10 +96,9 @@ Plasmoid::Plasmoid() :
 Plasmoid::Plasmoid(const Plasmoid& orig) :
   FitsRW(orig),
   UniformSphere(orig),
-  posIni_(NULL),
-  fourveldt_(NULL),
+  posIni_(),
+  fourveldt_(),
   flag_(orig.flag_),
-  posSet_(orig.posSet_),
   t_inj_(orig.t_inj_),
   radiusMax_(orig.radiusMax_),
   varyRadius_(orig.varyRadius_),
@@ -120,15 +115,8 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
   nb_angle_(orig.nb_angle_)
 {
 
-  if(orig.posIni_){
-	  posIni_= new double[4];
-	  memcpy(posIni_,orig.posIni_, 4*sizeof(double));
-  }
-
-  if(orig.fourveldt_){
-	  fourveldt_= new double[4];
-	  memcpy(fourveldt_,orig.fourveldt_, 4*sizeof(double));
-  }
+  memcpy(posIni_,orig.posIni_, 4*sizeof(double));
+  memcpy(fourveldt_,orig.fourveldt_, 4*sizeof(double));
   
   int ncells_coefs = nb_time_*nb_freq_*nb_angle_;
   if (orig.emis_polar_array_){
@@ -178,6 +166,8 @@ Plasmoid* Plasmoid::clone() const { return new Plasmoid(*this); }
 
 Plasmoid::~Plasmoid() {
   if (debug()) cerr << "DEBUG: Plasmoid::~Plasmoid()\n";
+  GYOTO_SEVERE <<
+    "Plasmoid is leaking memory, please help by implementing the destructor";
 }
 
 string Plasmoid::className() const { return  string("Plasmoid"); }
@@ -462,11 +452,11 @@ void Plasmoid::metric(SmartPointer<Metric::Generic> gg) {
 }
 
 void Plasmoid::initPosition(std::vector<double> const &v) {
+  if (v.size() != 4) GYOTO_ERROR("InitPosition should be of size 4");
   posIni_[0] = v[0];
   posIni_[1] = v[1];
   posIni_[2] = v[2];
   posIni_[3] = v[3];
-  posSet_=true;
 }
 
 std::vector<double> Plasmoid::initPosition() const {
@@ -479,26 +469,12 @@ std::vector<double> Plasmoid::initPosition() const {
 }
 
 void Plasmoid::initVelocity(std::vector<double> const &v) {
-  if (!posSet_)
-  	GYOTO_ERROR("In Plasmoid::initVelocity initial Position not defined");
-  fourveldt_[1] = v[0];
-  fourveldt_[2] = v[1];
-  fourveldt_[3] = v[2];
-  fourveldt_[0] = 1.;
-
-  double sum = 0;
-  double g[4][4];
-
-  gg_->gmunu(g, posIni_);
-
-  for (int i=0;i<4;++i) {
-    for (int j=0;j<4;++j) {
-      sum+=g[i][j]*fourveldt_[i]*fourveldt_[j];
-    }
-  }
-  if (sum>=0)
- 	GYOTO_ERROR("In Plasmoid::initVelocity Initial Velocity over C");
-
+  if (v.size() == 3) {
+    fourveldt_[1] = v[0];
+    fourveldt_[2] = v[1];
+    fourveldt_[3] = v[2];
+    fourveldt_[0] = 1.;
+  } else GYOTO_ERROR("InitVelocity should be of size 3");
 }
 
 std::vector<double> Plasmoid::initVelocity() const {

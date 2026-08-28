@@ -51,10 +51,12 @@ GYOTO_PROPERTY_END(PatternDisk, ThinDisk::properties)
 
 void PatternDisk::fillProperty(Gyoto::FactoryMessenger *fmp,
 			       Property const &p) const {
-  if (p.name == "File")
-    fmp->setParameter("File", (filename_.compare(0,1,"!") ?
-			       filename_ :
-			       filename_.substr(1)) );
+  if (p.name == "File") {
+    if (!file().empty())
+      fmp->setParameter("File", (filename_.compare(0,1,"!") ?
+				 filename_ :
+				 filename_.substr(1)) );
+  }
   else ThinDisk::fillProperty(fmp, p);
 }
 

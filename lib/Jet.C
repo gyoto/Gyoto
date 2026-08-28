@@ -593,7 +593,7 @@ bool Jet::isThreadSafe() const {
 
 void Jet::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
-  string kin = gg->kind();
+  //string kin = gg->kind();
   //if (kin != "KerrBL" or kin!="NumericalMetricLorene")
   //  GYOTO_ERROR
   //    ("Jet::metric(): metric must be KerrBL");
