@@ -18,21 +18,33 @@
  */
 
 #include <GyotoError.h>
+#include <boost/stacktrace.hpp>
 #include <iostream>
 #include <cstdlib>
 using namespace Gyoto;
 using namespace std;
 
-Error::Error( const std::string m ) : message(m), errcode(EXIT_FAILURE) { }
+Error::Error( const std::string m ) :
+  message(m),
+  stacktrace(boost::stacktrace::to_string(boost::stacktrace::stacktrace())),
+  errcode(EXIT_FAILURE) {
+  fullmessage = stacktrace + "\n" + message;
+}
 
-Error::Error( const Gyoto::Error &o): message(o.message), errcode(o.errcode) {}
+Error::Error( const Gyoto::Error &o):
+  message(o.message),
+  stacktrace(o.stacktrace),
+  fullmessage(o.fullmessage),
+  errcode(o.errcode) {}
 
-void Error::Report() const { cerr << message << endl; }
+void Error::Report() const {
+  cerr << fullmessage << endl;
+}
 
 int Error::getErrcode() const { return errcode ; }
 
-//char const * const Error::get_message() const { return message; }
 std::string Error::get_message() const { return message; }
+std::string Error::get_stacktrace() const { return stacktrace; }
 
 static Gyoto::Error::Handler_t * GyotoErrorHandler = NULL;
 
@@ -44,4 +56,6 @@ void Gyoto::throwError( const std::string m ) {
   else throw Error(m);
 }
 
-Gyoto::Error::operator const char * () const { return message.c_str(); }
+Gyoto::Error::operator const char * () const {
+  return fullmessage.c_str();
+}
