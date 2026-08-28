@@ -91,9 +91,10 @@ http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 Coding rules:
 =============
 
-Don't use std::atof from cstdlib. Use Gyoto::atof instead. Gyoto::atof
-is a wrapper that ensures demical_point is "." and handles special
-values like DBL_MAX.
+For conversion between strings and doubles, don't use std::atof or
+other generic interfaces. Use Gyoto::stringToDouble and
+Gyoto::doubleToString instead. They ensure demical_point is "." and
+handle special values like DBL_MAX.
 
 On output (especially to XML), you should also make sure to use the
 'C' locale. If using C-style sprintf(), this can be done with:

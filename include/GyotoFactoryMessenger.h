@@ -477,8 +477,8 @@ class Gyoto::FactoryMessenger {
    *
    * Parse at most max_tokens tokens from string src into
    * pre-allocated array dst. Returns the number of tokens actually
-   * found (interpreted using atof). dst must be at least of size
-   * max_tokens.
+   * found (interpreted using Gyoto::stringToDouble). dst must be at
+   * least of size max_tokens.
    */
   static size_t parseArray(std::string src, double dst[], size_t max_tokens);
 
