@@ -152,21 +152,21 @@ double FlaredDiskSynchrotron::hoverR() const {
   return hoverR_;
 }
 
-void FlaredDiskSynchrotron::timeTranslation_inMunit(double const dt) {
+void FlaredDiskSynchrotron::translateTimeArray(double delta_t) {
   double tmin=GridData2D::tmin(), tmax=GridData2D::tmax();
-  GridData2D::tmin(tmin-deltat_+dt);
-  GridData2D::tmax(tmax-deltat_+dt);
-  deltat_=dt;
-  if (GridData2D::nt()==0)
-    GYOTO_ERROR("In FlaredDiskSynchrotron::timeTranslation nt not yet defined");
   int nt = GridData2D::nt();
-  if (!time_array_)
-    GYOTO_ERROR("In FlaredDiskSynchrotron::timeTranslation time_array_ not defined. Please use FlaredDiskSynchrotron::file(string) before this function");
+  GridData2D::tmin(tmin+delta_t);
+  GridData2D::tmax(tmax+delta_t);
   for (int ii=0;ii<nt;ii++){
-    time_array_[ii]+=dt;
+    time_array_[ii] += delta_t;
   }
   if (GridData2D::tmin()>0)
-    cout << "\nWARNING : tmin is positive, in most cases the stationnary boundary condition will be applied. You should decrease more timeTranslation_inMunit until at least " << -tmin << "\n" << endl;
+    GYOTO_WARNING << "tmin is positive, in most cases the stationnary boundary condition will be applied. You should decrease more timeTranslation_inMunit until at least " << -tmin << "\n" << endl;
+}
+
+void FlaredDiskSynchrotron::timeTranslation_inMunit(double const dt) {
+  if (time_array_) translateTimeArray(dt-deltat_);
+  deltat_ = dt;
 }
 
 double FlaredDiskSynchrotron::timeTranslation_inMunit() const {
@@ -491,6 +491,9 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
   GridData2D::nr(naxes_dens[0]);
   GridData2D::nphi(naxes_dens[1]);
   GridData2D::nt(naxes_dens[2]);
+
+  translateTimeArray(deltat_);
+
   //cout << "axes dens: " << naxes_dens[0] << " " << naxes_dens[1] << " " << naxes_dens[2] << endl;
   //cout << "axes velo: " << naxes_velo[0] << " " << naxes_velo[1] << " " << naxes_velo[2] << " " << naxes_velo[3] << endl;
 
@@ -747,5 +750,16 @@ void FlaredDiskSynchrotron::getVelocity(double const pos[4], double vel[4]){
 
 bool FlaredDiskSynchrotron::isThreadSafe() const {
   return Standard::isThreadSafe();
+}
+
+void FlaredDiskSynchrotron::fillProperty(Gyoto::FactoryMessenger *fmp,
+			       Property const &p) const {
+  if (p.name == "File") {
+    if (filename_ != "")
+      fmp->setParameter("File", (filename_.compare(0,1,"!") ?
+				 filename_ :
+				 filename_.substr(1)) );
+  }
+  else Standard::fillProperty(fmp, p);
 }
 
