@@ -53,13 +53,12 @@ GYOTO_PROPERTY_END(Disk3D, Generic::properties)
 void Disk3D::fillProperty(Gyoto::FactoryMessenger *fmp,
 			       Property const &p) const {
   if (p.name == "File"){
-    fmp->setParameter("File", (filename_.compare(0,1,"!") ?
-			       filename_ :
-			       filename_.substr(1)) );
-    GYOTO_DEBUG << filename_.substr(1);
-    GYOTO_DEBUG << filename_.compare(0,1,"!");
-
-
+    if (filename_ != "") {
+      std::string fname = file(); // cope with derived classes
+      fmp->setParameter("File", (fname.compare(0,1,"!") ?
+				 fname :
+				 fname.substr(1)) );
+    }
   }
   else Generic::fillProperty(fmp, p);
 }

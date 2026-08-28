@@ -142,8 +142,9 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
 			 const std::string & prefix = "");
 #endif
 
-  void file(std::string const &f);
-  std::string file() const;
+  // Derived classes override file()
+  virtual void file(std::string const &f);
+  virtual std::string file() const;
   void zsym(bool t);
   bool zsym() const;
   void tPattern(double t);

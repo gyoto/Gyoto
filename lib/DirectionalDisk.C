@@ -56,10 +56,12 @@ GYOTO_PROPERTY_END(DirectionalDisk, ThinDisk::properties)
 
 void DirectionalDisk::fillProperty(Gyoto::FactoryMessenger *fmp,
 			       Property const &p) const {
-  if (p.name == "File")
-    fmp->setParameter("File", (filename_.compare(0,1,"!") ?
-			       filename_ :
-			       filename_.substr(1)) );
+  if (p.name == "File") {
+    if (filename_ != "")
+      fmp->setParameter("File", (filename_.compare(0,1,"!") ?
+				 filename_ :
+				 filename_.substr(1)) );
+  }
   else ThinDisk::fillProperty(fmp, p);
 }
 
@@ -245,14 +247,15 @@ double DirectionalDisk::lampaltitude() const {
 
 void DirectionalDisk::lampcutoffsinev(std::vector<double> const &v) {
   if (v.size() != 2)
-    GYOTO_ERROR("In DirectionalDisk: Only 2 arguments to define lamp energy range");
+    GYOTO_ERROR("Only 2 arguments to define lamp energy range");
   minfreq_lampframe_ = v[0]*GYOTO_eV2Hz;
   maxfreq_lampframe_ = v[1]*GYOTO_eV2Hz;
 }
 
 std::vector<double> DirectionalDisk::lampcutoffsinev() const {
   std::vector<double> v (2, 0.);
-  v[0]=minfreq_lampframe_; v[1]=maxfreq_lampframe_;
+  v[0] = minfreq_lampframe_ / GYOTO_eV2Hz;
+  v[1] = maxfreq_lampframe_ / GYOTO_eV2Hz;
   return v;
 }
 
@@ -699,9 +702,9 @@ double DirectionalDisk::emission(double nu, double,
 }
 
 void DirectionalDisk::metric(SmartPointer<Metric::Generic> gg) {
-  //Metric must be KerrBL (see emission function)
-  string kin = gg->kind();
-  if (kin != "KerrBL")
+  // Metric must be KerrBL (see emission function)
+  if (gg && !dynamic_cast<const Metric::KerrBL*>(gg()))
     GYOTO_ERROR("DirectionalDisk::metric(): metric must be KerrBL");
+
   ThinDisk::metric(gg);
 }
