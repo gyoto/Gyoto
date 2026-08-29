@@ -18,6 +18,7 @@
 #include "GyotoSimBridge.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
+#include "GyotoValue.h"
 
 #ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
@@ -31,15 +32,15 @@ using namespace Gyoto::Astrobj;
 
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(SimBridge)
-GYOTO_PROPERTY_STRING(SimBridge, Directory, directory)
-GYOTO_PROPERTY_STRING(SimBridge, Filename, filename)
+GYOTO_PROPERTY_FILENAME(SimBridge, FilePrefix, filePrefix)
 GYOTO_PROPERTY_DOUBLE(SimBridge, GammaMin, gammaMin)
 GYOTO_PROPERTY_DOUBLE(SimBridge, GammaMax, gammaMax)
 GYOTO_PROPERTY_BOOL(SimBridge, CircularMotion, NoCircularMotion, circularMotion)
 GYOTO_PROPERTY_BOOL(SimBridge, CunninghamVel, NoCunninghamVel, cunninghamVel)
 GYOTO_PROPERTY_DOUBLE(SimBridge, PLindex, PLindex)
 GYOTO_PROPERTY_DOUBLE(SimBridge, FloorTemperature, floorTemperature)
-GYOTO_PROPERTY_STRING(SimBridge, EmissionType, emissionType)
+GYOTO_PROPERTY_STRING(SimBridge, EmissionType, emissionType,
+		      "Thermal | Kappa | PL | [BlackBody]")
 GYOTO_PROPERTY_STRING(SimBridge, BoundaryConditions, boundaryConditions)
 GYOTO_PROPERTY_DOUBLE(SimBridge, Magnetization, magnetization)
 GYOTO_PROPERTY_END(SimBridge, Standard::properties)
@@ -51,13 +52,12 @@ SimBridge::SimBridge() :
   spectrumKappaSynch_(NULL),
   spectrumPLSynch_(NULL),
   spectrumThermalSynch_(NULL),
-  dirname_("None"),
-  fname_("data"),
+  fprefix_(""),
   temperature_(true),
   circularmotion_(false),
   cunninghamvel_(false),
   BinFile_(true),
-  emission_("None"),
+  emission_("BlackBody"),
   PLindex_(1.),
   gammaMin_(1.),
   gammaMax_(1.),
@@ -91,8 +91,7 @@ SimBridge::SimBridge(const SimBridge& orig) :
   spectrumKappaSynch_(NULL),
   spectrumPLSynch_(NULL),
   spectrumThermalSynch_(NULL),
-  dirname_(orig.dirname_),
-  fname_(orig.fname_),
+  fprefix_(orig.fprefix_),
   temperature_(orig.temperature_),
   circularmotion_(orig.circularmotion_),
   cunninghamvel_(orig.cunninghamvel_),
@@ -176,21 +175,12 @@ SimBridge::~SimBridge() {
 string SimBridge::className() const { return  string("SimBridge"); }
 string SimBridge::className_l() const { return  string("simbridge"); }
 
-void SimBridge::directory(std::string const &d){
-  dirname_=d;
-}
-std::string SimBridge::directory() const{
-  return dirname_;
-}
-
-void SimBridge::filename(std::string const &f){
-  fname_=f;
-  if (dirname_=="None")
-    GYOTO_ERROR("Please set the directory before the filenames");
+void SimBridge::filePrefix(std::string const &f){
+  fprefix_ = f;
   
   // Reading and save dimensions of arrays in header
   ostringstream stream_name ;
-  stream_name << dirname_ << fname_ << setw(4) << setfill('0') << 0 << ".fits" ;
+  stream_name << fprefix_ << setw(4) << setfill('0') << 0 << ".fits" ;
       
   string filename = stream_name.str();
   GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
@@ -285,8 +275,8 @@ void SimBridge::filename(std::string const &f){
   FitsRW::fitsClose(fptr);
 }
 
-std::string SimBridge::filename() const{
-  return fname_;
+std::string SimBridge::filePrefix() const{
+  return fprefix_;
 }
 
 void SimBridge::PLindex(double pl){
@@ -374,7 +364,7 @@ void SimBridge::emissionType(std::string const &kind){
     emission_ = "Kappa";
   else if (kind == "PL")
     emission_ = "PL";
-  else if (kind == "BB")
+  else if (kind == "BB" || kind == "BlackBody")
     emission_ = "BlackBody";
   else
     GYOTO_ERROR("unknown electron distribution!");
@@ -391,8 +381,6 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
-  if (dirname_=="None")
-      GYOTO_ERROR("In SimBridge RadiativeQ : dirname_ not defined, please use directory(string)");
   
   double tcur=coord_ph[0]; // in M units # TBC
   int nfile=ntime_==1?1:2; // 1 if ntime=1, 2 otherwise
@@ -446,7 +434,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   double time_interpo[nfile];
   for (int ii=0; ii<nfile; ii++){
     ostringstream stream_name ;
-    stream_name << dirname_ << fname_ << setw(4) << setfill('0') << index+ii << ".fits" ;
+    stream_name << fprefix_ << setw(4) << setfill('0') << index+ii << ".fits" ;
         
     string filename = stream_name.str();
     GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
@@ -867,8 +855,6 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
       }
     }
   }else{
-    if (dirname_=="None")
-        GYOTO_ERROR("In SimBridge RadiativeQ : dirname_ not defined, please use directory(string)");
   
     double tcur=pos[0]; // in M units # TBC
   
@@ -887,7 +873,7 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
     double time_interpo[nfile];
     for (int ii=0; ii<nfile; ii++){
       ostringstream stream_name ;
-      stream_name << dirname_ << fname_ << setw(4) << setfill('0') << index+ii << ".fits" ;
+      stream_name << fprefix_ << setw(4) << setfill('0') << index+ii << ".fits" ;
         
       string filename = stream_name.str();
       GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
@@ -989,4 +975,98 @@ int SimBridge::getIndex(double const tcur) const {
       return ii - 1;
     }
   }
+}
+
+void SimBridge::setParameters(Gyoto::FactoryMessenger *fmp)  {
+  GYOTO_DEBUG << "fmp=" << fmp << " START processing parameters" << endl;
+  string name="", content="", unit="";
+  bool file_found=false, dirname_found=false, fileprefix_found=false;
+  string file = "", dirname = "";
+  FactoryMessenger * child = NULL;
+
+  if (fmp)
+    while (fmp->getNextParameter(&name, &content, &unit)) {
+      GYOTO_DEBUG << "Setting '" << name << "' to '" << content
+		  << "' (unit='"<<unit<<"')" << endl;
+      if (name == "Filename") {
+	file_found = true;
+	file = content;
+	continue; // skip to next parameter
+      } else if (name == "Directory") {
+	dirname_found = true;
+	dirname = content;
+	continue; // skip to next parameter
+      } else if (name == "FilePrefix") {
+	fileprefix_found = true;
+	// fall-through to notmal processing
+      }
+      Property const * prop = property(name);
+      if (!prop) {;
+	GYOTO_DEBUG << "'" << name << "' not found, calling setParameter()"
+		    << endl;
+	// The specific setParameter() implementation may well know
+	// this entity
+	if (setParameter(name, content, unit) ) {
+	  std::string msg ("Property '");
+	  msg += name;
+	  msg += "' not found";
+	  GYOTO_ERROR (msg);
+	}
+      } else {
+	GYOTO_DEBUG << "'" << name << "' found "<< endl;
+	std::vector<std::string> plugins;
+	switch (prop->type) {
+	case Property::metric_t:
+	  set(*prop, fmp->metric());
+	  break;
+	case Property::astrobj_t:
+	  set(*prop, fmp->astrobj());
+	  break;
+	case Property::screen_t:
+	  set(*prop, fmp->screen());
+	  break;
+	case Property::spectrum_t:
+	  content = fmp -> getAttribute("kind");
+	  child = fmp -> getChild();
+	  plugins = Gyoto::split(fmp -> getAttribute("plugin"), ",");
+	  set(*prop, (*Spectrum::getSubcontractor(content, plugins))(child, plugins) );
+	  delete child;
+	  break;
+	case Property::spectrometer_t:
+	  content = fmp -> getAttribute("kind");
+	  child = fmp -> getChild();
+	  plugins = Gyoto::split(fmp -> getAttribute("plugin"), ",");
+	  set(*prop, (*Spectrometer::getSubcontractor(content, plugins))(child, plugins) );
+	  delete child;
+	  break;
+	case Property::filename_t:
+	  content = fmp->fullPath(content);
+	  [[fallthrough]]; // no 'break;' here, we need to proceed
+	default:
+	  setParameter(*prop, name, content, unit);
+	}
+      }
+    }
+  if (fileprefix_found && (file_found || dirname_found)) {
+    GYOTO_WARNING
+      << "Directory and Filename are dreprecated and ignored when using "
+      << "FilePrefix" << endl;
+  } else if (file_found) {
+    GYOTO_WARNING
+      << "Directory and Filename are deprecated, use FilePrefix instead"
+      << endl;
+    filePrefix(dirname+file);
+  }
+  GYOTO_DEBUG << "fmp=" << fmp << " DONE processing parameters" << endl;
+}
+
+void SimBridge::fillProperty(Gyoto::FactoryMessenger *fmp,
+			       Property const &p) const {
+  if (p.name == "FilePrefix") {
+    if (!fprefix_.empty())
+      fmp->setParameter("FilePrefix", (fprefix_.compare(0,1,"!") ?
+				       fprefix_ :
+				       fprefix_.substr(1)) );
+  }
+  else Standard::fillProperty(fmp, p);
 }
