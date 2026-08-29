@@ -556,13 +556,14 @@ bool ThickDisk::isThreadSafe() const {
 
 void ThickDisk::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
-  string kin = gg->kind();
+  //string kin = gg->kind();
   //if (kin != "KerrBL" or kin!="NumericalMetricLorene")
   //  GYOTO_ERROR
   //    ("ThickDisk::metric(): metric must be KerrBL");
   // NB: KerrBL needed for ZAMO velocity in getVelocity,
   // could be generalized if needed
   Generic::metric(gg);
+  if (gg_) gg_->hook(this);
 }
 
 void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,

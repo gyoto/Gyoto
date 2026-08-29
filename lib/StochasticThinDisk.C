@@ -92,12 +92,12 @@ string StochasticThinDisk::equationKind() const {
 void StochasticThinDisk::motionKind(string const &kind) {
   if (kind == "Static")
     motionkind_ = STATIC;
-  if (kind == "Circular")
+  else if (kind == "Circular")
     motionkind_ = CIRCULAR;
   else if (kind == "Radial")
     motionkind_ = RADIAL;
   else
-    GYOTO_ERROR("StochasticThinDisk: Unknown velocity kind");
+    GYOTO_ERROR("StochasticThinDisk: Unknown velocity kind: '" + kind + "'");
 }
 string StochasticThinDisk::motionKind() const {
   switch (motionkind_) {

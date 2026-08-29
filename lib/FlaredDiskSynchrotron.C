@@ -126,7 +126,8 @@ FlaredDiskSynchrotron::~FlaredDiskSynchrotron() {
 
 void FlaredDiskSynchrotron::file(std::string const &f) {
 # ifdef GYOTO_USE_CFITSIO
-  fitsRead(f);
+  if (!f.empty() && !(f.back() == '/'))
+    fitsRead(f);
 # else
   GYOTO_ERROR("This Gyoto has no FITS i/o");
 # endif
@@ -138,12 +139,10 @@ std::string FlaredDiskSynchrotron::file() const {
 
 void FlaredDiskSynchrotron::hoverR(double const hor) {
   double hmin=1e-4;
-  if (hor < hmin){
-    cerr << " " << endl;
-    cerr << "***!!WARNING!!*** In FlaredDiskSynchrotron::hoverR: "
+  if (hor < hmin) {
+    GYOTO_WARNING << "In FlaredDiskSynchrotron::hoverR: "
       "H/R very small, you might not resolve your disk; "
       "increase H/R or decrease GYOTO_T_TOL." << endl;
-    cerr << " " << endl;
   }
   hoverR_ = hor;
 }
@@ -751,15 +750,3 @@ void FlaredDiskSynchrotron::getVelocity(double const pos[4], double vel[4]){
 bool FlaredDiskSynchrotron::isThreadSafe() const {
   return Standard::isThreadSafe();
 }
-
-void FlaredDiskSynchrotron::fillProperty(Gyoto::FactoryMessenger *fmp,
-			       Property const &p) const {
-  if (p.name == "File") {
-    if (filename_ != "")
-      fmp->setParameter("File", (filename_.compare(0,1,"!") ?
-				 filename_ :
-				 filename_.substr(1)) );
-  }
-  else Standard::fillProperty(fmp, p);
-}
-

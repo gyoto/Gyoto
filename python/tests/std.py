@@ -391,16 +391,15 @@ class TestStdAstrobj(unittest.TestCase):
 
     def invalid(self, classname, cls):
         return (not inspect.isclass(cls)
-                or not issubclass(cls, gyoto.core.Astrobj))
+                or not issubclass(cls, gyoto.core.Astrobj)
+                or cls == gyoto.astrobj.UniformSphere)
 
-    @unittest.skip("lots of bugs to fix before this test will pass")
     def test_xmlio(self):
         nspace=gyoto.std
         for classname, cls in inspect.getmembers(nspace):
             if (self.invalid(classname, cls)):
                 continue
-            if True:
-            # with self.subTest():
+            with self.subTest(f"{classname=}"):
                 try:
                     astrobj=cls()
                 except gyoto.core.Error as e:
@@ -416,16 +415,25 @@ class TestStdAstrobj(unittest.TestCase):
                         e.get_message()
                     )
                 try:
-                    b = str(gyoto.core.Factory(a).astrobj())
+                    astrobj2 = gyoto.core.Factory(a).astrobj()
                 except gyoto.core.Error as e:
                     raise Exception(
                         f'unable to construct {classname} from XML: \n' +
+                        e.get_message()
+                    )
+                try:
+                    b = str(gyoto.core.Factory(a).astrobj())
+                except gyoto.core.Error as e:
+                    raise Exception(
+                        f'unable to describe second instance as XML: \n' +
                         e.get_message()
                     )
                 self.assertEqual(
                     a, b,
                     f"XML roudtrip is not idempotent for class {classname}"
                 )
+                del astrobj
+                del astrobj2
 
 class TestBalasinGrumiller(unittest.TestCase):
    def setUp(self):

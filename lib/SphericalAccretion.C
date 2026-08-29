@@ -323,11 +323,12 @@ bool SphericalAccretion::isThreadSafe() const {
 
 void SphericalAccretion::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
-  string kin = gg->kind();
+  // string kin = gg->kind();
   //if (kin != "KerrBL" or kin!="NumericalMetricLorene")
   //  GYOTO_ERROR
   //    ("SphericalAccretion::metric(): metric must be KerrBL");
   // NB: KerrBL needed for ZAMO velocity in getVelocity,
   // could be generalized if needed
   Generic::metric(gg);
+  if (gg_) gg_->hook(this);
 }

@@ -146,9 +146,6 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
 			  double const coord_obj[8]) const;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
 
-  // fillProperty is overridden to not output File if not set
-  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;
-
 };
 
 #endif
