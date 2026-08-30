@@ -63,6 +63,8 @@ class Gyoto::Metric::Complex
   Gyoto::SmartPointer<Gyoto::Metric::Generic> * elements_;
 
  public:
+ public:
+  GYOTO_OBJECT;
   GYOTO_OBJECT_THREAD_SAFETY;
   Complex(); ///< Default constructor.
   Complex(const Complex& ) ; ///< Copy constructor.

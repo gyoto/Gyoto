@@ -364,7 +364,6 @@ class TestStdMetric(unittest.TestCase):
             gup=metric.gmunu_up(pos)
             self.assertAlmostEqual(numpy.abs(numpy.linalg.multi_dot((g, gup))-I).max(), 0.)
 
-    @unittest.skip("lots of bugs to fix before this test will pass")
     def test_xmlio(self):
         nspace=gyoto.std
         for classname, cls in inspect.getmembers(nspace):

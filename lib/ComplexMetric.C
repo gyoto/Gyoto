@@ -24,9 +24,15 @@
 
 #include "GyotoComplexMetric.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoProperty.h"
 
 using namespace Gyoto;
 using namespace Gyoto::Metric;
+
+/// Properties
+GYOTO_PROPERTY_START(Gyoto::Metric::Complex,
+		     "A container for several metrics.")
+GYOTO_PROPERTY_END(Complex, Generic::properties)
 
 Complex::Complex() :
   Generic(GYOTO_COORDKIND_UNSPECIFIED, "Complex"),
