@@ -486,7 +486,7 @@ SmartPointer<Scenery> Factory::scenery () {
   
     FactoryMessenger fm(this, tmpEl);
     scenery_ = Scenery::Subcontractor(&fm);
-  
+
     delete result;
   }
   return scenery_;
@@ -494,24 +494,29 @@ SmartPointer<Scenery> Factory::scenery () {
 
 SmartPointer<Gyoto::Screen> Factory::screen(){
   if (!screen_) {
-    DOMXPathResult* result;
     DOMElement *ScreenDOM;
-    result=doc_->evaluate(
-			  X(("/"+kind_+"/Screen").c_str()),
-			  root_,
-			  resolver_,
-			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
-			  NULL);
-    if (!result->getSnapshotLength()) {
+
+    if (kind_=="Screen") {
+      ScreenDOM = root_;
+    } else {
+      DOMXPathResult* result = NULL;
+      result=doc_->evaluate(
+			    X(("/"+kind_+"/Screen").c_str()),
+			    root_,
+			    resolver_,
+			    DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
+			    NULL);
+      if (!result->getSnapshotLength()) {
+	delete result;
+	return NULL;
+      }
+
+      ScreenDOM = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
-      return NULL;
     }
-    
-    ScreenDOM = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
-    
+
     FactoryMessenger fm ( this, ScreenDOM );
     screen_ = Screen::Subcontractor(&fm);
-    delete result;
   }
   return screen_;
 }

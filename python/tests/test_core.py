@@ -5,25 +5,30 @@ import gyoto.core
 import numpy
 import gyoto.metric, gyoto.astrobj, gyoto.spectrum, gyoto.spectrometer
 import inspect
+from . import helpers
 
 gyoto.core.requirePlugin('stdplug')
 
 class TestSmartPointer(unittest.TestCase):
+    def invalid(self, classname, cls):
+        if (classname in ('Metric',
+                          'Astrobj',
+                          'StandardAstrobj',
+                          'UniformSphere',
+                          'Spectrum',
+                          'Spectrometer',
+                          'Object')
+            or not inspect.isclass(cls)
+            or not issubclass(cls, gyoto.core.Object)):
+            return True
+
     def test_core_classes(self):
         '''Test class namespace sanity and ref counting
         '''
         for classname, cls in inspect.getmembers(gyoto.core):
             default_verbosity=gyoto.core.verbose()
             # Skip abstract classes
-            if (classname in ('Metric',
-                              'Astrobj',
-                              'StandardAstrobj',
-                              'UniformSphere',
-                              'Spectrum',
-                              'Spectrometer',
-                              'Object')
-                or not inspect.isclass(cls)
-                or not issubclass(cls, gyoto.core.Object)):
+            if self.invalid(classname, cls):
                 continue
             obj = cls()
             for method in dir(cls):
@@ -192,6 +197,11 @@ class TestSmartPointer(unittest.TestCase):
             self.assertEqual(cplx1.getRefCount(), 1)
             del cplx1
             del cplx
+
+    def test_xmlio(self):
+        helpers.test_xmlio(self, gyoto.core,
+                           lambda n, c :
+                               self.invalid(n, c) or n == "Scoreen")
 
 class TestUnit(unittest.TestCase):
 

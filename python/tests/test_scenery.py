@@ -83,6 +83,16 @@ class TestScenery(unittest.TestCase):
         self.assertEqual(ao.getPointer(), ao2.getPointer(),
                          "retrieved astrobj pointer is not same as set")
 
+        scr = gyoto.core.Screen()
+        sc.Screen = scr
+        scr2 = sc.Screen
+
+        self.assertEqual(scr2.getPointer(), scr.getPointer(),
+                         "retrieved screen pointer is not same as set")
+
+        self.assertEqual(scr.Metric.getPointer(), gg.getPointer(),
+                         "scenery did not correctly set screen metric")
+
         sc.screen().time(10000)
         time2 = sc.screen().time()
         self.assertEqual(time2, 10000,

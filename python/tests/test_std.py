@@ -4,6 +4,7 @@ import gyoto.core
 import gyoto.std
 import gyoto.metric
 import inspect
+from . import helpers
 
 class TestChernSimons(unittest.TestCase):
 
@@ -365,18 +366,7 @@ class TestStdMetric(unittest.TestCase):
             self.assertAlmostEqual(numpy.abs(numpy.linalg.multi_dot((g, gup))-I).max(), 0.)
 
     def test_xmlio(self):
-        nspace=gyoto.std
-        for classname, cls in inspect.getmembers(nspace):
-            if (self.invalid(classname, cls)):
-                continue
-            with self.subTest():
-                metric=self.metric(cls)
-                a = str(metric)
-                b = str(gyoto.core.Factory(a).metric())
-                self.assertEqual(
-                    a, b,
-                    f"XML roudtrip is not idempotent for class {classname}"
-                )
+        helpers.test_xmlio(self, gyoto.std, self.invalid)
 
 class TestStdAstrobj(unittest.TestCase):
 
@@ -394,45 +384,24 @@ class TestStdAstrobj(unittest.TestCase):
                 or cls == gyoto.astrobj.UniformSphere)
 
     def test_xmlio(self):
-        nspace=gyoto.std
-        for classname, cls in inspect.getmembers(nspace):
-            if (self.invalid(classname, cls)):
-                continue
-            with self.subTest(f"{classname=}"):
-                try:
-                    astrobj=cls()
-                except gyoto.core.Error as e:
-                    raise Exception(
-                        f'unable to instanciate {classname}: \n' +
-                        e.get_message()
-                    )
-                try:
-                    a = str(astrobj)
-                except gyoto.core.Error as e:
-                    raise Exception(
-                        f'unable to describe {classname} as XML: \n' +
-                        e.get_message()
-                    )
-                try:
-                    astrobj2 = gyoto.core.Factory(a).astrobj()
-                except gyoto.core.Error as e:
-                    raise Exception(
-                        f'unable to construct {classname} from XML: \n' +
-                        e.get_message()
-                    )
-                try:
-                    b = str(gyoto.core.Factory(a).astrobj())
-                except gyoto.core.Error as e:
-                    raise Exception(
-                        f'unable to describe second instance as XML: \n' +
-                        e.get_message()
-                    )
-                self.assertEqual(
-                    a, b,
-                    f"XML roudtrip is not idempotent for class {classname}"
-                )
-                del astrobj
-                del astrobj2
+        helpers.test_xmlio(self, gyoto.std, self.invalid)
+
+class TestStdSpectrum(unittest.TestCase):
+
+    default_verbosity=gyoto.core.verbose()
+
+    def setUp(self):
+        gyoto.core.verbose(0)
+
+    def tearDown(self):
+        gyoto.core.verbose(self.default_verbosity)
+
+    def invalid(self, classname, cls):
+        return (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Spectrum))
+
+    def test_xmlio(self):
+        helpers.test_xmlio(self, gyoto.std, self.invalid)
 
 class TestBalasinGrumiller(unittest.TestCase):
    def setUp(self):

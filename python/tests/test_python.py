@@ -102,7 +102,7 @@ class TestThinDiskForTests(unittest.TestCase):
         self.assertEqual(gyoto.core.gyotoid(td), td.Instance,
                          "gyotoid(instance)==instance.Instance with self instance")
         ao=gyoto.python.PythonThinDisk()
-        ao.Module="python"
+        ao.Module="tests.test_python"
         ao.Class="ThinDiskForTests"
         self.assertEqual(ao.ThisPointer, ao.SelfPointer,
                          "thindisk.ThisPointer==thindisk.SelfPointer with internal instance")

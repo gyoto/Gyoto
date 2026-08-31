@@ -256,10 +256,10 @@ int main(int argc, char** argv) {
     GYOTO_DEFAULT_PLUGINS;
 
   // if executable was invoked as gyotoy, call the gyotoy application
-  GYOTO_DEBUG_THIS_EXPR(argv[0]);
+  GYOTO_DEBUG_EXPR(argv[0]);
   if (argc && starts_with(basename(argv[0]), "gyotoy")) {
     std::strcpy(argv[0], "gyotoy");
-    GYOTO_DEBUG_THIS_EXPR(argv[0]);
+    GYOTO_DEBUG_EXPR(argv[0]);
   } else {
     argc-=(argc>0); argv+=(argc>0); // skip program name, next may be app name
   }

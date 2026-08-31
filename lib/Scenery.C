@@ -113,6 +113,7 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
     else GYOTO_WARNING << "Unrecognized XML entity in Scenery section: '"
 		       << name << "'" << endl;
   }
+
   return sc;
 }
 #endif
@@ -138,7 +139,6 @@ Scenery::Scenery(SmartPointer<Metric::Generic> met,
 #endif
 {
   metric(met);
-  if (screen_) screen_->metric(met);
   astrobj(obj);
 }
 
@@ -174,15 +174,14 @@ SmartPointer<Metric::Generic> Scenery::metric() const { return ph_.metric(); }
 
 void Scenery::metric(SmartPointer<Metric::Generic> met) {
   ph_.metric(met);
-  if (!screen_) screen_ = new Screen ();
-  screen_ -> metric(met);
+  if (screen_) screen_ -> metric(met);
 }
 
 SmartPointer<Screen> Scenery::screen() const { return screen_; }
 
 void Scenery::screen(SmartPointer<Screen> scr) {
   screen_ = scr;
-  if (metric()) screen_ -> metric (metric()) ;
+  if (scr && metric()) screen_ -> metric (metric()) ;
 }
 
 SmartPointer<Astrobj::Generic> Scenery::astrobj() const {return ph_.astrobj();}

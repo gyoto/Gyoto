@@ -21,6 +21,7 @@
 #include "GyotoFactoryMessenger.h"
 #include "GyotoMetric.h"
 #include "GyotoPhoton.h"
+#include "GyotoProperty.h"
 
 #include <cstring>
 
@@ -29,6 +30,11 @@ using namespace Gyoto;
 using namespace Gyoto::Spectrometer;
 
 kind_t const Complex::Kind = "Complex";
+
+/// Properties
+GYOTO_PROPERTY_START(Complex,
+		     "A container for several spectrometers.")
+GYOTO_PROPERTY_END(Complex, Generic::properties)
 
 Complex::Complex() :
   Generic(Complex::Kind),
@@ -165,7 +171,7 @@ void Complex::tell(Gyoto::Hook::Teller *) {
   // This is called each time an element is added or mutated
   // This is suboptimal, but most straightforward
 
-  GYOTO_DEBUG_THIS << std::endl;
+  GYOTO_DEBUG << std::endl;
 
   nboundaries_ = nsamples_ = 0;
   for (size_t i=0; i<cardinal_; ++i) {
