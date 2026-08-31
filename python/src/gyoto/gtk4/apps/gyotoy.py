@@ -288,6 +288,7 @@ class GyotoyApplication(Gtk.Application):
         self.set_accels_for_action("win.open", ["<Primary>O"])
         self.set_accels_for_action("win.save", ["<Primary>S"])
         self.set_accels_for_action("win.save-as", ["<Primary><Shift>S"])
+        self.set_accels_for_action("win.fullscreen", ["F11"])
         self.set_accels_for_action("win.find", ["<Primary>F"])
         self.set_accels_for_action("win.compute-and-redraw", ["<Primary>R"])
 
@@ -762,9 +763,11 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         menu_section2.append(_("Save As…"), "win.save-as")
         menu_section3 = Gio.Menu()
         menu_section3.append(_("Find Property"), "win.find")
-        menu_section3.append(_("Help"), "app.help")
-        menu_section3.append(_("Close"), "win.close")
-        menu_section3.append(_("Quit"), "app.quit")
+        menu_section3.append(_("Toggle Fullscreen"), "win.fullscreen")
+        menu_section4 = Gio.Menu()
+        menu_section4.append(_("Help"), "app.help")
+        menu_section4.append(_("Close"), "win.close")
+        menu_section4.append(_("Quit"), "app.quit")
 
         # Main menu items
         menu.append_section(None, menu_section1)
@@ -785,6 +788,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             ("open", lambda *args: self.props.application.on_open(self), None),
             ("save", self.on_save, None),
             ("save-as", self.on_save_as, None),
+            ("fullscreen", self.toggle_fullscreen, None),
             ("find", lambda *args: self.editor.focus_search_bar(), None),
             ("close", lambda *args: self.close(), None),
             ("compute-and-redraw", self.compute_and_redraw, None),
@@ -932,6 +936,12 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         else:
             title += "Gyotoy"
         super().set_title(title)
+
+    def toggle_fullscreen(self, *args):
+        if self.is_fullscreen():
+            self.unfullscreen()
+        else:
+            self.fullscreen()
 
     ####################################################################
     # Compute and redraw

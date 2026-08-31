@@ -314,6 +314,7 @@ class GyotoSceneryViewerApplication(Gtk.Application):
         self.set_accels_for_action("win.open", ["<Primary>O"])
         self.set_accels_for_action("win.save", ["<Primary>S"])
         self.set_accels_for_action("win.save-as", ["<Primary><Shift>S"])
+        self.set_accels_for_action("win.fullscreen", ["F11"])
         self.set_accels_for_action("win.find", ["<Primary>F"])
         self.set_accels_for_action("win.display-3d", ["<Primary>D"])
         self.set_accels_for_action("win.compute-and-redraw", ["<Primary>R"])
@@ -767,6 +768,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         menu_section2.append(_("Save As…"), "win.save-as")
         menu_section3 = Gio.Menu()
         menu_section3.append(_("Find Property"), "win.find")
+        menu_section3.append(_("Toggle Fullscreen"), "win.fullscreen")
         menu_section3.append(_("Display 3D Window"), "win.display-3d")
         menu_section4 = Gio.Menu()
         menu_section4.append(_("Help"), "app.help")
@@ -793,6 +795,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             ("open", lambda *args: self.props.application.on_open(self), None),
             ("save", self.on_save, None),
             ("save-as", self.on_save_as, None),
+            ("fullscreen", self.toggle_fullscreen, None),
             ("find", lambda *args: self.editor.focus_search_bar(), None),
             ("display-3d", self.show_viewer3d, None),
             ("close", lambda *args: self.close(), None),
@@ -934,6 +937,12 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         else:
             title += "Gyoto Scenery Viewer"
         super().set_title(title)
+
+    def toggle_fullscreen(self, *args):
+        if self.is_fullscreen():
+            self.unfullscreen()
+        else:
+            self.fullscreen()
 
     ####################################################################
     # Compute and redraw
@@ -1662,6 +1671,9 @@ class GyotoSceneryViewer3dWindow(Gtk.ApplicationWindow):
         self.add_action_entries([
             ("save", self.parent.on_save, None),
             ("save-as", self.parent.on_save_as, None),
+            ("fullscreen", self.toggle_fullscreen, None),
+            ("find", lambda *args: (self.parent.editor.focus_search_bar(),
+                                    self.parent.present()), None),
             ("close", lambda *args: self.close(), None),
             ("compute-and-redraw", self.parent.compute_and_draw, None),
         ])
@@ -1719,6 +1731,12 @@ class GyotoSceneryViewer3dWindow(Gtk.ApplicationWindow):
         # Else, only hide it and tell the event handler to stop here.
         self.set_visible(False)
         return True
+
+    def toggle_fullscreen(self, *args):
+        if self.is_fullscreen():
+            self.unfullscreen()
+        else:
+            self.fullscreen()
 
 # Helper class
 
