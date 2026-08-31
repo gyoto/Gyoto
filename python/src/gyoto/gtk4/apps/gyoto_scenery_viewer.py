@@ -314,6 +314,7 @@ class GyotoSceneryViewerApplication(Gtk.Application):
         self.set_accels_for_action("win.open", ["<Primary>O"])
         self.set_accels_for_action("win.save", ["<Primary>S"])
         self.set_accels_for_action("win.save-as", ["<Primary><Shift>S"])
+        self.set_accels_for_action("win.find", ["<Primary>F"])
         self.set_accels_for_action("win.display-3d", ["<Primary>D"])
         self.set_accels_for_action("win.compute-and-redraw", ["<Primary>R"])
 
@@ -765,7 +766,8 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         menu_section2.append(_("Save"), "win.save")
         menu_section2.append(_("Save As…"), "win.save-as")
         menu_section3 = Gio.Menu()
-        menu_section3.append(_("Display 3D window"), "win.display-3d")
+        menu_section3.append(_("Find Property"), "win.find")
+        menu_section3.append(_("Display 3D Window"), "win.display-3d")
         menu_section4 = Gio.Menu()
         menu_section4.append(_("Help"), "app.help")
         menu_section4.append(_("Close"), "win.close")
@@ -791,6 +793,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             ("open", lambda *args: self.props.application.on_open(self), None),
             ("save", self.on_save, None),
             ("save-as", self.on_save_as, None),
+            ("find", lambda *args: self.editor.focus_search_bar(), None),
             ("display-3d", self.show_viewer3d, None),
             ("close", lambda *args: self.close(), None),
             ("compute-and-redraw", self.compute_and_draw, None),

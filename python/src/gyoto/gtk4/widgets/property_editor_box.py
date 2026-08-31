@@ -191,19 +191,9 @@ class PropertyEditorBox(Gtk.Box):
 
         self.prepend(self.search_entry)
 
-        controller = Gtk.EventControllerKey()
-        controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
-        controller.connect("key-pressed", self._on_search_key_pressed)
-        self.add_controller(controller)
-        self._search_key_controller = controller
-
-    def _on_search_key_pressed(self, controller, keyval, keycode, state):
-        if (keyval in (ord('f'), ord('F')) and
-                state & Gdk.ModifierType.CONTROL_MASK):
-            self.search_entry.grab_focus()
-            self.search_entry.select_region(0, -1)
-            return True
-        return False
+    def focus_search_bar(self):
+        self.search_entry.grab_focus()
+        self.search_entry.select_region(0, -1)
 
     def _on_search_changed(self, entry):
         text = entry.get_text()

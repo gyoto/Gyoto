@@ -288,8 +288,8 @@ class GyotoyApplication(Gtk.Application):
         self.set_accels_for_action("win.open", ["<Primary>O"])
         self.set_accels_for_action("win.save", ["<Primary>S"])
         self.set_accels_for_action("win.save-as", ["<Primary><Shift>S"])
-        self.set_accels_for_action("win.compute-and-redraw",
-                                    ["<Primary>R"])
+        self.set_accels_for_action("win.find", ["<Primary>F"])
+        self.set_accels_for_action("win.compute-and-redraw", ["<Primary>R"])
 
     def add_action_entries(self, entries):
         '''Mimick ApplicationWindow.add_action_entries
@@ -761,6 +761,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         menu_section2.append(_("Save"), "win.save")
         menu_section2.append(_("Save As…"), "win.save-as")
         menu_section3 = Gio.Menu()
+        menu_section3.append(_("Find Property"), "win.find")
         menu_section3.append(_("Help"), "app.help")
         menu_section3.append(_("Close"), "win.close")
         menu_section3.append(_("Quit"), "app.quit")
@@ -784,6 +785,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             ("open", lambda *args: self.props.application.on_open(self), None),
             ("save", self.on_save, None),
             ("save-as", self.on_save_as, None),
+            ("find", lambda *args: self.editor.focus_search_bar(), None),
             ("close", lambda *args: self.close(), None),
             ("compute-and-redraw", self.compute_and_redraw, None),
         ])

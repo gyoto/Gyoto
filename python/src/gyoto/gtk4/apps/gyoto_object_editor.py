@@ -188,6 +188,7 @@ class GyotoObjectEditorApplication(Gtk.Application):
         self.set_accels_for_action("win.close", ["<Primary>W"])
         self.set_accels_for_action("win.save", ["<Primary>S"])
         self.set_accels_for_action("win.save-as", ["<Primary><Shift>S"])
+        self.set_accels_for_action("win.find", ["<Primary>F"])
 
     def add_action_entries(self, entries):
         '''Mimick ApplicationWindow.add_action_entries
@@ -864,6 +865,7 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         menu.append(_("Save As…"), "win.save-as")
 
         menu_section2 = Gio.Menu()
+        menu_section2.append(_("Find Property"), "win.find")
         menu_section2.append(_("Help"), "app.help")
         menu_section2.append(_("Close"), "win.close")
         menu_section2.append(_("Quit"), "app.quit")
@@ -884,6 +886,7 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         self.add_action_entries([
             ("save", self.on_save, None),
             ("save-as", self.on_save_as, None),
+            ("find", lambda *args: self.editor.focus_search_bar(), None),
             ("close", lambda *args: self.close(), None),
             ("open", lambda *args: self.props.application.on_open(self), None),
             ("new", lambda *args:
