@@ -94,6 +94,7 @@ spectral_quantities = ('Spectrum', 'SpectrumStokesQ', 'SpectrumStokesU',
                        'SpectrumStokesV', 'BinSpectrum')
 
 # --- Commands for worker communication ---
+DEBUG = 'debug'E
 RUN_SIM = 'run'
 QUIT = 'quit'
 
@@ -109,7 +110,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
     The worker can be paused via pause_event and stopped via stop_event.
 
     Args:
-        cmd_queue: Queue for receiving commands (RUN_SIM, QUIT)
+        cmd_queue: Queue for receiving commands (DEBUG, RUN_SIM, QUIT)
         progress_queue: Queue for sending progress updates
         control_queue: Queue for sending control messages (log, done,
             error)
@@ -121,8 +122,9 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
         import numpy
         import time
         from ...core import Factory, Scenery, AstrobjProperties, array_double
-        from ...core import Range, Grid, verbose
+        from ...core import Range, Grid, verbose, debug
 
+        default_verbosity = verbose()
         verbose(0)
 
         while True:
@@ -134,6 +136,14 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
 
             if cmd[0] == QUIT:
                 break
+
+            elif cmd[0] == DEBUG:
+                if cmd[2]:
+                    verbose(default_verbosity)
+                    debug(True)
+                else:
+                    verbose(0)
+                    debug(False)
 
             elif cmd[0] == RUN_SIM:
                 end_msg = ('done',)
@@ -301,6 +311,7 @@ class GyotoSceneryViewerApplication(Gtk.Application):
 
         # App-level actions
         self.add_action_entries([
+            ("toggle-debug", lambda *_: debug(not debug()), None),
             ("help", self.on_help, None),
             ("quit", self.on_quit, None),
             ("new", self.on_new, None),
@@ -309,6 +320,7 @@ class GyotoSceneryViewerApplication(Gtk.Application):
         # Accelerators for all actions
         self.set_accels_for_action("app.help", ["F1"])
         self.set_accels_for_action("app.quit", ["<Primary>Q"])
+        self.set_accels_for_action("app.toggle-debug", ["<Primary><Shift>D"])
         self.set_accels_for_action("app.new", ["<Primary>N"])
         self.set_accels_for_action("win.close", ["<Primary>W"])
         self.set_accels_for_action("win.open", ["<Primary>O"])
@@ -472,8 +484,11 @@ class GyotoSceneryViewerApplication(Gtk.Application):
             "<b>• Save (Ctrl+S):</b> Save current scenery to last used file.\n"
             "<b>• Save As (Ctrl+Shift+S):</b> Save current scenery to a new "
             "file.\n"
+            "<b>• Toggle Fullscreen: (F11):</b> Toggle fullscreen mode.\n"
+            "<b>• Find Property: (Ctrl+F):</b> Focus property box search bar.\n"
             "<b>• Display 3D window (Ctrl+D):</b> Open 3D viewer for photon "
             "trajectories.\n"
+            "<b>• Toggle Debug Mode: (Ctrl+Shift+D):</b> Toggle debug mode.\n"
             "<b>• Help (F1):</b> Show this help dialog.\n"
             "<b>• Close (Ctrl+W):</b> Close current window.\n"
             "<b>• Quit (Ctrl+Q):</b> Close all windows and quit the "
@@ -771,6 +786,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
         menu_section3.append(_("Toggle Fullscreen"), "win.fullscreen")
         menu_section3.append(_("Display 3D Window"), "win.display-3d")
         menu_section4 = Gio.Menu()
+        menu_section3.append(_("Toggle Debug Mode"), "app.toggle-debug")
         menu_section4.append(_("Help"), "app.help")
         menu_section4.append(_("Close"), "win.close")
         menu_section4.append(_("Quit"), "app.quit")
@@ -983,6 +999,11 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             "semifov": fov/2 + delta/2,
             "quantity": self.quantity_dropdown.get_selected_item().get_string(),
         }
+
+        # Sync debug mode
+        self.cmd_queue.put((
+            DEBUG, debug()
+        ))
 
         # Send simulation command to worker
         self.cmd_queue.put((
@@ -1658,12 +1679,12 @@ class GyotoSceneryViewer3dWindow(Gtk.ApplicationWindow):
         """Create keyboard shortcuts.
 
         Creates keyboard shortcuts for these actions:
-        - New window: Ctrl+N,
         - Close window: Ctrl+W,
-        - Close all windows and quit: Ctrl+Q,
         - Open file: Ctrl+O,
         - Save file: Ctrl+S,
         - Save file as: Ctrl+Shift+S,
+        - Find Property: Ctrl+F,
+        - Toggle Fullscreen: F11,
         - Help: F1,
         - Compute and redraw: Ctrl+R.
 

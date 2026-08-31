@@ -176,6 +176,7 @@ class GyotoObjectEditorApplication(Gtk.Application):
 
         # App-level actions
         self.add_action_entries([
+            ("toggle-debug", lambda *_: debug(not debug()), None),
             ("help", self.on_help, None),
             ("quit", self.on_quit, None),
         ])
@@ -183,6 +184,7 @@ class GyotoObjectEditorApplication(Gtk.Application):
         # Accelerators
         self.set_accels_for_action("app.help", ["F1"])
         self.set_accels_for_action("app.quit", ["<Primary>Q"])
+        self.set_accels_for_action("app.toggle-debug", ["<Primary><Shift>D"])
         self.set_accels_for_action("win.open", ["<Primary>O"])
         self.set_accels_for_action("win.new", ["<Primary>N"])
         self.set_accels_for_action("win.close", ["<Primary>W"])
@@ -566,25 +568,17 @@ class GyotoObjectEditorApplication(Gtk.Application):
             "Gyoto Object Editor</span>\n"
             "\n"
             "<span font_weight='bold' size='large'>"
-            "Keyboard Shortcuts:</span>\n"
-            "<b>•</b> Ctrl+N: Create a new object\n"
-            "<b>•</b> Ctrl+O: Open an object from file\n"
-            "<b>•</b> Ctrl+S: Save the current object\n"
-            "<b>•</b> Ctrl+Shift+S: Save the current object as...\n"
-            "<b>•</b> Ctrl+W: Close the current window\n"
-            "<b>•</b> Ctrl+Q: Quit the application\n"
-            "<b>•</b> F1: Show this help dialog\n"
-            "\n"
-            "<span font_weight='bold' size='large'>"
             "Menu Options:</span>\n"
-            "<b>•</b> New: Create a new object (search and select from "
+            "<b>•</b> New (Ctrl+N): Create a new object (search and select from "
             "available types)\n"
-            "<b>•</b> Open: Load an object from an XML file\n"
-            "<b>•</b> Save: Save the current object to its last used file\n"
-            "<b>•</b> Save As: Save the current object to a new file\n"
-            "<b>•</b> Help: Show this dialog\n"
-            "<b>•</b> Close: Close the current window\n"
-            "<b>•</b> Quit: Close all windows and exit\n"
+            "<b>•</b> Open Ctrl+O): Load an object from an XML file\n"
+            "<b>•</b> Save (Ctrl+S): Save the current object to its last used file\n"
+            "<b>•</b> Save As (Ctrl+Shift+S): Save the current object to a new file\n"
+            "<b>•</b> Find Property (Ctrl+F): Focus property box search bar.\n"
+            "<b>•</b> Toggle Debug Mode: (Ctrl+Shift+D): Toggle debug mode.\n"
+            "<b>•</b> Help (F1): Show this help dialog\n"
+            "<b>•</b> Close (Ctrl+W): Close the current window\n"
+            "<b>•</b> Quit (Ctrl+Q): Close all windows and exit\n"
         )
 
         label = Gtk.Label(
@@ -866,11 +860,14 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
 
         menu_section2 = Gio.Menu()
         menu_section2.append(_("Find Property"), "win.find")
-        menu_section2.append(_("Help"), "app.help")
-        menu_section2.append(_("Close"), "win.close")
-        menu_section2.append(_("Quit"), "app.quit")
+        menu_section3 = Gio.Menu()
+        menu_section3.append(_("Toggle Debug Mode"), "app.toggle-debug")
+        menu_section3.append(_("Help"), "app.help")
+        menu_section3.append(_("Close"), "win.close")
+        menu_section3.append(_("Quit"), "app.quit")
 
         menu.append_section(None, menu_section2)
+        menu.append_section(None, menu_section3)
 
         # Create menu button
         menu_button = Gtk.MenuButton(

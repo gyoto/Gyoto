@@ -79,6 +79,7 @@ from ...core import GYOTO_COORDKIND_SPHERICAL, debug
 from ...std import Star, KerrBL
 
 # --- Commands for worker communication ---
+DEBUG = 'debug'
 RUN_SIM = 'run'
 QUIT = 'quit'
 
@@ -94,7 +95,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
     The worker can be paused via pause_event and stopped via stop_event.
 
     Args:
-        cmd_queue: Queue for receiving commands (RUN_SIM, QUIT)
+        cmd_queue: Queue for receiving commands (DEBUG, RUN_SIM, QUIT)
         progress_queue: Queue for sending progress updates
         control_queue: Queue for sending control messages (log, done,
             error)
@@ -105,8 +106,11 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
     try:
         import numpy
         import time
-        from ...core import Factory
+        from ...core import Factory, verbose, debug
         from ...std import Star
+
+        default_verbosity = verbose()
+        verbose(0)
 
         while True:
             try:
@@ -117,6 +121,14 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
 
             if cmd[0] == QUIT:
                 break
+
+            elif cmd[0] == DEBUG:
+                if cmd[2]:
+                    verbose(default_verbosity)
+                    debug(True)
+                else:
+                    verbose(0)
+                    debug(False)
 
             elif cmd[0] == RUN_SIM:
                 end_msg = ('done',)
@@ -273,6 +285,7 @@ class GyotoyApplication(Gtk.Application):
 
         # App-level actions
         self.add_action_entries([
+            ("toggle-debug", lambda *_: debug(not debug()), None),
             ("help", self.on_help, None),
             ("quit", self.on_quit, None),
             ("new-star", self.on_new_star, None),
@@ -282,6 +295,7 @@ class GyotoyApplication(Gtk.Application):
         # Accelerators
         self.set_accels_for_action("app.help", ["F1"])
         self.set_accels_for_action("app.quit", ["<Primary>Q"])
+        self.set_accels_for_action("app.toggle-debug", ["<Primary><Shift>D"])
         self.set_accels_for_action("app.new-star", ["<Primary>N"])
         self.set_accels_for_action("app.new-photon", ["<Primary><Shift>N"])
         self.set_accels_for_action("win.close", ["<Primary>W"])
@@ -461,6 +475,9 @@ class GyotoyApplication(Gtk.Application):
             "<b>•</b> Save (Ctrl+S): Save current particle to last used file.\n"
             "<b>•</b> Save As (Ctrl+Shift+S): Save current particle to a new "
             "file.\n"
+            "<b>•</b> Toggle Fullscreen: (F11): Toggle fullscreen mode.\n"
+            "<b>•</b> Find Property: (Ctrl+F): Focus property box search bar.\n"
+            "<b>•</b> Toggle Debug Mode: (Ctrl+Shift.D): Toggle debug mode.\n"
             "<b>•</b> Help (F1): Show this help dialog.\n"
             "<b>•</b> Close (Ctrl+W): Close current window.\n"
             "<b>•</b> Quit (Ctrl+Q): Close all windows and quit the "
@@ -765,6 +782,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         menu_section3.append(_("Find Property"), "win.find")
         menu_section3.append(_("Toggle Fullscreen"), "win.fullscreen")
         menu_section4 = Gio.Menu()
+        menu_section4.append(_("Toggle Debug Mode"), "app.toggle-debug")
         menu_section4.append(_("Help"), "app.help")
         menu_section4.append(_("Close"), "win.close")
         menu_section4.append(_("Quit"), "app.quit")
@@ -773,6 +791,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         menu.append_section(None, menu_section1)
         menu.append_section(None, menu_section2)
         menu.append_section(None, menu_section3)
+        menu.append_section(None, menu_section4)
 
         # Create menu button
         menu_button = Gtk.MenuButton(
@@ -970,6 +989,11 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         self.right.set_sensitive(False)
 
         coord = numpy.array(self.particle.InitCoord)
+
+        # Sync debug mode
+        self.cmd_queue.put((
+            DEBUG, debug()
+        ))
 
         # Send simulation command to worker
         self.cmd_queue.put((
