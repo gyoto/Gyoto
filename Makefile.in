@@ -1016,6 +1016,9 @@ python/testbed/stamp:
 $(SUBDIR_ARTIFACTS):
 	$(MAKE) -C $(dir $@) $(notdir $@)
 
+check-all: check check-mpi check-lorene check-lorene-mpi \
+	check-python check-python-mpi
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

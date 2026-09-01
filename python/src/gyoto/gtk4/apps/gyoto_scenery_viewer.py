@@ -94,7 +94,7 @@ spectral_quantities = ('Spectrum', 'SpectrumStokesQ', 'SpectrumStokesU',
                        'SpectrumStokesV', 'BinSpectrum')
 
 # --- Commands for worker communication ---
-DEBUG = 'debug'E
+DEBUG = 'debug'
 RUN_SIM = 'run'
 QUIT = 'quit'
 
