@@ -466,7 +466,8 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	  delete child;
 	  break;
 	case Property::filename_t:
-	  content = fmp->fullPath(content);
+	  if (!content.empty())
+	    content = fmp->fullPath(content);
 	  [[fallthrough]]; // no 'break;' here, we need to proceed
 	default:
 	  setParameter(*prop, name, content, unit);

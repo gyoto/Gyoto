@@ -50,7 +50,7 @@ class Gyoto::Metric::NumericalMetricLorene
   friend class Gyoto::SmartPointer<Gyoto::Metric::NumericalMetricLorene>;
 
  private:
-  char* filename_; ///< Lorene .d data file(s) path
+  std::string directory_; ///< Lorene .d data file(s) path
   bool mapet_; ///< Kind of Lorene mapping: 'false' for Map_af, 'true' for Map_et
   bool axisymCirc_; ///< True if sacetime is axisymmetric and circular
   bool bosonstarcircular_; ///< 1 to implement the circular velocity of a boson star

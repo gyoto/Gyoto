@@ -74,7 +74,7 @@ GYOTO_PROPERTY_THREAD_UNSAFE(NumericalMetricLorene)
 
 NumericalMetricLorene::NumericalMetricLorene() :
   Generic(GYOTO_COORDKIND_SPHERICAL, "NumericalMetricLorene"),
-  filename_(NULL),
+  directory_(""),
   mapet_(true),
   axisymCirc_(false),
   bosonstarcircular_(false),
@@ -104,7 +104,7 @@ NumericalMetricLorene::NumericalMetricLorene() :
 
 NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   Generic(GYOTO_COORDKIND_SPHERICAL,"NumericalMetricLorene"),
-  filename_(NULL),
+  directory_(""),
   mapet_(o.mapet_),
   axisymCirc_(o.axisymCirc_),
   bosonstarcircular_(o.bosonstarcircular_),
@@ -130,7 +130,7 @@ NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   rmb_(o.rmb_)
 {
   GYOTO_DEBUG << endl;
-  if (o.filename_) directory(o.filename_);
+  directory(o.directory());
 }
 
 NumericalMetricLorene* NumericalMetricLorene::clone() const{
@@ -146,7 +146,6 @@ NumericalMetricLorene::~NumericalMetricLorene()
 
 void NumericalMetricLorene::free() {
   GYOTO_DEBUG << "freeing memory\n";
-  if (filename_)   { delete [] filename_;   filename_=NULL;  }
   if (lapse_tab_)  { delete [] lapse_tab_;  lapse_tab_=NULL; }
   if (shift_tab_)  { delete [] shift_tab_;  shift_tab_=NULL; }
   if (gamcov_tab_) { delete [] gamcov_tab_; gamcov_tab_=NULL;}
@@ -164,8 +163,8 @@ void NumericalMetricLorene::setMetricSource() {
   GYOTO_DEBUG << endl;
   DIR *dp;
   struct dirent *dirp;
-  if((dp  = opendir(filename_)) == NULL) {
-    GYOTO_ERROR("In NumericalMetricLorene.C constructor : bad filename_");
+  if((dp  = opendir(directory_.c_str())) == NULL) {
+    GYOTO_ERROR("bad directory_: '" + directory_ +"'");
   }
 
   nb_times_=0;
@@ -176,13 +175,13 @@ void NumericalMetricLorene::setMetricSource() {
 
   GYOTO_DEBUG << "Nb of metric files= " << nb_times_ << endl;
   /*
-    NB: ***Caution***, here it is assumed that filename_ contains ONLY the .d 
+    NB: ***Caution***, here it is assumed that directory_ contains ONLY the .d
     Lorene result files, nothing else.
   */
   closedir(dp);
 
   if (nb_times_<1) 
-    GYOTO_ERROR("In NumericalMetricLorene.C: bad nb_times_ value");
+    GYOTO_ERROR("bad nb_times_ value");
 
   lapse_tab_ = new Scalar*[nb_times_] ; 
   shift_tab_ = new Vector*[nb_times_] ;
@@ -200,27 +199,24 @@ void NumericalMetricLorene::setMetricSource() {
       accel_tab_ = new Vector*[nb_times_] ;
   }
 
-  if (debug()) {
-    cout << "In NumericalMetricLorene" << endl;
-    cout << "File name=" << filename_ << endl;
-    cout << "Number of time slices=" << nb_times_ << endl;
-  }
+  GYOTO_IF_DEBUG;
+  GYOTO_DEBUG_THIS_EXPR(directory_);
+  GYOTO_DEBUG_THIS_EXPR(nb_times_);
+  GYOTO_DEBUG_THIS << "NumericalMetricLorene.C: "
+    "initializing geometrical quantities..." << endl;
+  GYOTO_ENDIF_DEBUG;
 
-  if (debug()) cout << "NumericalMetricLorene.C: "
-		 "initializing geometrical quantities..." << endl;
-  
   for (int i=1; i<=nb_times_; i++) {
     ostringstream stream_name ;
-    stream_name << filename_ << "metric" << setw(6) << setfill('0') 
+    stream_name << directory_ << "metric" << setw(6) << setfill('0')
 		<< i << ".d" ;
 
-    if (debug()) cout << "Reading file: " << stream_name.str() << endl ;
-    FILE* resu = fopen(stream_name.str().data(), "r") ;
+    GYOTO_DEBUG << "Reading file: " << stream_name.str() << endl ;
+    FILE* resu = fopen(stream_name.str().c_str(), "r") ;
     if (resu == 0x0) {
-      cerr << "With file name: " << stream_name.str() << endl ;
-      GYOTO_ERROR("NumericalMetricLorene.C: Problem opening file!");
+      GYOTO_ERROR("Problem opening file '" + stream_name.str() +"'");
     }
-    if (debug()) cout << "File read normally." << endl ;
+    GYOTO_DEBUG << "File read normally." << endl ;
     double cLor = GYOTO_C*1e-3*1e-4;
     /*
       this is c in Lorene units, allows to translate between 
@@ -1949,31 +1945,27 @@ double NumericalMetricLorene::Interpol3rdOrder(double tt,
 }
 
 void NumericalMetricLorene::directory(std::string const &dir) {
-  char const * const cdir=dir.c_str();
-  filename_ = new char[strlen(cdir)+1];
-  strcpy(filename_, cdir);
-  setMetricSource();
+  directory_ = dir;
+  if (!dir.empty()) setMetricSource();
 }
 
 std::string NumericalMetricLorene::directory() const {
-  return filename_?string(filename_):string("");
+  return directory_;
 }
 
 bool NumericalMetricLorene::hasSurface() const {return  has_surface_;}
 void NumericalMetricLorene::hasSurface(bool s) {
   has_surface_ = s;
-  if (filename_!=NULL){
-    GYOTO_ERROR("In NumericalMetricLorene::hasSurface "
-	       "please provide Surface information before File in XML");
+  if (!directory_.empty()){
+    GYOTO_ERROR("please provide Surface information before File in XML");
   }
 }
 
 bool NumericalMetricLorene::hasAccelerationVector() const {return  has_acceleration_vector_;}
 void NumericalMetricLorene::hasAccelerationVector(bool aa) {
   has_acceleration_vector_ = aa;
-  if (filename_!=NULL){
-    GYOTO_ERROR("In NumericalMetricLorene::hasAccelerationVector "
-	       "please provide Acceleration vector info before File in XML");
+  if (!directory_.empty()){
+    GYOTO_ERROR("please provide Acceleration vector info before File in XML");
   }
 }
 
@@ -1986,9 +1978,8 @@ bool NumericalMetricLorene::specifyMarginalOrbits() const {
 }
 void NumericalMetricLorene::specifyMarginalOrbits(bool s) {
   specify_marginalorbits_=s;
-  if (filename_!=NULL){
-    GYOTO_ERROR("In NumericalMetricLorene::specifyMarginalOrbits "
-	       "please provide Marginal orbits information "
+  if (!directory_.empty()){
+    GYOTO_ERROR("please provide Marginal orbits information "
 	       "before File in XML");
   }
 }
@@ -1999,7 +1990,7 @@ void NumericalMetricLorene::rico(double r0) {rico_=r0;}
 bool NumericalMetricLorene::mapEt() const {return  mapet_;}
 void NumericalMetricLorene::mapEt(bool s) {
   mapet_ = s;
-  if (filename_!=NULL){
+  if (!directory_.empty()){
     GYOTO_ERROR("In NumericalMetricLorene::mapEt "
 	       "please provide MapET/MapAF information before File in XML");
   }
