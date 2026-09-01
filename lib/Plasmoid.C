@@ -167,7 +167,7 @@ Plasmoid* Plasmoid::clone() const { return new Plasmoid(*this); }
 Plasmoid::~Plasmoid() {
   if (debug()) cerr << "DEBUG: Plasmoid::~Plasmoid()\n";
   GYOTO_SEVERE <<
-    "Plasmoid is leaking memory, please help by implementing the destructor";
+    "Plasmoid is leaking memory, please help by implementing the destructor\n";
 }
 
 string Plasmoid::className() const { return  string("Plasmoid"); }
