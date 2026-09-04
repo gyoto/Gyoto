@@ -73,6 +73,17 @@ Value::~Value() {}
     return T;					                   \
   }
 
+#define ___local_stuff2(t, t_t, T)				   \
+  Value::Value(t val) : type(Property::t_t), INIT_MEMBERS {T=val;} \
+  Value::operator t() const {		                           \
+    GYOTO_DEBUG_EXPR(type);					   \
+    if (type==Property::empty_t)				   \
+      return t(NULL);						   \
+    if (type!=Property::t_t)		                           \
+      GYOTO_ERROR("This Value does not hold a " #t);		   \
+    return T;					                   \
+  }
+
 Value::Value(double val) : type(Property::double_t), INIT_MEMBERS {Double=val;}
 Value::Value(long val) : type(Property::long_t), INIT_MEMBERS {Long=val;}
 Value::Value(unsigned long val) : type(Property::unsigned_long_t), INIT_MEMBERS {ULong=val;}
@@ -94,12 +105,8 @@ Value::operator double() const {
   case Property::size_t_t:
     return double(SizeT);
   case Property::string_t:
-    if (String== "DBL_MAX") return  DBL_MAX;
-    if (String=="-DBL_MAX") return -DBL_MAX;
-    if (String== "DBL_MIN") return  DBL_MIN;
-    if (String=="-DBL_MIN") return -DBL_MIN;
     try {
-	return stod(String);
+      return Gyoto::stringToDouble(String);
     }
     catch (const std::invalid_argument& e) {
       GYOTO_ERROR("This string does not look like a double: '" + String + "'");
@@ -181,11 +188,11 @@ Value::operator bool() const {
 ___local_stuff(std::string, string_t, String)
 ___local_stuff(std::vector<double>, vector_double_t, VDouble)
 ___local_stuff(std::vector<unsigned long>, vector_unsigned_long_t, VULong)
-___local_stuff(Gyoto::SmartPointer<Gyoto::Metric::Generic>, metric_t, Metric)
-___local_stuff(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>, astrobj_t, Astrobj)
-___local_stuff(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>, spectrum_t, Spectrum)
-___local_stuff(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>, spectrometer_t, Spectrometer)
-___local_stuff(Gyoto::SmartPointer<Gyoto::Screen>, screen_t, Screen)
+___local_stuff2(Gyoto::SmartPointer<Gyoto::Metric::Generic>, metric_t, Metric)
+___local_stuff2(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>, astrobj_t, Astrobj)
+___local_stuff2(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>, spectrum_t, Spectrum)
+___local_stuff2(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>, spectrometer_t, Spectrometer)
+___local_stuff2(Gyoto::SmartPointer<Gyoto::Screen>, screen_t, Screen)
 
 Value& Value::operator=(Value const &right) {
 # define ___local_case(t_t, member) case Property::t_t: member = right.member; break;

@@ -113,7 +113,9 @@ tag_platform=sysconfig.get_platform().replace("-", "_").replace(".", "_"); \
 print(f"{tag_interpreter}-{tag_abi}-{tag_platform}")').whl
 
 CHECK_ENV = @DYLIB_VAR@=../lib/.libs:../plugins/python/lib/.libs:$$@DYLIB_VAR@ \
-	PYTHONPATH=testbed:$$PYTHONPATH
+	PYTHONPATH=testbed:$$PYTHONPATH \
+	GYOTO_EXAMPLES_DIR=$(top_srcdir)/doc/examples/ \
+	PYTHONPYCACHEPREFIX=pycache
 
 MPIRUN = mpirun --mca btl_tcp_if_include lo 
 
@@ -171,7 +173,7 @@ testbed/stamp: $(WHEEL)
 
 # run test suite based on unittest
 unittest: testbed/stamp $(GYOTO_PLUGINS_LA)
-	$(CHECK_ENV) PYTHONPATH=$(top_srcdir)/doc/examples:$$PYTHONPATH $(PYTHON) -m unittest discover -s $(srcdir)/tests -p "*.py"
+	$(CHECK_ENV) PYTHONPATH=$(top_srcdir)/doc/examples:$$PYTHONPATH $(PYTHON) -m unittest discover -s $(srcdir)/
 @HAVE_LORENE_TRUE@unittest: ../lib/libgyoto-lorene.la
 
 # check calls the above and runs the example files
@@ -183,6 +185,9 @@ check: testbed/stamp $(GYOTO_PLUGINS_LA) unittest
 	$(CHECK_ENV) $(PYTHON) $(srcdir)/example-python.py \
 		--pdf=example-python.pdf \
 		--examples-dir=$(top_srcdir)/doc/examples
+	$(CHECK_ENV) $(PYTHON) $(srcdir)/example-matte-painting.py \
+		--pdf=example-matte-painting.pdf \
+		--painters=PMode --resolution=64
 
 # check-mpi runs the MPI example
 check-mpi: testbed/stamp ../bin/gyoto-mpi-worker.@sovers@@EXEEXT@ $(GYOTO_PLUGINS_LA)
@@ -200,7 +205,8 @@ check-mpi: testbed/stamp ../bin/gyoto-mpi-worker.@sovers@@EXEEXT@ $(GYOTO_PLUGIN
 
 # clean up:
 check-clean:
-	-rm -f example.pdf example-patterndisk.pdf
+	-rm -f example*.pdf
+	-rm -Rf tests/artifacts/
 
 # those targets are yet empty:
 check-lorene check-lorene-clean check-lorene-mpi check-lorene-mpi-clean check-mpi-clean check-python check-python-clean check-python-mpi check-python-mpi-clean: ;
@@ -297,6 +303,8 @@ endif
 	-rm -f tests/*.pyc *_wrap.cxx
 	-rm -Rf _gyoto*.so src/Gyoto*.egg-info _*.so testbed
 	-rm -Rf dist gyoto/__pycache__/ tests/__pycache__/ .eggs/ __pycache__/
+	-rm -Rf ../doc/examples/__pycache__/ src/gyoto.egg-info/
+	-rm -Rf pycache
 	-rmdir include
 
 distclean: clean 

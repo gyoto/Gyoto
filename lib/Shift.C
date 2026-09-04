@@ -70,8 +70,8 @@ void Shift::subMetric(SmartPointer<Metric::Generic> submet) {
 }
 
 void Shift::mass(double m) {
-  submet_->mass(m);
-  // hook system will also set mass_;
+  if (submet_) submet_->mass(m); // hook system will set mass_ in this case
+  else  Generic::mass(m);
 }
 
 void Shift::tell(Hook::Teller* msg) {

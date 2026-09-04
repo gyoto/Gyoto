@@ -57,7 +57,6 @@ class Gyoto::Spectrum::KappaDistributionSynchrotron : public Gyoto::Spectrum::Ge
   double kappaindex_; ///< Kappa distribution index
   double hypergeometric_; ///< Hypergeometric function evaluation
   bool angle_averaged_; ///< Boolean for angle averaging
-  double gamma_max_; ///< Maximum gamma value to integer the distribution
 
  public:
   GYOTO_OBJECT;
@@ -102,8 +101,6 @@ class Gyoto::Spectrum::KappaDistributionSynchrotron : public Gyoto::Spectrum::Ge
   void hypergeometric(double hh);
   bool angle_averaged() const;
   void angle_averaged(bool ang);
-  double gamma_max() const;
-  void gamma_max(double gammaMax);
   
   /**
    * Returns the emission coefficient j_nu in cgs units

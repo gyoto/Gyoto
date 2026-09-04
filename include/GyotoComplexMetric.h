@@ -63,6 +63,8 @@ class Gyoto::Metric::Complex
   Gyoto::SmartPointer<Gyoto::Metric::Generic> * elements_;
 
  public:
+ public:
+  GYOTO_OBJECT;
   GYOTO_OBJECT_THREAD_SAFETY;
   Complex(); ///< Default constructor.
   Complex(const Complex& ) ; ///< Copy constructor.
@@ -71,6 +73,10 @@ class Gyoto::Metric::Complex
    *  Frees every SmartPointer<Metric::Generic> before freed the array itself.
    */
   virtual ~Complex() ; ///< Destructor
+
+  using Gyoto::Metric::Generic::coordKind;
+  int coordKind() const;
+
   void append(Gyoto::SmartPointer<Gyoto::Metric::Generic> element);
   ///< Add element at the end of the array.
   void remove(size_t i);

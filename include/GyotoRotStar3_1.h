@@ -55,7 +55,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Metric::RotStar3_1>;
 
  private:
-  char* filename_; ///< Lorene output file name
+  std::string filename_; ///< Lorene output file name
   Lorene::Star_rot * star_; ///< Pointer to underlying Lorene Star_rot instance 
   int integ_kind_;///< 1 if RotStar3_1::myrk4(), 0 if Metric::myrk4()
 
@@ -67,9 +67,6 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   virtual ~RotStar3_1() ;        ///< Destructor
   virtual RotStar3_1* clone() const ;
            ///< Cloner (uses RotStar3_1(file, integ_kind))
-
-  void fileName(char const *); ///< Set filename_
-  char const * fileName() const; ///< Get filename_
 
   void file(std::string const &); ///< Set filename_
   std::string file() const; ///< Get filename_

@@ -65,10 +65,9 @@ class Gyoto::Astrobj::Plasmoid :
   // Data : 
   // -----
  private:
-  double* posIni_; // 4-position of the plasmoid in spherical coordinates
-  double* fourveldt_; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
+  double posIni_[4]; // 4-position of the plasmoid in spherical coordinates
+  double fourveldt_[4]; // 1 then 3-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
   std::string flag_; // type of motion "helical" or "equatorial"
-  bool posSet_;
   double t_inj_;
   double radiusMax_; // Maximun radius of the Plasmoid in geometrical units
   std::string varyRadius_;

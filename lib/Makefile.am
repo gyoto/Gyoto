@@ -27,6 +27,7 @@ libgyoto@FEATURES@_la_SOURCES =  \
 	StandardAstrobj.C ThinDisk.C Converters.C Functors.C Hooks.C \
 	GridData2D.C FitsRW.C
 libgyoto@FEATURES@_la_LIBS = $(XERCES_LIBS)
+libgyoto@FEATURES@_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=built-in
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 
 # STANDARD PLUGIN
@@ -34,6 +35,7 @@ soverdir=$(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
+	Kerr2PN.C \
 	ChernSimons.C Hayward.C SchwarzschildHarmonic.C \
 	ReissnerNordstrom.C \
 	RezzollaZhidenko.C KonoplyaRezzollaZhidenko.C \

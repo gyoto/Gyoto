@@ -1,10 +1,10 @@
 /*
-    Copyright 2012-2015, 2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2012-2026 Frederic Vincent, Thibaut Paumard, Julien Brulé
 
     This file is part of Gyoto.
 
-    Gyoto is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
+    Gyoto is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
@@ -52,10 +52,14 @@ GYOTO_PROPERTY_END(Disk3D, Generic::properties)
 
 void Disk3D::fillProperty(Gyoto::FactoryMessenger *fmp,
 			       Property const &p) const {
-  if (p.name == "File")
-    fmp->setParameter("File", (filename_.compare(0,1,"!") ?
-			       filename_ :
-			       filename_.substr(1)) );
+  if (p.name == "File"){
+    if (filename_ != "") {
+      std::string fname = file(); // cope with derived classes
+      fmp->setParameter("File", (fname.compare(0,1,"!") ?
+				 fname :
+				 fname.substr(1)) );
+    }
+  }
   else Generic::fillProperty(fmp, p);
 }
 
@@ -458,10 +462,11 @@ void Disk3D::fitsRead(string filename) {
   fptr = NULL;
 }
 
-void Disk3D::fitsWrite(string filename) {
+void Disk3D::fitsWrite(string filename, const std::string & prefix) {
   if (!emissquant_) GYOTO_ERROR("Disk3D::fitsWrite(filename): nothing to save!");
-  filename_ = filename;
-  char*     pixfile   = const_cast<char*>(filename_.c_str());
+
+  std::string fullname;
+  char*     pixfile;
   fitsfile* fptr      = NULL;
   int       status    = 0;
   long      naxes []  = {long(nnu_), long(nphi_), long(nz_), long(nr_)};
@@ -469,6 +474,18 @@ void Disk3D::fitsWrite(string filename) {
   char * CNULL=NULL;
 
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
+
+  if (!filename.compare(0,1,"!")) {
+    filename_ = filename.substr(1);
+    fullname = "!" + prefix + filename_;
+  } else {
+    filename_ = filename;
+    fullname = prefix + filename_;
+  }
+
+  pixfile = const_cast<char *>(fullname.c_str());
+  GYOTO_DEBUG_EXPR(filename_);
+  GYOTO_DEBUG_EXPR(pixfile);
 
   ////// CREATE FILE
   GYOTO_DEBUG << "creating file" << endl;

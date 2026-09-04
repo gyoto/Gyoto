@@ -82,7 +82,7 @@ namespace Gyoto {
     GYOTO_PROPERTY_DOUBLE(c, DeltaMax, _deltaMax, "Maximum step (geometrical units).")	\
     GYOTO_PROPERTY_DOUBLE(c, DeltaMin, _deltaMin, "Minimum step (geometrical units).")	\
     GYOTO_PROPERTY_STRING(c, Integrator, _integrator,			\
-			  "Name of integrator (\"runge_kutta_fehlberg78\").")			\
+			  "Name of integrator (*runge_kutta_fehlberg78, runge_kutta_cash_karp54, runge_kutta_dopri5, runge_kutta_cash_karp54_classic).")			\
     GYOTO_PROPERTY_SIZE_T(c, MaxIter, _maxiter,				\
 			  "Maximum number of integration steps.")	\
     GYOTO_PROPERTY_BOOL(c, Adaptive, NonAdaptive, _adaptive,		\

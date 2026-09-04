@@ -1,5 +1,6 @@
-import unittest, numpy, sys
+import unittest, numpy, sys, inspect
 import gyoto.python
+from . import helpers
 
 class ThinDiskForTests(gyoto.python.ThinDiskBase):
     properties = {"ThisPointer": "long",
@@ -102,7 +103,7 @@ class TestThinDiskForTests(unittest.TestCase):
         self.assertEqual(gyoto.core.gyotoid(td), td.Instance,
                          "gyotoid(instance)==instance.Instance with self instance")
         ao=gyoto.python.PythonThinDisk()
-        ao.Module="python"
+        ao.Module="tests.test_python"
         ao.Class="ThinDiskForTests"
         self.assertEqual(ao.ThisPointer, ao.SelfPointer,
                          "thindisk.ThisPointer==thindisk.SelfPointer with internal instance")
@@ -334,3 +335,20 @@ class TestPythonMetric(unittest.TestCase):
         stdgg . circularVelocity(pos, vc, -1)
         self.assertEqual(vp.tolist(), vc.tolist(),
                          "circularVelocity is different")
+
+class TestPythonXMLio(unittest.TestCase):
+
+    default_verbosity=gyoto.core.verbose()
+
+    def setUp(self):
+        gyoto.core.verbose(0)
+
+    def tearDown(self):
+        gyoto.core.verbose(self.default_verbosity)
+
+    def invalid(self, classname, cls):
+        return (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Object))
+
+    def test_xmlio(self):
+        helpers.test_xmlio(self, gyoto.python, self.invalid)

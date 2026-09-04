@@ -55,14 +55,15 @@ class Gyoto::Astrobj::FreeStar :
   // Data : 
   // -----
  private:
-  double* posIni_; // 4-position of the star in spherical coordinates
-  double* fourveldt_; // 4-velocity of the star in spherical coordinates (dxi/dt, not dtau)
+  double posIni_[4]; // 4-position of the star in spherical coordinates
+  double fourveldt_[4]; // 4-velocity of the star in spherical coordinates (dxi/dt, not dtau)
   bool posSet_;
+  bool velSet_;
 
   // Constructors - Destructor
   // -------------------------
  public:
-  GYOTO_OBJECT; // This object has a (non-inherited) Property list
+  GYOTO_OBJECT; // Property list management
 
  /**
   * Create FreeStar object with undefined initial conditions. One needs to
@@ -82,6 +83,8 @@ class Gyoto::Astrobj::FreeStar :
   virtual std::string className_l() const ; ///< "free_star"
 
  public:
+  using UniformSphere::metric;
+  void metric(SmartPointer<Metric::Generic>);
   void initPosition(std::vector<double> const &v);
   std::vector<double> initPosition() const;
   void initVelocity(std::vector<double> const &v);
@@ -96,6 +99,8 @@ class Gyoto::Astrobj::FreeStar :
           double * const zprime=NULL);
 
   void getVelocity(double const pos[4], double vel[4]);
+
+  void normalizeVelocity();
 
 };
 

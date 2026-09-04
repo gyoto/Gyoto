@@ -91,11 +91,19 @@ double SimThickDisk::operator()(double const coord[4]) {
   return zpos - zdisk; // >0 outside, <0 inside flared disk 
 }
 
-void SimThickDisk::filename(std::string const &f){
-  SimBridge::filename(f);
+void SimThickDisk::filePrefix(std::string const &f){
+  SimBridge::filePrefix(f);
+  if (gg_) cache_data();
+}
 
-  if (!gg_)
-    GYOTO_ERROR("Define the metric in the Astrobj before giving the filename.");
+void SimThickDisk::metric(SmartPointer<Metric::Generic> gg) {
+  SimBridge::metric(gg);
+  if (!fprefix_.empty()) cache_data();
+}
+
+void SimThickDisk::cache_data() {
+  if (!gg_ || fprefix_.empty())
+    GYOTO_ERROR("Set Metric and FilePrefix before calling cache_data().");
   
   double theta_lim, xmax, ymax, zmax, rproj_max;
   switch (gg_ -> coordKind()) {

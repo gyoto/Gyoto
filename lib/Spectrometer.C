@@ -68,6 +68,7 @@ void Gyoto::Spectrometer::Register(std::string name, Subcontractor_t* scp){
 }
 
 GYOTO_GETSUBCONTRACTOR(Spectrometer)
+GYOTO_REGISTEREDPLUGINSSLASHKINDS(Spectrometer)
 
 Generic::Generic() :
   SmartPointee(),
@@ -130,21 +131,55 @@ size_t Generic::nSamples() const { return nsamples_; }
 size_t Generic::getNBoundaries() const { return nboundaries_; }
 
 double const * Generic::getMidpoints() const { return midpoints_; }
-void Generic::getMidpoints( double data[], std::string unit) {
+void Generic::getMidpoints( double data[], std::string unit) const {
   for (size_t i=0; i<nsamples_; ++i)
     data[i]=Units::FromHerz(midpoints_[i], unit);
 }
+std::vector<double> Generic::midpoints() const {
+  std::vector<double> out(midpoints_, midpoints_+nsamples_);
+  return out;
+}
+std::vector<double> Generic::midpoints(std::string unit) const {
+  std::vector<double> out(nsamples_);
+  getMidpoints(out.data(), unit);
+  return out;
+}
 double const * Generic::getChannelBoundaries() const { return boundaries_;}
-void Generic::getChannelBoundaries( double data[], std::string unit) {
+void Generic::getChannelBoundaries( double data[], std::string unit) const {
   for (size_t i=0; i<nboundaries_; ++i)
     data[i]=Units::FromHerz(boundaries_[i], unit);
 }
+std::vector<double> Generic::channelBoundaries() const {
+  std::vector<double> out(boundaries_, boundaries_+nboundaries_);
+  return out;
+}
+std::vector<double> Generic::channelBoundaries(std::string unit) const {
+  std::vector<double> out(nboundaries_);
+  getChannelBoundaries(out.data(), unit);
+  return out;
+}
 size_t const * Generic::getChannelIndices() const { return chanind_; }
+std::vector<unsigned long> Generic::channelIndices() const {
+  std::vector<unsigned long> out;
+  out.reserve(2*nsamples_);
+  for (size_t i = 0; i < 2*nsamples_; ++i)
+    out.push_back(chanind_[i]);
+  return out;
+}
 double const * Generic::getWidths() const { return widths_; }
-void Generic::getWidths( double data[], std::string unit) {
+void Generic::getWidths( double data[], std::string unit) const {
   double * cbound = new double[nboundaries_];
   getChannelBoundaries(cbound, unit);
   for(size_t i=0; i<nsamples_; ++i)
     data[i]=fabs(cbound[chanind_[2*i+1]]-cbound[chanind_[2*i]]);
   delete [] cbound;
+}
+std::vector<double> Generic::widths() const {
+  std::vector<double> out(widths_, widths_+nsamples_);
+  return out;
+}
+std::vector<double> Generic::widths(std::string unit) const {
+  std::vector<double> out(nsamples_);
+  getWidths(out.data(), unit);
+  return out;
 }

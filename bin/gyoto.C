@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2025 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2026 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -50,6 +50,15 @@
 
 // dlsym
 #include <dlfcn.h>
+
+// std::unordered_map
+#include<unordered_map>
+
+// std::strcpy
+#include <cstring>
+
+// std::string_view
+#include <string_view>
 
 using namespace std;
 using namespace Gyoto;
@@ -156,10 +165,39 @@ void sigint_handler(int sig)
 #define ERROR_INITIALIZING     2
 #define ERROR_READING_SCENERY  3
 #define ERROR_RAYTRACING       4
-#define ERROR_MK_VIDEO 5
+#define ERROR_RUN_APP 5
 
 static std::string curmsg = "";
 static int curretval = 1;
+
+static std::unordered_map<std::string, std::string> app_codes = {
+  {
+    "mk-video",
+    "import gyoto.animate\n"
+    "gyoto.animate.main()\n"
+  },
+  {
+    "gyotoy",
+    "import gyoto.core\n"
+    "gyoto.core.Error.setHandler(None)\n"
+    "from gyoto.gtk4.apps.gyotoy import GyotoyApplication\n"
+    "GyotoyApplication.run_app(parsecliargs=True)"
+  },
+  {
+    "edit",
+    "import gyoto.core\n"
+    "gyoto.core.Error.setHandler(None)\n"
+    "from gyoto.gtk4.apps.gyoto_object_editor import *\n"
+    "GyotoObjectEditorApplication.run_app(parsecliargs=True)"
+  },
+  {
+    "view-scenery",
+    "import gyoto.core\n"
+    "gyoto.core.Error.setHandler(None)\n"
+    "from gyoto.gtk4.apps.gyoto_scenery_viewer import *\n"
+    "GyotoSceneryViewerApplication.run_app(parsecliargs=True)"
+  }
+};
 
 void gyotoErrorHandler( const Gyoto::Error e ) {
   cerr << curmsg << e << endl;
@@ -178,6 +216,21 @@ static void gyotoVersion() {
        << "  Classical and Quantum Gravity 28, 225011 (2011) "
        << "[arXiv:1109.4769]"
        << endl << endl;
+}
+
+// Utility functions to manipulate argv[0]
+std::string_view basename(std::string_view path)
+{
+    const auto pos = path.find_last_of('/');
+    return pos == std::string_view::npos
+        ? path
+        : path.substr(pos + 1);
+}
+
+bool starts_with(std::string_view str, std::string_view prefix)
+{
+    return str.size() >= prefix.size()
+        && str.compare(0, prefix.size(), prefix) == 0;
 }
 
 int main(int argc, char** argv) {
@@ -202,15 +255,23 @@ int main(int argc, char** argv) {
     getenv("GYOTO_PLUGINS"):
     GYOTO_DEFAULT_PLUGINS;
 
-  argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
+  // if executable was invoked as gyotoy, call the gyotoy application
+  GYOTO_DEBUG_EXPR(argv[0]);
+  if (argc && starts_with(basename(argv[0]), "gyotoy")) {
+    std::strcpy(argv[0], "gyotoy");
+    GYOTO_DEBUG_EXPR(argv[0]);
+  } else {
+    argc-=(argc>0); argv+=(argc>0); // skip program name, next may be app name
+  }
 
   // if first argument is exactly mk-video, make a video!
-  if ( (argc>0) && (!strcmp(argv[0], "mk-video")) ) {
-    curmsg = "In gyoto.C: in mk-video: ";
-    curretval = ERROR_MK_VIDEO;
+  if ( (argc>0) && app_codes.count(argv[0])) {
+    std::string app_code = app_codes[argv[0]];
+    curmsg = "In gyoto.C: in run-app: ";
+    curretval = ERROR_RUN_APP;
     GYOTO_DEBUG << "trying to load python plugin\n";
     void* handle=NULL;
-    int (*mk_video)(int, char**) = NULL;
+    int (*run_app)(std::string, int, char**) = NULL;
     Gyoto::Register::init(NULL);
     std::vector< std::string > plugnames =
       getenv("GYOTO_PYTHON") ?
@@ -224,14 +285,14 @@ int main(int argc, char** argv) {
       GYOTO_DEBUG << "trying to load plug-in " << plugnames[k] << endl;
       handle = loadPlugin(plugnames[k].c_str(), 2);
       if (handle) {
-	GYOTO_DEBUG << "trying find symbol \"mk_video\" in plug-in " << plugnames[k] << endl;
-	mk_video = (int (*)(int, char**)) dlsym(handle, "mk_video");
-	if (mk_video) break;
+	GYOTO_DEBUG << "trying to find symbol \"run_app\" in plug-in " << plugnames[k] << endl;
+	run_app = (int (*)(std::string, int, char**)) dlsym(handle, "run_app");
+	if (run_app) break;
       }
     }
-    if (!mk_video) GYOTO_ERROR("No Python plug-in containing mk_video() found");
+    if (!run_app) GYOTO_ERROR("No Python plug-in containing run_app() found");
 
-    return mk_video(argc, argv);
+    return run_app(app_code, argc, argv);
   }
 
   // else parse arguments
@@ -335,7 +396,7 @@ int main(int argc, char** argv) {
       break;
     case BOUNDARIES:
       {
-	double valtest=Gyoto::atof(opt.arg);
+	double valtest=Gyoto::stringToDouble(opt.arg);
 	if (valtest<=0){
 	  cerr << "In gyoto.C: screen indices should be >0" << endl;
 	  return 1;
@@ -398,14 +459,14 @@ int main(int argc, char** argv) {
       if (opt.arg) ipctfile=opt.arg;
       else ipct=1;
       break;
-    case TIME:        screen -> time       (Gyoto::atof(opt.arg)); break;
-    case TMIN:       scenery -> tMin       (Gyoto::atof(opt.arg)); break;
-    case FOV:         screen -> fieldOfView(Gyoto::atof(opt.arg)); break;
+    case TIME:        screen -> time       (Gyoto::stringToDouble(opt.arg)); break;
+    case TMIN:       scenery -> tMin       (Gyoto::stringToDouble(opt.arg)); break;
+    case FOV:         screen -> fieldOfView(Gyoto::stringToDouble(opt.arg)); break;
     case RESOLUTION:  screen -> resolution (       atoi(opt.arg)); break;
-    case DISTANCE:    screen -> distance   (Gyoto::atof(opt.arg)); break;
-    case PALN:        screen -> PALN       (Gyoto::atof(opt.arg)); break;
-    case INCLINATION: screen -> inclination(Gyoto::atof(opt.arg)); break;
-    case ARGUMENT:    screen -> argument   (Gyoto::atof(opt.arg)); break;
+    case DISTANCE:    screen -> distance   (Gyoto::stringToDouble(opt.arg)); break;
+    case PALN:        screen -> PALN       (Gyoto::stringToDouble(opt.arg)); break;
+    case INCLINATION: screen -> inclination(Gyoto::stringToDouble(opt.arg)); break;
+    case ARGUMENT:    screen -> argument   (Gyoto::stringToDouble(opt.arg)); break;
     case NTHREADS:   scenery -> nThreads   (       atoi(opt.arg)); break;
     case NPROCESSES: scenery -> nProcesses (       atoi(opt.arg)); break;
     case UNIT: unit=opt.arg?opt.arg:""; break;
@@ -417,7 +478,7 @@ int main(int argc, char** argv) {
 	string val=(pos==string::npos)?"":arg.substr(pos+1);
 	GYOTO_DEBUG << "Setting parameter \"" << name << "\" to value \"" << val << "\" using unit \"" << unit << "\".\n";
 	if(scenery -> setParameter(name, val, unit))
-	  throwError("Unknown parameter");
+	  GYOTO_ERROR("Unknown parameter");
       }
       break;
     case XMLWRITE: Factory(scenery).write(opt.arg); break;
@@ -509,7 +570,7 @@ int main(int argc, char** argv) {
     size_t nbnuobs=0;
     if (quantities & GYOTO_QUANTITY_SPECTRAL) {
       SmartPointer<Spectrometer::Generic> spr = screen -> spectrometer();
-      if (!spr) throwError("Spectral quantity requested but "
+      if (!spr) GYOTO_ERROR("Spectral quantity requested but "
 			   "no spectrometer specified!");
       nbnuobs = spr -> nSamples();
     }

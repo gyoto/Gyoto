@@ -93,21 +93,24 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, SimBridge)
 GyotoSmPtrTypeMapClassDerived(Astrobj, SimThickDisk)
 GyotoSmPtrTypeMapClassDerived(Astrobj, SimThinDisk)
 
-GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
-GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
-GyotoSmPtrTypeMapClassDerived(Metric, Minkowski)
-GyotoSmPtrTypeMapClassDerived(Metric, ChernSimons)
-GyotoSmPtrTypeMapClassDerived(Metric, RezzollaZhidenko)
-GyotoSmPtrTypeMapClassDerived(Metric, KonoplyaRezzollaZhidenko)
+GyotoSmPtrTypeMapClassDerived(Metric, BalasinGrumiller)
 GyotoSmPtrTypeMapClassDerived(Metric, Hayward)
-GyotoSmPtrTypeMapClassDerived(Metric, SchwarzschildHarmonic)
+GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
+GyotoSmPtrTypeMapClassDerived(Metric, ChernSimons)
+GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
+GyotoSmPtrTypeMapClassDerived(Metric, KonoplyaRezzollaZhidenko)
+GyotoSmPtrTypeMapClassDerived(Metric, Minkowski)
 GyotoSmPtrTypeMapClassDerived(Metric, ReissnerNordstrom)
+GyotoSmPtrTypeMapClassDerived(Metric, RezzollaZhidenko)
+GyotoSmPtrTypeMapClassDerived(Metric, Shift)
+GyotoSmPtrTypeMapClassDerived(Metric, SchwarzschildHarmonic)
 
-GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLaw)
 GyotoSmPtrTypeMapClassDerived(Spectrum, BlackBody)
+GyotoSmPtrTypeMapClassDerived(Spectrum, KappaDistributionSynchrotron)
+GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLaw)
+GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLawSynchrotron)
 GyotoSmPtrTypeMapClassDerived(Spectrum, ThermalBremsstrahlung)
 GyotoSmPtrTypeMapClassDerived(Spectrum, ThermalSynchrotron)
-GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLawSynchrotron)
 
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (std::string kind, SmartPointer<Metric::Generic> gg, double radius);
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (std::string kind);
@@ -203,22 +206,25 @@ GyotoSmPtrClassDerived(Astrobj, SimThinDisk)
 GyotoSmPtrClassDerivedPtrHdr(Metric, Complex, ComplexMetric, GyotoComplexMetric.h)
 
 
-GyotoSmPtrClassDerivedMetric(Shift)
-GyotoSmPtrClassDerivedMetric(KerrBL)
-GyotoSmPtrClassDerivedMetric(KerrKS)
-GyotoSmPtrClassDerivedMetric(Minkowski)
-GyotoSmPtrClassDerivedMetric(ChernSimons)
-GyotoSmPtrClassDerivedMetric(RezzollaZhidenko)
-GyotoSmPtrClassDerivedMetric(KonoplyaRezzollaZhidenko)
+GyotoSmPtrClassDerivedMetric(BalasinGrumiller)
 GyotoSmPtrClassDerivedMetric(Hayward)
-GyotoSmPtrClassDerivedMetric(SchwarzschildHarmonic)
+GyotoSmPtrClassDerivedMetric(KerrBL)
+GyotoSmPtrClassDerivedMetric(ChernSimons)
+GyotoSmPtrClassDerivedMetric(KerrKS)
+GyotoSmPtrClassDerivedMetric(KonoplyaRezzollaZhidenko)
+GyotoSmPtrClassDerivedMetric(Minkowski)
 GyotoSmPtrClassDerivedMetric(ReissnerNordstrom)
+GyotoSmPtrClassDerivedMetric(RezzollaZhidenko)
+GyotoSmPtrClassDerivedMetric(Shift)
+GyotoSmPtrClassDerivedMetric(SchwarzschildHarmonic)
 
-GyotoSmPtrClassDerivedHdr(Spectrum, PowerLaw, GyotoPowerLawSpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, BlackBody, GyotoBlackBodySpectrum.h)
+GyotoSmPtrClassDerivedHdr(Spectrum, KappaDistributionSynchrotron,
+                          GyotoKappaDistributionSynchrotronSpectrum.h)
+GyotoSmPtrClassDerivedHdr(Spectrum, PowerLaw, GyotoPowerLawSpectrum.h)
+GyotoSmPtrClassDerivedHdr(Spectrum, PowerLawSynchrotron, GyotoPowerLawSynchrotronSpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, ThermalBremsstrahlung, GyotoThermalBremsstrahlungSpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, ThermalSynchrotron, GyotoThermalSynchrotronSpectrum.h)
-GyotoSmPtrClassDerivedHdr(Spectrum, PowerLawSynchrotron, GyotoPowerLawSynchrotronSpectrum.h)
 
 // Workaround cvar bug in Swig which makes help(gyoto_std) fail:
 %inline {
@@ -227,3 +233,9 @@ GyotoSmPtrClassDerivedHdr(Spectrum, PowerLawSynchrotron, GyotoPowerLawSynchrotro
   }
   int GyotoStd::__class__ = 0;
 }
+
+%pythoncode %{
+  # ThinDisk is implemented in libgyoto but it's subconstractor lives
+  # in stdplug. It should probably be findable in both modules.
+  from .core import ThinDisk
+    %}

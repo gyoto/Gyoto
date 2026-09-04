@@ -308,13 +308,23 @@ class Gyoto::FactoryMessenger {
   ///< Output parameter
 
   /**
-   * Convert value to striing "svalue" and create an XML child element
+   * Convert value to string "svalue" and create an XML child element
    * of the form
    * \code
    * <name>svalue</name>
    * \endcode
    */
   void setParameter(std::string name, double value);
+  ///< Output parameter
+
+  /**
+   * Convert value to string "svalue" and create an XML child element
+   * of the form
+   * \code
+   * <name unit="unit">svalue</name>
+   * \endcode
+   */
+  void setParameter(std::string name, double value, std::string unit);
   ///< Output parameter
 
   /**
@@ -467,8 +477,8 @@ class Gyoto::FactoryMessenger {
    *
    * Parse at most max_tokens tokens from string src into
    * pre-allocated array dst. Returns the number of tokens actually
-   * found (interpreted using atof). dst must be at least of size
-   * max_tokens.
+   * found (interpreted using Gyoto::stringToDouble). dst must be at
+   * least of size max_tokens.
    */
   static size_t parseArray(std::string src, double dst[], size_t max_tokens);
 

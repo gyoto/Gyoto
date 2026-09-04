@@ -102,6 +102,8 @@ class Gyoto::Error
  private:
   /// Error message.
   const std::string message;
+  const std::string stacktrace;
+  std::string fullmessage;
 
   /// Error code.
   /**
@@ -137,10 +139,21 @@ class Gyoto::Error
 
   /// Retrieve error message for custom handling of the exception.
   /**
-   * See also operator const char * () const and getErrCode().
-   * \return char* message : pointer to the error message
+   * See also operator const char * () const, getErrCode() and
+   * get_stacktrace().
+   *
+   * \return std::string message: the error message
    */
   std::string get_message() const ;
+
+  /// Retrieve stacktrace description for custom handling of the exception.
+  /**
+   * See also operator const char * () const and getErrCode() and
+   * get_message().
+   *
+   * \return std::string stacktrace: the stacktrace cast to string
+   */
+  std::string get_stacktrace() const ;
 
   /// Error handler type.
   /**

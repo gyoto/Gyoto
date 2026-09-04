@@ -192,6 +192,11 @@ class Gyoto::Spectrometer::Generic
   public Gyoto::Hook::Teller
 {
   friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
+
+ public:
+  /// Get list of "plugins/names" of all registered Spectrometers
+  static std::vector<std::string> registeredPluginsSlashKinds() ;
+
  protected:
   /**
    * \brief Spectrometer kind ID
@@ -349,17 +354,30 @@ class Gyoto::Spectrometer::Generic
   /**
    * \brief Copy Generic::midpoints_, converting to unit
    * \param data an array of Generic::nsamples_ doubles to fill with result
-   * \param unit a string 
+   * \param unit a string
    */
-  virtual void getMidpoints( double data[], std::string unit);
+  virtual void getMidpoints( double data[], std::string unit) const ;
+   /**
+   * \brief Copy Generic::midpoints_
+   * \param unit a string
+   */
+  virtual std::vector<double> midpoints() const  ; ///< Get Generic::midpoints_.
   /**
+   * \brief Copy Generic::midpoints_, converting to unit
+   * \param unit a string
+   */
+  virtual std::vector<double> midpoints(std::string unit) const  ; ///< Get Generic::midpoints_.
+ /**
    * \brief Copy Generic::boundaries_, converting to unit
    * \param data an array of Generic::nboundaries_ doubles to fill with result
-   * \param unit a string 
+   * \param unit a string
    */
-  virtual void getChannelBoundaries( double data[], std::string unit);
+  virtual void getChannelBoundaries( double data[], std::string unit) const ;
   virtual double const * getChannelBoundaries() const ; ///< Get Generic::boundaries_.
+  virtual std::vector<double> channelBoundaries() const  ; ///< Get Generic::midpoints_.
+  virtual std::vector<double> channelBoundaries(std::string unit) const  ; ///< Get Generic::midpoints_.
   virtual size_t const * getChannelIndices() const ; ///< Get Generic::chanind_.
+  virtual std::vector<unsigned long> channelIndices() const  ; ///< Get Generic::midpoints_.
   virtual double const * getWidths() const ; ///< Get Generic::widths_.
   /**
    * \brief Copy Generic::widths_, converting to unit
@@ -371,7 +389,9 @@ class Gyoto::Spectrometer::Generic
    * \param data an array of Generic::nboundaries_ doubles to fill with result
    * \param unit a string 
    */
-  virtual void getWidths( double data[], std::string unit);
+  virtual void getWidths( double data[], std::string unit) const ;
+  virtual std::vector<double> widths() const  ; ///< Get Generic::midpoints_.
+  virtual std::vector<double> widths(std::string unit) const  ; ///< Get Generic::midpoints_.
 
 };
 

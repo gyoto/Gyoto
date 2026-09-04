@@ -114,6 +114,10 @@ void PageThorneDisk::updateSpin() {
 
 void PageThorneDisk::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
+  if (!gg) {
+    gg_ = gg;
+    return;
+  }
   string kin = gg->kind();
   if (kin != "KerrBL" && kin != "KerrKS")
     GYOTO_ERROR

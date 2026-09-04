@@ -226,7 +226,7 @@ class Gyoto::SmartPointer
   T& operator* ()
     {
       if (!obj)
-	Gyoto::throwError("Null Gyoto::SmartPointer dereference in operator*");
+	GYOTO_ERROR("Null Gyoto::SmartPointer dereference in operator*");
       return *obj;
     }
 
@@ -238,7 +238,7 @@ class Gyoto::SmartPointer
   const T& operator* () const
     {
       if (!obj)
-	Gyoto::throwError("Null Gyoto::SmartPointer dereference in operator*");
+	GYOTO_ERROR("Null Gyoto::SmartPointer dereference in operator*");
       return *obj;
     }
 
@@ -250,7 +250,7 @@ class Gyoto::SmartPointer
   T* operator-> ()
     {
       if (!obj)
-	Gyoto::throwError("Null Gyoto::SmartPointer dereference in operator->");
+	GYOTO_ERROR("Null Gyoto::SmartPointer dereference in operator->");
       return obj;
     }
 
@@ -262,7 +262,7 @@ class Gyoto::SmartPointer
   T* operator-> () const
     {
       if (!obj)
-	Gyoto::throwError("Null Gyoto::SmartPointer dereference in operator->");
+	GYOTO_ERROR("Null Gyoto::SmartPointer dereference in operator->");
       return obj;
     }
 

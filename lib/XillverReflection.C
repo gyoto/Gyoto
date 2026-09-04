@@ -82,7 +82,7 @@ XillverReflection::XillverReflection() :
   radius_(NULL), phi_(NULL),
   nr_(0), nphi_(0),
   aa_(0.),
-  lampradius_(0), timelampphizero_(0.),
+  lampradius_(0), timelampphizero_(0.), timelamphizero_as_set_(0.),
   average_over_angle_(0)
 {
   GYOTO_DEBUG << endl;
@@ -100,6 +100,7 @@ XillverReflection::XillverReflection(const XillverReflection& o) :
   nr_(o.nr_), nphi_(o.nphi_), 
   aa_(o.aa_),
   lampradius_(o.lampradius_), timelampphizero_(o.timelampphizero_),
+  timelamphizero_as_set_(o.timelamphizero_as_set_),
   average_over_angle_(o.average_over_angle_)
 {
   GYOTO_DEBUG << endl;
@@ -151,6 +152,7 @@ XillverReflection::~XillverReflection() {
 
 void XillverReflection::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
+  if (!gg_) return;
   string kin = gg->kind();
   if (kin != "KerrBL" && kin != "KerrKS")
     GYOTO_ERROR
@@ -362,22 +364,19 @@ bool XillverReflection::averageOverAngle()const {
 
 void XillverReflection::fileillumination(std::string const &f) {
 # ifdef GYOTO_USE_CFITSIO
-  fitsReadIllum(f);
+  if (!f.empty() && !(f.back() == '/'))
+    fitsReadIllum(f);
 # else
   GYOTO_ERROR("This Gyoto has no FITS i/o");
 # endif
 }
 
 double XillverReflection::timelampphizero() const{
-  return timelampphizero_;
+  return timelamphizero_as_set_;
 }
 
 void XillverReflection::timelampphizero(double tt){
-  if (lampradius_==0.)
-    {
-      GYOTO_ERROR("In Xillver::timelempphizero: "
-		 "update lampradius before timelampphizero.");
-    }
+  timelamphizero_as_set_ = tt;
   double lampperiod = 2*M_PI*(pow(lampradius_,1.5)+aa_);
   timelampphizero_=fmod(tt,lampperiod);
 }
@@ -388,11 +387,13 @@ double XillverReflection::lampradius() const{
 
 void XillverReflection::lampradius(double rr){
   lampradius_=rr;
+  timelampphizero(timelamphizero_as_set_);
 }
 
 void XillverReflection::filereflection(std::string const &f) {
 # ifdef GYOTO_USE_CFITSIO
-  fitsReadRefl(f);
+  if (!f.empty() && !(f.back() == '/'))
+    fitsReadRefl(f);
 # else
   GYOTO_ERROR("This Gyoto has no FITS i/o");
 # endif

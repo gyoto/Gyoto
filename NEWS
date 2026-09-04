@@ -1,5 +1,30 @@
-NEXT BUG
+2.1.0 UNRELEASED ABI 10.0.0
+    * Gyoto Properties are now exposed as Python class attributes
+      that:
+        * can be set during instantiation:
+	    metric = KerrBL(Spin=0.5, Mass=(4e6, "sunmass"))
+	    star = Star(Metric=KerrBL(), InitCoord=(...))
+	* can be set as attributes:
+	    metric.Spin = 0.8
+	    metric.Mass = 4e6, "sunmass"
+	* can be retrieved as attributes:
+	    mass = metric.Mass
+	    fov = scenery.Screen.FieldOfView
+	* are listed in dir(obj) and are proposed by IPython's
+          autocompletion mechanism
+    * New submodule gtk4 with custom widgets and useful GUIs:
+        * gyotoy.gtk4.gyotoy(): visualize a geodesic
+	* <gyoto object>.edit(): edit an object's properties
+	* <gyoto scenery>.view(): explore a scenery
+      These GUIs are also available from the command line:
+        * gyoto gyotoy [filename.xml]
+        * gyoto edit [filename.xml]
+        * gyoto view-scenery [filename.xml]
+    * New submodule gyoto.matte_painting
     * Make it an error when an unknown parameter is found in an XML file
+    * Replaced Gyoto::atof with Gyoto::stringToDouble (please update
+      your code) and provided matching Gyoto::doubleToString and
+      startsWithCaseInsensitive.
 
 2.0.2 2024/01/19 PKG
     * Update citations and copyright in AUTHORS and README.md

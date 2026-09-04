@@ -194,7 +194,29 @@ public:
    * \brief Get next
    */
   Register::Entry* next();
+
+  /**
+   *\brief Get "plugin/name" for this and all subsequent entries
+   */
+  void pluginsSlashNames(std::vector<std::string> &retval) const;
 };
+
+
+/**
+ * \def GYOTO_PLUGINSSLASHNAMES(space)
+ *
+ * \brief Defines the registeredPluginsSlashKinds() function for
+ * namespace \p space.
+ */
+
+#define GYOTO_REGISTEREDPLUGINSSLASHKINDS(space)					\
+  std::vector<std::string>						\
+  Gyoto::space::Generic::registeredPluginsSlashKinds() {		\
+    std::vector<std::string> retval;					\
+    if (Gyoto::space::Register_)					\
+      Gyoto::space::Register_->pluginsSlashNames(retval);		\
+    return retval;							\
+  }
 
 /**
  * \def GYOTO_GETSUBCONTRACTOR(space)
@@ -287,7 +309,7 @@ public:
       }									\
     }									\
     if (!Gyoto::space::Register_)					\
-      throwError("No " GYOTO_STRINGIFY(space) " kind registered!");	\
+      GYOTO_ERROR("No " GYOTO_STRINGIFY(space) " kind registered!");	\
     Gyoto::space::Subcontractor_t* sctr= NULL;				\
     GYOTO_DEBUG << "looking for " << name				\
                 << " in non-fallback plug-ins..."  << std::endl;	\
@@ -315,7 +337,7 @@ public:
 		    << "' as item 0 of pluglist" << std::endl;		\
 	return sctr;							\
       } else if (!fallback.size() && !errmode)				\
-	throwError ("Kind not found in any plug-in: "+name);		\
+	GYOTO_ERROR ("Kind not found in any plug-in: "+name);		\
     }									\
     GYOTO_DEBUG << "looking for " << name				\
 		<< " in fallback plug-ins..."  << std::endl;		\
@@ -374,7 +396,7 @@ public:
     GYOTO_DEBUG << name << " not found anywhere, error?"		\
                 << std::endl;						\
     if (!errmode)							\
-      throwError("Kind not found in the specified plug-ins: "+name);	\
+      GYOTO_ERROR("Kind not found in the specified plug-ins: "+name);	\
     return sctr;							\
   }
 

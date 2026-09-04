@@ -126,3 +126,9 @@ Property::type_e Property::typeFromString(std::string stype) {
   GYOTO_ERROR("unimplemeted Python property type: " + stype);
   return Property::empty_t; // avoid warning, will never reach here
 }
+
+bool Property::supportsUnits() const {
+  if (type == double_t) return setter_unit.set_double != NULL;
+  if (type == vector_double_t) return setter_unit.set_vdouble != NULL;
+  return false;
+}

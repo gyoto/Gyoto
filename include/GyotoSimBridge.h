@@ -102,10 +102,13 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_; // kappa-distribution synchrotron spectrum
   SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // PL-distribution synchrotron spectrum
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
+  ///< FITS files prefix
+  /**
+   * Including directory, without the number or extension, i.e. '.fits'.
+   */
+  std::string fprefix_;
 
  private:
-  std::string dirname_; ///< FITS files directory
-  std::string fname_; ///< FITS files prefix (without the number neither the extension, i.e. '.fits')
   bool temperature_; ///< 1 if temperature is given in fits data file, 0 if emission coef is directly given
   bool circularmotion_; ///< 1 if velocity is given in fits data file, 0 if circularmotion is directly given
   bool cunninghamvel_; ///< 1 if Cunningham prescription below risco, 0 if radial velocity below risco
@@ -159,10 +162,8 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   // Accessors
   // ---------
  public:
-  void directory(std::string const &d); ///< Set the directory where the FITS files are stored
-  std::string directory() const; ///< Get the directory where the FITS files will be searched
-  void filename(std::string const &d); ///< Set the prefix of the FITS filenames, it should be followed by a 4-digit number (filled by zeros)
-  std::string filename() const; ///< Get the FITS filename prefix
+  void filePrefix(std::string const &d); ///< Set the prefix of the FITS filenames, it should be followed by a 4-digit number (filled by zeros)
+  std::string filePrefix() const; ///< Get the FITS filename prefix
   void PLindex(double pl); ///< Set the power law index when the emission is set to "Power-Law" or "Kappa"
   double PLindex()const; ///< Get the power law index of the electron distribution function
   void gammaMin(double gmin); ///< Set the minimum gamma factor when the emission is set to "Power-Law" or "Kappa"
@@ -193,7 +194,11 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
 
   virtual double operator()(double const coord[4]);
 
-  private:
+  virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
+  virtual void fillProperty(Gyoto::FactoryMessenger *fmp,
+			    Property const &p) const ;
+
+ private:
   int getIndex(double const tcur) const;
 
 };

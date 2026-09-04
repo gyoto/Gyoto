@@ -337,7 +337,7 @@ void Jet::radiativeQ(double Inu[], // output
     if (fabs(norm-1.)>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("Bad mf normalization");
     
     theta_mag = get_theta_mag(B4vect,coord_ph, vel);
-    if (theta_mag<0. or theta_mag>M_PI) throwError("Jet: bad B angle");
+    if (theta_mag<0. or theta_mag>M_PI) GYOTO_ERROR("Jet: bad B angle");
   }
   
 
@@ -581,7 +581,7 @@ void Jet::getVelocity(double const pos[4], double vel[4])
   double u2 = gg_->ScalarProd(pos,vel,vel);
   double tol = 1e-6;
   //cout << "vel norm= " << fabs(u2+1) << endl;
-  if (fabs(u2+1)>tol or u2!=u2) throwError("In Jett::getVelo: bad jet velocity");
+  if (fabs(u2+1)>tol or u2!=u2) GYOTO_ERROR("In Jett::getVelo: bad jet velocity");
 
 }
 
@@ -593,7 +593,7 @@ bool Jet::isThreadSafe() const {
 
 void Jet::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
-  string kin = gg->kind();
+  //string kin = gg->kind();
   //if (kin != "KerrBL" or kin!="NumericalMetricLorene")
   //  GYOTO_ERROR
   //    ("Jet::metric(): metric must be KerrBL");
@@ -718,7 +718,7 @@ void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
   //cout << "At r,x,y,z= " << coord_ph[1] << " " << coord_ph[1]*sin(coord_ph[2])*cos(coord_ph[3]) << " " << coord_ph[1]*sin(coord_ph[2])*sin(coord_ph[3]) << " " << coord_ph[1]*cos(coord_ph[2]) << " ; Chi=" << Chi << endl;
   double theta_mag = get_theta_mag(B4vect,coord_ph, vel);
 
-  if (theta_mag<0. or theta_mag>M_PI) throwError("Jet: bad B angle");
+  if (theta_mag<0. or theta_mag>M_PI) GYOTO_ERROR("Jet: bad B angle");
 
   
   Eigen::Matrix4d Omat;

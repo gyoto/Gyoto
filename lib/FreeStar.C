@@ -48,35 +48,26 @@ GYOTO_PROPERTY_END(FreeStar, UniformSphere::properties)
 
 FreeStar::FreeStar() : 
   UniformSphere("FreeStar"),
-  posIni_(NULL),
-  fourveldt_(NULL),
-  posSet_(false)
+  posIni_(),
+  fourveldt_(),
+  posSet_(false),
+  velSet_(false)
 {
   kind_="FreeStar";
 # ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done." << endl;
 # endif
-
-  posIni_= new double[4];
-  fourveldt_= new double[4];
 }
 
 FreeStar::FreeStar(const FreeStar& orig) :
   UniformSphere(orig),
-  posIni_(NULL),
-  fourveldt_(NULL),
-  posSet_(orig.posSet_)
+  posIni_(),
+  fourveldt_(),
+  posSet_(orig.posSet_),
+  velSet_(orig.velSet_)
 {
-
-  if(orig.posIni_){
-      posIni_= new double[4];
-      memcpy(posIni_,orig.posIni_, 4*sizeof(double));
-  }
-
-  if(orig.fourveldt_){
-      fourveldt_= new double[4];
-      memcpy(fourveldt_,orig.fourveldt_, 4*sizeof(double));
-  }
+  memcpy(posIni_, orig.posIni_, 4*sizeof(double));
+  memcpy(fourveldt_, orig.fourveldt_, 4*sizeof(double));
 }
 
 
@@ -90,65 +81,94 @@ string FreeStar::className() const { return  string("FreeStar"); }
 string FreeStar::className_l() const { return  string("freeStar"); }
 
 
+void FreeStar::metric(SmartPointer<Metric::Generic> met) {
+  UniformSphere::metric(met);
+  if (posSet_ && velSet_) normalizeVelocity();
+}
+
 void FreeStar::initPosition(std::vector<double> const &v) {
+  if (v.size() == 0) {
+    posSet_ = false;
+    return;
+  }
+  if (v.size() != 4) GYOTO_ERROR("InitPosition must have 4 elements");
   posIni_[0] = v[0];
   posIni_[1] = v[1];
   posIni_[2] = v[2];
   posIni_[3] = v[3];
   posSet_=true;
+  if (velSet_ && gg_) normalizeVelocity(); 
 }
 
 std::vector<double> FreeStar::initPosition() const {
-  std::vector<double> v (4, 0.);
-  v[0] = posIni_[0];
-  v[1] = posIni_[1];
-  v[2] = posIni_[2];
-  v[3] = posIni_[3];
-  return v;
+  return std::vector<double>(posIni_, posIni_+4);
 }
 
 void FreeStar::initVelocity(std::vector<double> const &v) {
-  if (!posSet_)
-    GYOTO_ERROR("In FreeStar::initVelocity initial Position not defined");
-  fourveldt_[1] = v[0];
-  fourveldt_[2] = v[1];
-  fourveldt_[3] = v[2];
-  fourveldt_[0] = 1.;
-
-  double sum = 0;
-  double g[4][4];
-
-  gg_->gmunu(g, posIni_);
-
-  for (int i=0;i<4;++i) {
-    for (int j=0;j<4;++j) {
-      sum+=g[i][j]*fourveldt_[i]*fourveldt_[j];
-    }
+  if (v.size() == 0) {
+    velSet_ = false;
+    return;
   }
-  if (sum>=0)
-    GYOTO_ERROR("In FreeStar::initVelocity Initial Velocity over C");
+  if (v.size() < 3) GYOTO_ERROR("velocity must have 3 or 4 elements");
+  if (v.size() == 3) {
+    fourveldt_[0] = 1.;
+    fourveldt_[1] = v[0];
+    fourveldt_[2] = v[1];
+    fourveldt_[3] = v[2];
+  } else {
+    fourveldt_[0] = v[0];
+    fourveldt_[1] = v[1];
+    fourveldt_[2] = v[2];
+    fourveldt_[3] = v[3];
+  }
+  velSet_ = true;
 
-  gg_->normalizeFourVel(posIni_, fourveldt_);
+  if (posSet_ && gg_) normalizeVelocity();
+}
 
+void FreeStar::normalizeVelocity() {
+  double v[4] = {
+    fourveldt_[0],
+    fourveldt_[1],
+    fourveldt_[2],
+    fourveldt_[3]
+  };
+
+  gg_->normalizeFourVel(posIni_, v);
+  if (v[0] == 0) GYOTO_ERROR("v>c");
+
+  for (auto i=0; i<4; ++i) fourveldt_[i] = v[i];
 }
 
 std::vector<double> FreeStar::initVelocity() const {
-  std::vector<double> v (3, 0.);
-  v[0] = fourveldt_[1];
-  v[1] = fourveldt_[2];
-  v[2] = fourveldt_[3];
-  return v;
+  return std::vector<double>(fourveldt_, fourveldt_+4);
 }
 
 void FreeStar::initCoord(std::vector<double> const &v) {
+  if (v.size() == 0) {
+    posSet_ = false;
+    velSet_ = false;
+    return;
+  }
+  if (v.size() < 7) GYOTO_ERROR("initCoord must have 7 or 8 elements");
   posIni_[0] = v[0];
   posIni_[1] = v[1];
   posIni_[2] = v[2];
   posIni_[3] = v[3];
-  fourveldt_[0] = v[4];
-  fourveldt_[1] = v[5];
-  fourveldt_[2] = v[6];
-  fourveldt_[3] = v[7];
+  if (v.size() == 7) {
+    fourveldt_[0] = 1.;
+    fourveldt_[1] = v[4];
+    fourveldt_[2] = v[5];
+    fourveldt_[3] = v[6];
+  } else {
+    fourveldt_[0] = v[4];
+    fourveldt_[1] = v[5];
+    fourveldt_[2] = v[6];
+    fourveldt_[3] = v[7];
+  }
+  posSet_ = true;
+  velSet_ = true;
+  if (gg_) normalizeVelocity();
 }
 
 std::vector<double> FreeStar::initCoord() const {
@@ -172,8 +192,13 @@ void FreeStar::getCartesian(double const * const dates, size_t const n_dates,
   // fourveldt_ is the initial 3-velocity dxi/dt
   // vel is the 4-velocity dxnu/dtau
 
+  if (!gg_) GYOTO_ERROR("metric not set");
+
+  if (gg_->coordKind() == GYOTO_COORDKIND_CARTESIAN)
+    GYOTO_ERROR("only spherical supported");
+
   if (n_dates!=1)
-    GYOTO_ERROR("In FreeStar::getCartesian n_dates!=1");
+    GYOTO_ERROR("supports only n_dates=1");
 
   double tt=dates[0];
   
@@ -199,9 +224,6 @@ void FreeStar::getCartesian(double const * const dates, size_t const n_dates,
 }
 
 void FreeStar::getVelocity(double const *, double vel[4]){
-  if (!gg_)
-    GYOTO_ERROR("In FreeStar::getVelocity Metric not set");
-    
   vel[0] = fourveldt_[0];
   vel[1] = fourveldt_[1];
   vel[2] = fourveldt_[2];

@@ -1,15 +1,17 @@
 // include Metric headers
+// ChernSimons must come after KerrBL from which it derives
+#include "GyotoBalasinGrumiller.h"
 #include "GyotoComplexMetric.h"
-#include "GyotoShift.h"
-#include "GyotoKerrBL.h"
-#include "GyotoKerrKS.h"
-#include "GyotoMinkowski.h"
-#include "GyotoChernSimons.h"
-#include "GyotoRezzollaZhidenko.h"
-#include "GyotoKonoplyaRezzollaZhidenko.h"
 #include "GyotoHayward.h"
-#include "GyotoSchwarzschildHarmonic.h"
+#include "GyotoKerrBL.h"
+#include "GyotoChernSimons.h"
+#include "GyotoKerrKS.h"
+#include "GyotoKonoplyaRezzollaZhidenko.h"
+#include "GyotoMinkowski.h"
 #include "GyotoReissnerNordstrom.h"
+#include "GyotoRezzollaZhidenko.h"
+#include "GyotoSchwarzschildHarmonic.h"
+#include "GyotoShift.h"
 
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
@@ -49,8 +51,9 @@
 #include "GyotoSimThinDisk.h"
 
 // include Spectrum headers
-#include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
+#include "GyotoKappaDistributionSynchrotronSpectrum.h"
+#include "GyotoPowerLawSpectrum.h"
+#include "GyotoPowerLawSynchrotronSpectrum.h"
 #include "GyotoThermalBremsstrahlungSpectrum.h"
 #include "GyotoThermalSynchrotronSpectrum.h"
-#include "GyotoPowerLawSynchrotronSpectrum.h"

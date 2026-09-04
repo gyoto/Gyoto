@@ -1,7 +1,40 @@
 """The General relativitY Orbit Tracer of paris Observatory
 
-Note that importing "gyoto" is deprecated and may cease to work in a
-future release. Please update your code to import gyoto.core instead.
+GYOTO is an open source C++ code that computes null and time-like
+geodesics in the Kerr metric as well as in any metric computed within
+the framework of the 3+1 formalism of general relativity. This code
+allows to compute mainly (polarized or non-polarized) images and
+spectra of astrophysical sources emitting electromagnetic radiation in
+the vicinity of compact objects (e.g. accretion disks or nearby
+stars).
+
+The gyoto Python module is split into several submodules:
+  Exposing libgyoto*:
+    gyoto.core exposes the generic framework compiled in libgyoto;
+    gyoto.std exposes the derived classes compiled in the standard
+      plug-in, libgyoto-stdplug;
+    gyoto.python exposes the derived classes compiled in the Python
+      plug-in, libgyoto-python3, that allow implementing new Gyoto
+      classes direclty in Python;
+    gyoto.lorene exposes the derived classes compiled in the Lorene
+      plug-in, libgyoto-lorene, that allow implementing numerical
+      Metrics based on LORENE;
+    gyoto.<some plug-in> can be generated on the fly to expose the
+      classes implemented in any new custom plug-in;
+    gyoto.metric, gyoto.astrobj, gyoto.spectrometer, gyoto.spectrum
+      regroup the various Metrics, Astrobjs, etc. from the various
+      extensions.
+
+  Pure Python helpers and high-level routine:
+    gyoto.animate contains a frame-work for producing videos based on
+      Gyoto;
+    gyoto.gtk4 contains GTK4 graphical user interfaces (notably
+      gyotoy() and edit()) and widgets for building such custom
+      applications;
+    gyoto.matte_painting provides functionality to visualize
+      gravitational lensing effects on painted backgrounds;
+    gyoto.utils contains a few high-level wrappers and helper
+      functions.
 
 """
 import sys
@@ -11,8 +44,9 @@ import importlib
 import importlib.abc
 import importlib.util
 from pathlib import Path
+import warnings
 
-# For backwards compatibility, expose gyoto.core as gyoto
+# Expose gyoto.core as gyoto
 from .core import *
 
 # import gyoto.core
@@ -20,13 +54,24 @@ from gyoto import core
 
 # avoid outputting n times the same warning about lorene while loading the rest
 core.verbose(0)
-from gyoto import util, animate, std, metric, astrobj, spectrum, spectrometer
+
+# import basic functionalities
+from gyoto import core, std
+
+# import namespaces
+from gyoto import metric, astrobj, spectrum, spectrometer
+
+# import pure python utilities
+from gyoto import utils, animate, matte_painting
+
+# for backwards compatibility
+util = utils
 
 # try importing the python submodule.
 try:
     from gyoto import python
 except:
-    pass
+    warnings.warn("gyoto.python is not available")
 
 # try importing the lorene submodule
 try:
@@ -34,21 +79,27 @@ try:
 except:
     pass
 
+# try importing the gtk4 submodule
+try:
+    from gyoto import gtk4
+except:
+    warnings.warn("gyoto.gtk4 is not available")
+
 core.verbose(core.GYOTO_DEFAULT_VERBOSITY)
 
 # Provide a Pythonic wrapper around Scenery.rayTrace.
 # The underlying C++-like interface remains accessible.
-core.Scenery.rayTrace = util.rayTrace
+core.Scenery.rayTrace = utils.rayTrace
 core.Scenery.rayTrace.__doc__ += core._core.Scenery_rayTrace.__doc__
-core.Scenery.__getitem__ = util.Scenery_getitem
+core.Scenery.__getitem__ = utils.Scenery_getitem
 core.Scenery.__getitem__.__doc__ += core.Scenery.rayTrace.__doc__
 
-core.Worldline.getCartesian =  util._Worldline_getCartesian
+core.Worldline.getCartesian =  utils._Worldline_getCartesian
 core.Worldline.getCartesian.__doc__ = core._core.Worldline_getCartesian.__doc__
-core.Worldline.getCoord =  util._Worldline_getCoord
+core.Worldline.getCoord =  utils._Worldline_getCoord
 core.Worldline.getCoord.__doc__ = core._core.Worldline_getCoord.__doc__
 
-# import plugins as modules
+# Generate submodules on the fly for Gyoto plugins
 
 class GyotoPluginLoader(importlib.abc.Loader):
     """Loader for wrapping dynamic moduls around Gyoto plugins."""
@@ -83,54 +134,54 @@ class GyotoPluginLoader(importlib.abc.Loader):
 
         class Metric(core.Metric):
             _plugin = name
-            def __init__(self, clsname):
-                super().__init__(clsname, (self._plugin,))
+            def __init__(self, clsname, *kwargs):
+                super().__init__(clsname, (self._plugin,), *kwargs)
         Metric.__module__ = fullname
         Metric.__doc__ = '''Instanciate Metric of kind clsname from plugin '''+name+'''.
 
             If '''+name+''' only registers one class with that name,
             equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
-            (see gyoto.util.valid_identifier()).
+            (see gyoto.utils.valid_identifier()).
             '''
 
         class Astrobj(core.Astrobj):
             _plugin = name
-            def __init__(self, clsname):
-                super().__init__(clsname, (self._plugin,))
+            def __init__(self, clsname, *kwargs):
+                super().__init__(clsname, (self._plugin,), *kwargs)
         Astrobj.__module__ = fullname
         Astrobj.__doc__ = '''Instanciate Astrobj of kind clsname from plugin '''+name+'''.
 
             If '''+name+''' only registers one class with that name,
             equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
-            (see gyoto.util.valid_identifier()).
+            (see gyoto.utils.valid_identifier()).
             '''
 
         class Spectrum(core.Spectrum):
             _plugin = name
-            def __init__(self, clsname):
-                super().__init__(clsname, (self._plugin,))
+            def __init__(self, clsname, *kwargs):
+                super().__init__(clsname, (self._plugin,), *kwargs)
         Spectrum.__module__ = fullname
         Spectrum.__doc__ = '''Instanciate Spectrum of kind clsname from plugin '''+name+'''.
 
             If '''+name+''' only registers one class with that name,
             equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
-            (see gyoto.util.valid_identifier()).
+            (see gyoto.utils.valid_identifier()).
             '''
 
         class Spectrometer(core.Spectrometer):
             _plugin = name
-            def __init__(self, clsname):
-                super().__init__(clsname, (self._plugin,))
+            def __init__(self, clsname, *kwargs):
+                super().__init__(clsname, (self._plugin,), *kwargs)
         Spectrometer.__module__ = fullname
         Spectrometer.__doc__ = '''Instanciate Spectrometer of kind clsname from plugin '''+name+'''.
 
             If '''+name+''' only registers one class with that name,
             equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
-            (see gyoto.util.valid_identifier()).
+            (see gyoto.utils.valid_identifier()).
             '''
         module.Metric = Metric
         module.Astrobj = Astrobj
@@ -150,8 +201,8 @@ class GyotoPluginLoader(importlib.abc.Loader):
             while entry:
                 if entry.plugin() == name:
                     classname = entry.name()
-                    identifier = util.valid_identifier(classname)
-                    klass = util.make_class(namespace, classname,
+                    identifier = utils.valid_identifier(classname)
+                    klass = utils.make_class(namespace, classname,
                                             name, identifier)
                     if identifier not in module.__dict__:
                         setattr(module, identifier, klass)
@@ -161,38 +212,21 @@ class GyotoPluginLoader(importlib.abc.Loader):
                 entry = entry.next()
 
 class GyotoPluginFinder(importlib.abc.MetaPathFinder):
-    """Finder for wrapping dynamic modules around Gyoto plugins.
-
-    Check if a static submodule by that name already exists
-    (gyoto/<name>.py or gyoto/<name>/__init__.py. In this case, let
-    Python handle it normally.
-
-    Else, instruct Python to try and build it dynamically using
-    GyotoPluginBuilder.
-    """
+    """Finder for wrapping dynamic modules around Gyoto plugins."""
 
     def find_spec(self, fullname, path, target=None):
-        """Find the module spec for the given module name.
-
-        Args:
-            fullname: The full module name (e.g., "module.submodule").
-            path: The search path (unused here).
-            target: The target module (unused here).
-
-        Returns:
-            A ModuleSpec if the module should be created dynamically,
-            None if the module should be loaded normally.
-        """
-        # Only handle submodules of "module"
-        if not fullname.startswith(__name__+"."):
+        """Find the module spec for the given module name."""
+        if not fullname.startswith(__name__ + "."):
             return None
 
-        # Extract the submodule name (e.g., "submodule")
         submodule_name = fullname.split('.', 1)[1]
-
-        # Expected path for the .py file
         module_dir = Path(__file__).parent
-        submodule_path = module_dir / submodule_name
+
+        # Split the submodule name into parts for nested modules
+        parts = submodule_name.split('.')
+        submodule_path = module_dir
+        for part in parts:
+            submodule_path = submodule_path / part
 
         # Check for .py file
         if submodule_path.with_suffix(".py").exists():
@@ -204,8 +238,7 @@ class GyotoPluginFinder(importlib.abc.MetaPathFinder):
             return None
 
         # Check for compiled module (.so)
-        # Example pattern: _std.cpython-313-x86_64-linux-gnu.so
-        so_pattern = f"{submodule_name}.*.so"
+        so_pattern = f"{parts[-1]}.*.so"
         so_matches = list(module_dir.glob(so_pattern))
         if so_matches:
             return None
@@ -221,27 +254,37 @@ class GyotoPluginFinder(importlib.abc.MetaPathFinder):
 sys.meta_path.insert(0, GyotoPluginFinder())
 
 def __getattr__(name):
-    f'''Autoload submodules
+    """Autoload submodules.
 
-    {__name__}.__getattr__ is called when Python encounters a call to
-    an attribute that does not yet exist.
-
-    It first tries to load an existing submodule. If it fails, it
+    First tries to load an existing submodule. If it fails, it
     tries to load a Gyoto plugin by that name and expose it as a
     minimal submodule.
-
-    '''
-    # __getattr__ shouldn't be called in that case, but still the
-    # right answer:
-    if name in sys.modules[__name__].__dict__:
-        return sys.modules[__name__].__dict__[name]
-
-    # Take care of standard attributes
-    if name.startswith('__') and name.endsswith('__'):
+    """
+    # Avoid infinite recursion for standard attributes
+    if name.startswith('__') and name.endswith('__'):
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
-    # Now try to load a submodule
-    fullname=f"{__name__}.{name}"
-    mod = importlib.import_module(fullname)
-    setattr(sys.modules[__name__], name, mod)
-    return mod
+    fullname = f"{__name__}.{name}"
+
+    # First, try to import the submodule normally
+    try:
+        mod = importlib.import_module(fullname)
+        setattr(sys.modules[__name__], name, mod)
+        return mod
+    except ModuleNotFoundError:
+        pass  # Fall back to dynamic plugin wrapper
+
+    # If normal import fails, try to load as a Gyoto plugin
+    try:
+        core.requirePlugin(name)
+    except core.Error:
+        raise ModuleNotFoundError(f"No module named '{fullname}'")
+
+    # Dynamically create the module
+    module = types.ModuleType(fullname)
+    sys.modules[fullname] = module
+    setattr(sys.modules[__name__], name, module)
+
+    # Initialize the module (same as GyotoPluginLoader.exec_module)
+    GyotoPluginLoader().exec_module(module)
+    return module

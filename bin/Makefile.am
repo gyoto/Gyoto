@@ -121,10 +121,10 @@ check-wip: check-wip-nompi
 if HAVE_PYTHON
 
 $(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(GYOTO_PYTHON_LA) ../python/testbed/stamp ../lib/libgyoto-stdplug.la
-	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+	PYTHONPYCACHEPREFIX=../python/pycache PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 $(CHECK_PYTHON_MPI_RESULTS): gyoto gyoto-mpi-worker.@sovers@ $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN) ../python/testbed/stamp ../lib/libgyoto-stdplug.la
-	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+	PYTHONPYCACHEPREFIX=../python/pycache PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 check-python-nompi-compute: $(CHECK_PYTHON_RESULTS)
 check-python-nompi: check-python-nompi-clean check-python-nompi-compute

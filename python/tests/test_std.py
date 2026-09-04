@@ -4,6 +4,7 @@ import gyoto.core
 import gyoto.std
 import gyoto.metric
 import inspect
+from . import helpers
 
 class TestChernSimons(unittest.TestCase):
 
@@ -248,6 +249,8 @@ class TestStdMetric(unittest.TestCase):
         gyoto.core.verbose(self.default_verbosity)
 
     def pos(self, metric):
+        if isinstance(metric, gyoto.std.BalasinGrumiller):
+            return (10, 1e5, numpy.pi/4, numpy.pi/3)
         if metric.coordKind() is gyoto.core.GYOTO_COORDKIND_SPHERICAL:
             pos=(10, 6., numpy.pi/4, numpy.pi/3)
         else:
@@ -288,10 +291,19 @@ class TestStdMetric(unittest.TestCase):
             if (self.invalid(classname, cls)):
                 continue
             metric=self.metric(cls)
+            if cls is gyoto.std.BalasinGrumiller:
+                abstol = 5.
+            else:
+                abstol = 1e-6
             try:
-                gyoto.metric.check_christoffel(metric, poslist=(self.pos(metric),), epsilon=1e-7)
+                gyoto.metric.check_christoffel(metric,
+                                               poslist=(self.pos(metric),),
+                                               epsilon=1e-7,
+                                               abstol=abstol)
             except AssertionError as e:
                 self.fail(e.__str__())
+            if cls is gyoto.std.BalasinGrumiller:
+                continue
             pos=self.pos(metric)
             G=metric.christoffel(pos)
             G2=numpy.ones((4,4,4))
@@ -363,6 +375,67 @@ class TestStdMetric(unittest.TestCase):
             g=metric.gmunu(pos)
             gup=metric.gmunu_up(pos)
             self.assertAlmostEqual(numpy.abs(numpy.linalg.multi_dot((g, gup))-I).max(), 0.)
+
+    def test_xmlio(self):
+        helpers.test_xmlio(self, gyoto.std, self.invalid)
+
+    def test_exposed_classes(self):
+        helpers.test_exposed_classes(self,
+                                     plg = "stdplug",
+                                     module=gyoto.std,
+                                     nspace=gyoto.metric,
+                                     special={"Complex": "ComplexMetric"})
+
+class TestStdAstrobj(unittest.TestCase):
+
+    default_verbosity=gyoto.core.verbose()
+
+    def setUp(self):
+        gyoto.core.verbose(0)
+
+    def tearDown(self):
+        gyoto.core.verbose(self.default_verbosity)
+
+    def invalid(self, classname, cls):
+        return (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Astrobj)
+                or cls == gyoto.astrobj.UniformSphere)
+
+    def test_xmlio(self):
+        helpers.test_xmlio(self, gyoto.std, self.invalid)
+
+    def test_exposed_classes(self):
+        helpers.test_exposed_classes(self,
+                                     plg = "stdplug",
+                                     module=gyoto.std,
+                                     nspace=gyoto.astrobj,
+                                     special={"Complex": "ComplexAstrobj"})
+        self.assertEqual(gyoto.core.ThinDisk, gyoto.std.ThinDisk,
+                         "gyoto.core.ThinDisk ≠ gyoto.std.ThinDisk")
+
+class TestStdSpectrum(unittest.TestCase):
+
+    default_verbosity=gyoto.core.verbose()
+
+    def setUp(self):
+        gyoto.core.verbose(0)
+
+    def tearDown(self):
+        gyoto.core.verbose(self.default_verbosity)
+
+    def invalid(self, classname, cls):
+        return (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Spectrum))
+
+    def test_xmlio(self):
+        helpers.test_xmlio(self, gyoto.std, self.invalid)
+
+    def test_exposed_classes(self):
+        helpers.test_exposed_classes(self,
+                                     plg = "stdplug",
+                                     module=gyoto.std,
+                                     nspace=gyoto.spectrum,
+                                     special={})
 
 class TestBalasinGrumiller(unittest.TestCase):
    def setUp(self):

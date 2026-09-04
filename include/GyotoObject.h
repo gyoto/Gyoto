@@ -135,7 +135,7 @@ namespace Gyoto {
  * A myobj();
  * Property const *prop=NULL;
  * prop = myobj.property("PropertyName");
- * if (!prop) throwError("No Property by that name in this object");
+ * if (!prop) GYOTO_ERROR("No Property by that name in this object");
  * \endcode
  * It then becomes possible to set or get the Property from or to a
  * Value:
@@ -277,6 +277,14 @@ class Gyoto::Object
    * \return true if set() or get() would work with this name.
    */
   virtual bool knowsProperty(const std::string &name) const;
+
+  /// \brief Get a list of known property names
+  /**
+   * For boolean properties, if #list_false is true, also list
+   * name_false.
+   */
+  std::vector<std::string> getPropertyNames(bool list_false=false) const;
+
 
 #ifdef GYOTO_USE_XERCES
   /// Output a single Property to XML
@@ -441,7 +449,7 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
 			    std::string const &unit);
 
    /**
-    * \brief Format desrciption for a property
+    * \brief Format description for a property
     *
     * Returns a string containing the name(s) and type of the
     * property, as well as whether it supports unit.

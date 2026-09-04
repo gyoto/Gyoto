@@ -55,19 +55,19 @@ GYOTO_PROPERTY_THREAD_UNSAFE(RotStar3_1)
 
 RotStar3_1::RotStar3_1() : 
 Generic(GYOTO_COORDKIND_SPHERICAL, "RotStar3_1"),
-  filename_(NULL),
+  filename_(""),
   star_(NULL),
   integ_kind_(1)
 {}
 
 RotStar3_1::RotStar3_1(const RotStar3_1& o) : 
   Generic(o),
-  filename_(NULL),
+  filename_(""),
   star_(NULL),
   integ_kind_(o.integ_kind_)
 {
   kind("RotStar3_1");
-  fileName(o.fileName());
+  file(o.file());
 }
 
 RotStar3_1* RotStar3_1::clone() const {
@@ -85,23 +85,12 @@ RotStar3_1::~RotStar3_1()
     delete mg;
   }
   
-  if (filename_) delete [] filename_;
-
-  if (debug()) cout << "RotStar3_1 Destruction" << endl;
+  GYOTO_DEBUG << endl;
 }
 
 void RotStar3_1::file(std::string const &fname) {
-  cerr << "Setting file name to '" << fname << "'" << endl;
-  fileName(fname.c_str());
-}
+  GYOTO_DEBUG << "Setting file name to '" << fname << "'" << endl;
 
-std::string RotStar3_1::file() const {
-  if (!filename_) return "";
-  return filename_;
-}
-
-void RotStar3_1::fileName(char const * lorene_res) {
-  if (filename_) { delete[] filename_; filename_=NULL; }
   if (star_) {
     const Map& mp=star_ -> get_mp();
     const Mg3d* mg=mp.get_mg();
@@ -110,12 +99,12 @@ void RotStar3_1::fileName(char const * lorene_res) {
     delete mpp;
     delete mg;
   }
-  if (!lorene_res) return;
 
-  filename_ = new char[strlen(lorene_res)+1];
-  strcpy(filename_,lorene_res);
-  FILE* resfile=fopen(lorene_res,"r");
-  if (!resfile) GYOTO_ERROR(string("No such file or directory: ")+lorene_res);
+  filename_ = fname;
+  if (filename_.empty()) return;
+
+  FILE* resfile=fopen(fname.c_str(),"r");
+  if (!resfile) GYOTO_ERROR("No such file or directory: '" + fname + "'");
   Mg3d* mg = new Mg3d(resfile);
   Map_et* mps = new Map_et(*mg,resfile);
   Eos* p_eos = Eos::eos_from_file(resfile);
@@ -127,7 +116,9 @@ void RotStar3_1::fileName(char const * lorene_res) {
   tellListeners();
 }
 
-char const * RotStar3_1::fileName() const { return filename_; }
+std::string RotStar3_1::file() const {
+  return filename_;
+}
 
 void RotStar3_1::integKind(int ik) { integ_kind_ = ik; }
 int RotStar3_1::integKind() const { return integ_kind_; }
@@ -140,7 +131,7 @@ int RotStar3_1::diff(state_t const &coord, state_t &res, double /* mass */) cons
   //4-DIMENSIONAL INTEGRATION
   //NB: this diff is only called by Generic::RK4
 
-  //if (debug()) cout << "In 4D RotStar diff [8]..." << endl;
+  //GYOTO_DEBUG << "In 4D RotStar diff [8]..." << endl;
   //clock_t time1, time2;
   //double diftime, clocks = CLOCKS_PER_SEC;
   //time1 = clock();
@@ -167,7 +158,7 @@ int RotStar3_1::diff(state_t const &coord, state_t &res, double /* mass */) cons
 
   /*  time2 = clock();
   diftime = time2 - time1;
-  if (debug()) cout << "Time elapsed in temp 4D diff (in sec)= " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << diftime/clocks << endl;*/
+  GYOTO_DEBUG << "Time elapsed in temp 4D diff (in sec)= " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << diftime/clocks << endl;*/
 
   //METRIC COEF
   double gtt=-1./N2, grr=1./A2, gthth=1./(A2*r2), gpp=1./(B2*r2*sinth2)-omega2/N2, gtp=-omega/N2;
@@ -193,7 +184,7 @@ int RotStar3_1::diff(state_t const &coord, state_t &res, double /* mass */) cons
 
   /*  time2 = clock();
   diftime = time2 - time1;
-  if (debug()) cout << "TOTAL Time elapsed in 4D diff (in sec)= " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << diftime/clocks << endl;*/
+  GYOTO_DEBUG << "TOTAL Time elapsed in 4D diff (in sec)= " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << diftime/clocks << endl;*/
 
   return 0;
   
@@ -205,7 +196,7 @@ int RotStar3_1::diff(const double y[6], double res[6], int) const
   //NB: this diff is only called by RotStar::RK4
   //NBB: here t=theta, not time!
 
-  //if (debug()) cout << "In 3+1 D RotStar::diff" << endl;
+  //GYOTO_DEBUG << "In 3+1 D RotStar::diff" << endl;
   // clock_t time1, time2;
   //double diftime, clocks = CLOCKS_PER_SEC;
   //time1 = clock();
@@ -242,7 +233,7 @@ int RotStar3_1::diff(const double y[6], double res[6], int) const
 
   /*  time2 = clock();
   diftime = time2 - time1;
-  if (debug()) cout << "Time elapsed in 3+1 diff (in sec)= " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << diftime/clocks << endl;*/
+  GYOTO_DEBUG << "Time elapsed in 3+1 diff (in sec)= " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << diftime/clocks << endl;*/
 
   //METRIC COEF
   double grr=1./A2, gtt=1./(A2*r2), gpp=1./(B2*r2*sinth2), g_rrr=A2_r, g_rrt=A2_th, g_ttr=r2*A2_r+2.*rr*A2, g_ttt=r2*A2_th, g_ppr=r2*sinth2*B2_r+2.*rr*B2*sinth2, g_ppt=r2*sinth2*B2_th+2.*sin(th)*cos(th)*r2*B2;
@@ -308,7 +299,7 @@ int RotStar3_1::diff(const double y[6], double res[6], int) const
   
   /*  time2 = clock();
   diftime = time2 - time1;
-  if (debug()) cout << "TOTAL Time elapsed in 3+1 diff (in sec)= " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << diftime/clocks << endl;*/
+  GYOTO_DEBUG << "TOTAL Time elapsed in 3+1 diff (in sec)= " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << diftime/clocks << endl;*/
   
   return 0;
 }
@@ -316,7 +307,7 @@ int RotStar3_1::diff(const double y[6], double res[6], int) const
 
 int RotStar3_1::myrk4(const double coorin[6], double h, double res[6]) const
 {
-  //if (debug()) cout << "In RotStar::rk4" << endl;
+  //GYOTO_DEBUG << "In RotStar::rk4" << endl;
 
   //Here the integration must be 3+1:
   if (!integ_kind_) GYOTO_ERROR("In RotStar3_1::myrk4: Impossible case");
@@ -366,7 +357,7 @@ int RotStar3_1::myrk4(const double coorin[6], double h, double res[6]) const
 int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, double coordnew[6], double cst[2], double& tdot_used, double h0, double& h1, double h1max, double& hused) const
 {
 
-  // if (debug()) cout << "In Rotstar::adaptive [6]" << endl;
+  // GYOTO_DEBUG << "In Rotstar::adaptive [6]" << endl;
 
   double delta0[6];
   double delta0min=1e-15;
@@ -379,15 +370,15 @@ int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, do
 
   h1max=deltaMax(coord, h1max);
 
-  /*if (debug()) cout << "RotStar.C: coord in rk=";
-  for (int ii=0;ii<8;ii++) if (debug()) cout << coord[ii] << " " ;
-  if (debug()) cout << endl;*/
+  /*GYOTO_DEBUG << "RotStar.C: coord in rk=";
+  for (int ii=0;ii<8;ii++) GYOTO_DEBUG << coord[ii] << " " ;
+  GYOTO_DEBUG << endl;*/
 
   diff(coord,dcoord,1);
 
   for (int i = 0;i<6;i++) {
     delta0[i]=delta0min+eps*(fabs(h0*dcoord[i]));
-    //if (debug()) cout << "Rot: delta0[i]=" << delta0[i] << endl;
+    //GYOTO_DEBUG << "Rot: delta0[i]=" << delta0[i] << endl;
   }
 
   double hbis=0.5*h0;
@@ -401,7 +392,7 @@ int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, do
 
   while (1){
     count++;
-    //if (debug()) cout << "count in rk Rot= " << count << endl;
+    //GYOTO_DEBUG << "count in rk Rot= " << count << endl;
     if (count > 100){
       GYOTO_ERROR("RotStar: bad rk");
     }
@@ -442,7 +433,7 @@ int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, do
 	double rprime=coordnew[3], thprime=coordnew[4], phprime=coordnew[5];
 	double pos[4]={0.,coordnew[0],coordnew[1],coordnew[2]};
 	double g_tt=gmunu(pos,0,0), g_tp=gmunu(pos,0,3), g_rr=gmunu(pos,1,1), g_thth=gmunu(pos,2,2), g_pp=gmunu(pos,3,3);
-	//	if (debug()) cout << "time integ" << endl;
+	//	GYOTO_DEBUG << "time integ" << endl;
 	double ds2=g_tt+2.*g_tp*phprime+g_rr*rprime*rprime+g_thth*thprime*thprime+g_pp*phprime*phprime;
 	if (ds2>0) GYOTO_ERROR("In RotStar3_1.C: impossible to compute timelike norm!");
 	if (tdot_used<=0.){//NB: default value of tdot_used has correct sign
@@ -483,9 +474,9 @@ int RotStar3_1::myrk4_adaptive(Worldline* line, state_t const &coord,
 			       state_t &coordnew, double h0, 
 			       double& h1, double h1max) const
 {
-  //  if (debug()) cout << "In Rotstar::adaptive [8]" << endl;
+  //  GYOTO_DEBUG << "In Rotstar::adaptive [8]" << endl;
   if (coord[1] < 2.5) {//inside rotating star -> a ameliorer
-    if (debug()) cout << "In RotStar3_1.C: Particle has reached the rotating star. Stopping integration." << endl;
+    GYOTO_DEBUG << "In RotStar3_1.C: Particle has reached the rotating star. Stopping integration." << endl;
     return 1;
   }
   
@@ -518,7 +509,7 @@ int RotStar3_1::myrk4_adaptive(Worldline* line, state_t const &coord,
 
   double g_tt=gmunu(coord.data(),0,0), g_tp=gmunu(coord.data(),0,3), g_pp=gmunu(coord.data(),3,3);
   double cst_p_t=g_tt*tdot+g_tp*phdot, cst_p_ph=g_pp*phdot+g_tp*tdot;//Cst of motion because the vectors d/dt and d/dphi are Killing
-  //if (debug()) cout << "Rot: cst= " << cst_p_t << " " << cst_p_ph << endl;
+  //GYOTO_DEBUG << "Rot: cst= " << cst_p_t << " " << cst_p_ph << endl;
   double cst[2]={cst_p_t,cst_p_ph};
   //cout << "3+1 Cst of motion= " << cst_p_t << " " << cst_p_ph << endl;
   double coor[6]={rr,th,ph,Vr,Vth,Vph};
@@ -536,7 +527,7 @@ int RotStar3_1::myrk4_adaptive(Worldline* line, state_t const &coord,
     }//tdot_used thus has the correct sign*/
 
   if (myrk4_adaptive(coor,lastnorm,normref,coornew,cst,tdot_used,h0,h1,delta_max_,hused)) return 1;
-  //  if (debug()) cout << "tdot_used in rk-8= " << tdot_used << endl;
+  //  GYOTO_DEBUG << "tdot_used in rk-8= " << tdot_used << endl;
   
   //phdot=coornew[5]*tdot_used;rdot=coornew[3]*tdot_used;thdot=coornew[4]*tdot_used;
   
@@ -545,7 +536,7 @@ int RotStar3_1::myrk4_adaptive(Worldline* line, state_t const &coord,
   phdot=(NN*coornew[5]+omega)*tdot_used;rdot=NN*coornew[3]*tdot_used;thdot=NN*coornew[4]*tdot_used;
 
   coordnew[0]=coord[0]+hused;coordnew[1]=coornew[0];coordnew[2]=coornew[1];coordnew[3]=coornew[2];coordnew[4]=tdot_used;coordnew[5]=rdot;coordnew[6]=thdot;coordnew[7]=phdot;
-  //  if (debug()) cout << "Rot: norm at end rk-8= " << ScalarProd(coordnew,coordnew+4,coordnew+4) << endl;
+  //  GYOTO_DEBUG << "Rot: norm at end rk-8= " << ScalarProd(coordnew,coordnew+4,coordnew+4) << endl;
 
   return 0;
 }
@@ -568,7 +559,7 @@ void RotStar3_1::Normalize4v(const double coordin[6], double coordout[6], const 
   // Changing phdot and tdot (thus phprime) to insure conservation of cst of motion
   if (g_tt != 0. && (g_tt*g_pp != g_tp*g_tp)){
     phdot=(cst_p_ph - g_tp/g_tt*cst_p_t)/(g_pp-g_tp*g_tp/g_tt); tdot_used=(cst_p_t - g_tp*phdot)/g_tt; phprime=phdot/tdot_used;//cf constants of motion
-    //    if (debug()) cout << "tdot use in Normalize= " << tdot_used << endl;
+    //    GYOTO_DEBUG << "tdot use in Normalize= " << tdot_used << endl;
   }else{
     GYOTO_ERROR("RotStar3_1.C: special case metric coef=0 to handle in Normalize4v...");
     phprime=0.;
@@ -608,8 +599,8 @@ void RotStar3_1::Normalize4v(const double coordin[6], double coordout[6], const 
     double aa=tdot_used*tdot_used*(g_tt+2.*g_tp*phprime+g_pp*phprime*phprime), bb=tdot_used*tdot_used*g_rr, cc=tdot_used*tdot_used*g_thth;
     //Aim: find X and Y so that a+b*X^2+c*Y^2=0 (or -1), then rprime_new=X, thprime_new=Y (NB: phprime was already changed above, so its value is fixed, that's why it's put in the cst 'a')
     
-    //if (debug()) cout << "aa, bb, cc= " << aa << " " << bb << " " << cc << endl;
-    //if (debug()) cout << "rdot, thdot ini= " << rdot << " " << thdot << endl;
+    //GYOTO_DEBUG << "aa, bb, cc= " << aa << " " << bb << " " << cc << endl;
+    //GYOTO_DEBUG << "rdot, thdot ini= " << rdot << " " << thdot << endl;
     
     
     
@@ -645,7 +636,7 @@ double RotStar3_1::gmunu(const double * pos, int mu, int nu) const
     cf Eric's Rotating Stars Notes Eq. 2.32
   */
   
-  //if (debug()) cout << "In gmunu Rot" << endl;
+  //GYOTO_DEBUG << "In gmunu Rot" << endl;
   double rr=pos[1],r2=rr*rr,th=pos[2],sinth2=sin(th)*sin(th),ph=pos[3];
   const Scalar & NNtemp=star_ -> get_nn();
   double NN=NNtemp.val_point(rr,th,ph), N2=NN*NN;
@@ -678,7 +669,7 @@ double RotStar3_1::christoffel(const double coord[8], const int alpha,
     The computation of the christo is easy since we know the expression of gmunu as a function of 3+1 quantities, and since Lorene allows to perform derivatives on quantities. So gmunu,sigma is computable. 
    */
 
-  //if (debug()) cout << "In RotStar::christo" << endl;
+  //GYOTO_DEBUG << "In RotStar::christo" << endl;
   //GYOTO_ERROR("RotStar3_1::christoffel: Not implemented yet");
 
   //24/05/10: stationary axisymmetric version
@@ -715,8 +706,8 @@ double RotStar3_1::christoffel(const double coord[8], const int alpha,
   double g_ppr=sinth2*(r2*B2_r+2.*rr*B2), g_ppth=r2*(sinth2*B2_th+2.*cos(th)*sin(th)*B2);
   double g_tpr=-omega_r*B2*r2*sinth2-omega*B2_r*r2*sinth2-2.*rr*omega*B2*sinth2, g_tpth=-omega_th*B2*r2*sinth2-omega*B2_th*r2*sinth2-2.*cos(th)*sin(th)*omega*B2*r2;
 
-  //  if (debug()) cout << "at r t p= " << rr << " " << th << " " << ph << endl;
-  //if (debug()) cout << "gthth, g_ppr= " << gthth << " " << g_ppr << endl;
+  //  GYOTO_DEBUG << "at r t p= " << rr << " " << th << " " << ph << endl;
+  //GYOTO_DEBUG << "gthth, g_ppr= " << gthth << " " << g_ppr << endl;
 
   //32 non-0 christo
     if ((alpha==0 && mu==0 && nu==1) || (alpha==0 && mu==1 && nu==0)) 
@@ -767,14 +758,8 @@ double RotStar3_1::christoffel(const double coord[8], const int alpha,
 double RotStar3_1::ScalarProd(const double pos[4],
 			  const double u1[4], const double u2[4]) const {
   //cout << "in RotStar ScalarProd" << endl;
-  if (debug()) 
-    cout << "u1,u2 in Scal= " ;
-  for (int ii=0;ii<4;ii++) {
-    if (debug()) 
-      cout << u1[ii] << " " << u2[ii] << " ";
-  }
-  if (debug()) 
-    cout << endl;
+  GYOTO_DEBUG_ARRAY( u1, 4);
+  GYOTO_DEBUG_ARRAY( u2, 4);
   double g_tt=gmunu(pos,0,0), g_tp=gmunu(pos,0,3), g_rr=gmunu(pos,1,1), g_thth=gmunu(pos,2,2), g_pp=gmunu(pos,3,3);
   //if (debug()) 
  

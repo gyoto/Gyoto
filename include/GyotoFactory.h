@@ -78,11 +78,11 @@ namespace Gyoto {
  * \code
  *  Gyoto::Factory * factory = new Gyoto::Factory("some/input/file.xml");
  *  const std::string kind = factory->kind();
- *  if (kind.compare("Scenery")) Gyoto::throwError("I wan't a Scenery");
+ *  if (kind.compare("Scenery")) GYOTO_ERROR("I wan't a Scenery");
  *  Gyoto::SmartPointer<Gyoto::Scenery> scenery = factory -> scenery();
- *  Gyoto::SmartPointer<Gyoto::Screen>  screen = scenery->screen();
- *  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> object = scenery->astrobj();
- *  Gyoto::SmartPointer<Gyoto::Metric::Generic> metric = scenery->metric();
+ *  Gyoto::SmartPointer<Gyoto::Screen>  screen = scenery -> screen();
+ *  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> object = scenery -> astrobj();
+ *  Gyoto::SmartPointer<Gyoto::Metric::Generic> metric = scenery -> metric();
  *  delete factory; factory=NULL;
  * \endcode or, for a single object and without checking the kind
  * (kind()) first:
@@ -261,7 +261,7 @@ class Gyoto::Factory
   /**
    * If called several times for the same document, the metric
    * SmartPointers must point to the same instance or an error will be
-   * thrown using Gyoto::throwError().
+   * thrown using GYOTO_ERROR().
    */
   void metric(SmartPointer<Metric::Generic> gg, xercesc::DOMElement *el);
 
@@ -269,7 +269,7 @@ class Gyoto::Factory
   /**
    * If called several times for the same document, the astrobj
    * SmartPointers must point to the same instance or an error will be
-   * thrown using Gyoto::throwError().
+   * thrown using GYOTO_ERROR().
    */
   void astrobj(SmartPointer<Astrobj::Generic> ao, xercesc::DOMElement *el);
 
@@ -277,7 +277,7 @@ class Gyoto::Factory
   /**
    * If called several times for the same document, the screen
    * SmartPointers must point to the same instance or an error will be
-   * thrown using Gyoto::throwError().
+   * thrown using GYOTO_ERROR().
    */
   void screen(SmartPointer<Screen> scr, xercesc::DOMElement *el);
 
@@ -306,6 +306,20 @@ class Gyoto::Factory
    * \param pel Parent XML element.
    */
   void setParameter(std::string name, double value,
+		    xercesc::DOMElement *pel);
+
+  /// Create new XML element with double value and unit
+  /**
+   * E.g.
+   * \code
+   * <Radius> 2. </Radius>
+   * \endcode
+   * \param name XML entity name.
+   * \param value Entity content.
+   * \param unit Entity attribute.
+   * \param pel Parent XML element.
+   */
+  void setParameter(std::string name, double value, std::string unit,
 		    xercesc::DOMElement *pel);
 
   /// Create new XML element with integer value

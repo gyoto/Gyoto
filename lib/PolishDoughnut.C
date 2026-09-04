@@ -1,6 +1,6 @@
 /*
-    Copyright (c) 2012-2016, 2018-2019 Frederic Vincent, Odele Straub,
-                                       Thibaut Paumard
+    Copyright (c) 2012-2026 Frederic Vincent, Odele Straub,
+                            Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -180,10 +180,11 @@ double PolishDoughnut::getRcentre() const { return r_centre_; }
 
 double PolishDoughnut::lambda() const {
   if (!rochelobefilling_) {
-    if (defangmomrinner_)
-      GYOTO_ERROR("Lambda is not set because AngMomRinner is.");
-    else
-      GYOTO_ERROR("Lambda is not set yet.");
+    if (defangmomrinner_) {
+      GYOTO_WARNING << "Lambda is ignored because AngMomRinner was set last.";
+    } else {
+      GYOTO_WARNING << "Neither Lambda nor AngMomRinner are set yet, both are ignored.";
+    }
   }
   return lambda_;
 }
@@ -193,9 +194,9 @@ void PolishDoughnut::lambda(double lam) {
     GYOTO_WARNING << "Setting Lambda overrides AngMomRinner previously set\n";
     defangmomrinner_=0;
   }
-  if (!gg_) GYOTO_ERROR("Metric but be set before lambda in PolishDoughnut");
-  //Computing marginally stable and marginally bound radii:
   lambda_=lam;
+  if (!gg_) return; // if metric is not set yet, wait for it
+  //Computing marginally stable and marginally bound radii:
   double rms = gg_->getRms();
   double rmb = gg_->getRmb();
   // marginally stable & marginally bound keplerian angular momentum
@@ -277,6 +278,7 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   rintorus_ = v[1];
   r_cusp_=rintorus_; // NB: the cusp is most probably not at this radius; however we need to define it to avoid having cases where operator() returns "inside torus" when the photon actually is in the funnel at r<r_cusp_. Defining r_cusp_ that way is okay, we won't miss any part of the real torus.
   //cout << "l0,rin= " << l0_ << " " << rintorus_ << endl;
+  if (!gg_) return; // if metric is not set yet, wait for it
   double posin[4]={0.,rintorus_,M_PI/2.,0.};
   W_surface_ = gg_->getPotential(posin,l0_);
   double rmin=rintorus_, rmax = 1000.;
@@ -295,8 +297,8 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   outerradius.papa = this;
   rmin=r_centre_;
   r_torusouter_ = outerradius.ridders(rmin,rmax);
-  cout << "Torus rinner, rcen, router= " << rintorus_ << " " << r_centre_ << " " << r_torusouter_ << endl;
-  cout << "Pot center surface= " << W_centre_ << " " << W_surface_ << endl;
+  GYOTO_INFO << "Torus rinner, rcen, router= " << rintorus_ << " " << r_centre_ << " " << r_torusouter_ << endl;
+  GYOTO_INFO << "Pot center surface= " << W_centre_ << " " << W_surface_ << endl;
   //GYOTO_ERROR("Testing");
   GYOTO_IF_DEBUG;
   GYOTO_DEBUG_EXPR(l0_);
@@ -308,10 +310,11 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
 }
 std::vector<double> PolishDoughnut::angmomrinner() const {
   if (!defangmomrinner_) {
-    if (rochelobefilling_)
-      GYOTO_ERROR("AngMomRinner is not set because Lambda has been set.");
-    else
-      GYOTO_ERROR("AngMomRinner is not set yet.");
+    if (rochelobefilling_) {
+      GYOTO_WARNING << "AngMomRinner is ignored because Lambda was set last.";
+    } else {
+      GYOTO_WARNING << "Neither Lambda nor AngMomRinner are set yet, both are ignored.";
+    }
   }
   std::vector<double> v (2, 0.);
   v[0]=l0_; v[1]=rintorus_;

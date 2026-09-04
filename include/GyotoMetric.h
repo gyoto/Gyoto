@@ -125,14 +125,14 @@ namespace Gyoto {
      * communicate with the Gyoto::Factory to build an instance of
      * the class from its XML description
      */
-     void Register(std::string kind, Gyoto::Metric::Subcontractor_t* scp);
+    void Register(std::string kind, Gyoto::Metric::Subcontractor_t* scp);
 
-     /// Empty the Metric register Metric::Register_
-     /**
-      *  This must be called once. It is called by
-      *  Gyoto::Register::init().
-      */
-     void initRegister();
+    /// Empty the Metric register Metric::Register_
+    /**
+     *  This must be called once. It is called by
+     *  Gyoto::Register::init().
+     */
+    void initRegister();
 
   }
 
@@ -166,6 +166,10 @@ class Gyoto::Metric::Generic
   public Gyoto::Hook::Teller
 {
   friend class Gyoto::SmartPointer<Gyoto::Metric::Generic>;
+
+ public:
+  /// Get list of "plugins/names" of all registered Metrics
+  static std::vector<std::string> registeredPluginsSlashKinds() ;
 
  private:
   double mass_;     ///< Mass yielding geometrical unit (in kg).
@@ -207,7 +211,7 @@ class Gyoto::Metric::Generic
    * coordkind(int coordkind) is protected because, for most Metrics,
    * it should not be changed in runtime.
    */
-  void coordKind(int coordkind); ///< Set coordinate kind
+  virtual void coordKind(int coordkind); ///< Set coordinate kind
 
 
  public:
@@ -231,7 +235,7 @@ class Gyoto::Metric::Generic
 
   // Accessors
 
-  int coordKind() const; ///< Get coordinate kind
+  virtual int coordKind() const; ///< Get coordinate kind
 
   double mass() const;        ///< Get mass used in unitLength()
   double mass(const std::string &unit) const; ///< Get mass used in unitLength()
