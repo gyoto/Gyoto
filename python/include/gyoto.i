@@ -1432,6 +1432,9 @@ GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUn
 // Not a class
 %include "GyotoUtils.h"
 
+// A class, but not a Gyoto::Object
+%include "GyotoAnsi.h"
+
 // We want to export some macros from glob.h for Gyoto::glob():
 %constant int GLOB_NOCHECK;
 %constant int GLOB_NOMATCH;

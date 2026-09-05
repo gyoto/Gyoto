@@ -241,6 +241,7 @@ am_libgyoto@FEATURES@_la_OBJECTS = libgyoto@FEATURES@_la-Value.lo \
 	libgyoto@FEATURES@_la-Worldline.lo \
 	libgyoto@FEATURES@_la-Photon.lo \
 	libgyoto@FEATURES@_la-Scenery.lo \
+	libgyoto@FEATURES@_la-AnsiScope.lo \
 	libgyoto@FEATURES@_la-WorldlineIntegState.lo \
 	libgyoto@FEATURES@_la-Error.lo libgyoto@FEATURES@_la-Screen.lo \
 	libgyoto@FEATURES@_la-Spectrum.lo \
@@ -274,7 +275,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/libgyoto@FEATURES@_la-Astrobj.Plo \
+am__depfiles_remade = ./$(DEPDIR)/libgyoto@FEATURES@_la-AnsiScope.Plo \
+	./$(DEPDIR)/libgyoto@FEATURES@_la-Astrobj.Plo \
 	./$(DEPDIR)/libgyoto@FEATURES@_la-ComplexSpectrometer.Plo \
 	./$(DEPDIR)/libgyoto@FEATURES@_la-Converters.Plo \
 	./$(DEPDIR)/libgyoto@FEATURES@_la-Error.Plo \
@@ -638,7 +640,7 @@ lib_LTLIBRARIES = libgyoto@FEATURES@.la
 libgyoto@FEATURES@_la_SOURCES = \
 	Value.C Property.C Object.C \
 	Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
-	WIP.C Worldline.C Photon.C Scenery.C			\
+	WIP.C Worldline.C Photon.C Scenery.C AnsiScope.C		\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	StandardAstrobj.C ThinDisk.C Converters.C Functors.C Hooks.C \
@@ -804,6 +806,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto@FEATURES@_la-AnsiScope.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto@FEATURES@_la-Astrobj.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto@FEATURES@_la-ComplexSpectrometer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto@FEATURES@_la-Converters.Plo@am__quote@ # am--include-marker
@@ -1438,6 +1441,13 @@ libgyoto@FEATURES@_la-Scenery.lo: Scenery.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto@FEATURES@_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto@FEATURES@_la-Scenery.lo `test -f 'Scenery.C' || echo '$(srcdir)/'`Scenery.C
 
+libgyoto@FEATURES@_la-AnsiScope.lo: AnsiScope.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto@FEATURES@_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto@FEATURES@_la-AnsiScope.lo -MD -MP -MF $(DEPDIR)/libgyoto@FEATURES@_la-AnsiScope.Tpo -c -o libgyoto@FEATURES@_la-AnsiScope.lo `test -f 'AnsiScope.C' || echo '$(srcdir)/'`AnsiScope.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto@FEATURES@_la-AnsiScope.Tpo $(DEPDIR)/libgyoto@FEATURES@_la-AnsiScope.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='AnsiScope.C' object='libgyoto@FEATURES@_la-AnsiScope.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto@FEATURES@_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto@FEATURES@_la-AnsiScope.lo `test -f 'AnsiScope.C' || echo '$(srcdir)/'`AnsiScope.C
+
 libgyoto@FEATURES@_la-WorldlineIntegState.lo: WorldlineIntegState.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto@FEATURES@_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto@FEATURES@_la-WorldlineIntegState.lo -MD -MP -MF $(DEPDIR)/libgyoto@FEATURES@_la-WorldlineIntegState.Tpo -c -o libgyoto@FEATURES@_la-WorldlineIntegState.lo `test -f 'WorldlineIntegState.C' || echo '$(srcdir)/'`WorldlineIntegState.C
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto@FEATURES@_la-WorldlineIntegState.Tpo $(DEPDIR)/libgyoto@FEATURES@_la-WorldlineIntegState.Plo
@@ -1713,6 +1723,7 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	clean-soverLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
+	-rm -f ./$(DEPDIR)/libgyoto@FEATURES@_la-AnsiScope.Plo
 	-rm -f ./$(DEPDIR)/libgyoto@FEATURES@_la-Astrobj.Plo
 	-rm -f ./$(DEPDIR)/libgyoto@FEATURES@_la-ComplexSpectrometer.Plo
 	-rm -f ./$(DEPDIR)/libgyoto@FEATURES@_la-Converters.Plo
@@ -1847,6 +1858,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f ./$(DEPDIR)/libgyoto@FEATURES@_la-AnsiScope.Plo
 	-rm -f ./$(DEPDIR)/libgyoto@FEATURES@_la-Astrobj.Plo
 	-rm -f ./$(DEPDIR)/libgyoto@FEATURES@_la-ComplexSpectrometer.Plo
 	-rm -f ./$(DEPDIR)/libgyoto@FEATURES@_la-Converters.Plo

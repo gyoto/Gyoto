@@ -21,7 +21,7 @@ lib_LTLIBRARIES = libgyoto@FEATURES@.la
 libgyoto@FEATURES@_la_SOURCES =  \
 	Value.C Property.C Object.C \
 	Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
-	WIP.C Worldline.C Photon.C Scenery.C			\
+	WIP.C Worldline.C Photon.C Scenery.C AnsiScope.C		\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	StandardAstrobj.C ThinDisk.C Converters.C Functors.C Hooks.C \

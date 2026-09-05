@@ -24,9 +24,11 @@
 #ifndef __GyotoDefs_H_ 
 #define __GyotoDefs_H_ 
 
-#include "GyotoConfig.h"
 #include <float.h>
 #include <vector>
+
+#include "GyotoConfig.h"
+#include "GyotoAnsi.h"
 
 /**
  * \brief Replacement for GNU extension sincos
@@ -133,7 +135,7 @@ namespace Gyoto {
    * The user should be able to choose which messages are shown to
    * her. In Gyoto, this is determined by a user-settable verbosity
    * level (see Gyoto::verbose()) and a user-settable debug mode (see
-   * Goyto::debug()).
+   * Gyoto::debug()).
    *
    * The following macros define various debug and verbosity level and
    * provide short-cuts to display formatted messages only at a given
@@ -210,7 +212,8 @@ namespace Gyoto {
    * GYOTO_QUIET << "Important message displayed once" << std::endl;
    * \endcode
    */
-#define GYOTO_QUIET  if (Gyoto::verbose() >= GYOTO_QUIET_VERBOSITY) std::cout 
+#define GYOTO_QUIET  if (Gyoto::verbose() >= GYOTO_QUIET_VERBOSITY) \
+    Gyoto::AnsiScope::cout()
 
   /// Display a severe level message to stderr.
   /**
@@ -218,7 +221,10 @@ namespace Gyoto {
    * GYOTO_SEVERE << "Important warning" << std::endl;
    * \endcode
    */
-#define GYOTO_SEVERE if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY) std::cerr<<"SEVERE: "
+#define GYOTO_SEVERE if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY) \
+    Gyoto::AnsiScope::cerr()					  \
+      << GYOTO_ANSI_SEVERE_TAG << "SEVERE: "			  \
+      << GYOTO_ANSI_SEVERE
 
   /// Display a warning level message to stderr.
   /**
@@ -226,7 +232,10 @@ namespace Gyoto {
    * GYOTO_WARNING << "Warning" << std::endl;
    * \endcode
    */
-#define GYOTO_WARNING if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY) std::cerr<<"WARNING: "
+#define GYOTO_WARNING if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY) \
+    Gyoto::AnsiScope::cerr()					   \
+      << GYOTO_ANSI_WARNING_TAG << "WARNING: "			   \
+      << GYOTO_ANSI_WARNING
 
   /// Display normal message to stdout.
   /**
@@ -237,7 +246,9 @@ namespace Gyoto {
    * GYOTO_MSG << "Message" << std::endl;
    * \endcode
    */
-#define GYOTO_MSG    if (Gyoto::verbose() >= GYOTO_DEFAULT_VERBOSITY) std::cout 
+#define GYOTO_MSG						\
+  if (Gyoto::verbose() >= GYOTO_DEFAULT_VERBOSITY)		\
+    Gyoto::AnsiScope::cout() << GYOTO_ANSI_RESET
 
   /// Display informative message to stderr.
   /**
@@ -248,7 +259,9 @@ namespace Gyoto {
    * GYOTO_MSG << "Message" << std::endl;
    * \endcode
    */
-#define GYOTO_INFO   if (Gyoto::verbose() >= GYOTO_INFO_VERBOSITY) std::cerr<<"INFO: "
+#define GYOTO_INFO   if (Gyoto::verbose() >= GYOTO_INFO_VERBOSITY)	\
+    Gyoto::AnsiScope::cerr()						\
+      << GYOTO_ANSI_INFO_TAG << "INFO: " << GYOTO_ANSI_INFO
 
   /// Unit ignored because libudunits2 was disabled.
   /**
@@ -260,9 +273,9 @@ namespace Gyoto {
    */
 #define GYOTO_WARNING_UDUNITS(from, to) \
   GYOTO_WARNING << "unit ignored (trying to convert from \"" << from \
-		<< "\" to "					     \
+		<< "\" to "			     \
 		<< to \
-		<< "\"), you may have more chance recompiling Gyoto with --with-udunits\n"
+		<< "\" ), you may have more chance recompiling Gyoto with --with-udunits\n"
 
   /// Output expression value in debug mode
   /**
@@ -277,7 +290,8 @@ namespace Gyoto {
    * DEBUG: <function signature>: a+b=3
    * \endcode
    */
-#define GYOTO_DEBUG_EXPR(a) GYOTO_DEBUG << #a << "=" << a << std::endl
+#define GYOTO_DEBUG_EXPR(a)			\
+  if (GYOTO_DEBUG_MODE) GYOTO_DEBUG_THIS_EXPR(a)
 
   /// Output expression value unconditionally
   /**
@@ -291,7 +305,11 @@ namespace Gyoto {
    * DEBUG: <function signature>: a+b=3
    * \endcode
    */
-#define GYOTO_DEBUG_THIS_EXPR(a) GYOTO_DEBUG_THIS << #a << "=" << a << std::endl
+#define GYOTO_DEBUG_THIS_EXPR(a)			\
+  GYOTO_DEBUG_THIS					\
+  << GYOTO_ANSI_DEBUG_VARIABLE << #a			\
+  << GYOTO_ANSI_DEBUG << "="				\
+  << GYOTO_ANSI_DEBUG_VALUE << a << std::endl
 
   /// Output array content in debug mode
   /**
@@ -310,13 +328,8 @@ namespace Gyoto {
    * \param n Number of elements to show (array must be at least this
    * size).
    */
-#define GYOTO_DEBUG_ARRAY(a,n) if (GYOTO_DEBUG_MODE) {			\
-    std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "		\
-	      << #a << "=[" << a[0] ;					\
-    for (size_t _gyoto_debug_array_i=1; _gyoto_debug_array_i < n;	\
-	 ++_gyoto_debug_array_i)					\
-      std::cerr << "," << a[_gyoto_debug_array_i] ;			\
-    std::cerr << "]" << std::endl ;}
+#define GYOTO_DEBUG_ARRAY(a,n)				\
+  if (GYOTO_DEBUG_MODE) GYOTO_DEBUG_THIS_ARRAY(a, n)
 
   /// Output array content unconditionally
   /**
@@ -336,12 +349,14 @@ namespace Gyoto {
    * size).
    */
 #define GYOTO_DEBUG_THIS_ARRAY(a,n) {					\
-    std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "		\
-	      << #a << "=[" << a[0] ;					\
+    GYOTO_DEBUG_THIS							\
+      << GYOTO_ANSI_DEBUG_VARIABLE << #a				\
+      << GYOTO_ANSI_DEBUG << "=";					\
+    std::cerr << GYOTO_ANSI_DEBUG_VALUE << "[" << a[0] ;		\
     for (size_t _gyoto_debug_array_i=1; _gyoto_debug_array_i < n;	\
-	 ++_gyoto_debug_array_i)					\
+	 ++_gyoto_debug_array_i)                                        \
       std::cerr << "," << a[_gyoto_debug_array_i] ;			\
-    std::cerr << "]" << std::endl ;}
+    std::cerr << "]" << GYOTO_ANSI_RESET << std::endl ;}
 
   /// Display debug message (unconditionally)
   /**
@@ -352,7 +367,11 @@ namespace Gyoto {
    * GYOTO_DEBUG << "message" << endl;
    * \endcode
    */
-#define GYOTO_DEBUG_THIS std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "
+#define GYOTO_DEBUG_THIS Gyoto::AnsiScope::cerr()		\
+  << GYOTO_ANSI_DEBUG_TAG << "DEBUG: "				\
+  << GYOTO_ANSI_DEBUG_PRETTY_FUNCTION << __PRETTY_FUNCTION__	\
+  << GYOTO_ANSI_DEBUG_TAG << ": "					\
+  << GYOTO_ANSI_DEBUG
 
   /// Display debug message (in debug mode)
   /**
