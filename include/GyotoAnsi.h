@@ -64,8 +64,6 @@
 #ifndef __GyotoAnsi_H_
 #define __GyotoAnsi_H_
 
-#include "GyotoDefs.h"
-
 #include <ostream>
 
 // ============================================================================

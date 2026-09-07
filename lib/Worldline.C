@@ -657,7 +657,7 @@ void Worldline::xFill(double tlim, bool proper) {
     //if (stopcond && debug()) cout << "stopcond from integrator" << endl;
     if (mycount==maxiter_) {
       stopcond=1;
-      Error ( "***WARNING STOP: in Worldline.C unexplained stop !!!" );
+      GYOTO_ERROR ( "***WARNING STOP: in Worldline.C unexplained stop !!!" );
     }
     // Check stop condition and whether we need to expand the arrays
     if (dir==1) {

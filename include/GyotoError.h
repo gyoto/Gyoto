@@ -59,6 +59,8 @@
  */
 
 #include <string>
+#include <boost/stacktrace.hpp>
+
 #include "GyotoDefs.h"
 
 namespace Gyoto {
@@ -102,7 +104,7 @@ class Gyoto::Error
  private:
   /// Error message.
   const std::string message;
-  const std::string stacktrace;
+  std::string stacktrace;
   std::string fullmessage;
 
   /// Error code.
@@ -115,7 +117,7 @@ class Gyoto::Error
  public:
 
   /// Constructor with an error message.
-  Error( const std::string m );
+  Error(const std::string &m, boost::stacktrace::stacktrace const &trace);
 
   // Copy constructor
   Error( const Gyoto::Error &o);
@@ -197,7 +199,7 @@ namespace Gyoto {
   /**
    * Most code should use the GYOTO_ERROR macro instead
    */
-  void throwError( std::string );
+  void throwError(std::string const &, boost::stacktrace::stacktrace const &trace);
 }
 
 
@@ -206,6 +208,9 @@ namespace Gyoto {
  * Throw an Error, prepending current function name. Calls
  * Gyoto::throwError(std::string).
  */
-#define GYOTO_ERROR(msg) Gyoto::throwError(std::string(__FILE__ ":" GYOTO_STRINGIFY(__LINE__) " in ")+ __PRETTY_FUNCTION__ + ": " + msg)
+#define GYOTO_ERROR(msg)						\
+  Gyoto::throwError(std::string(__FILE__ ":" GYOTO_STRINGIFY(__LINE__) " in ") \
+		    + __PRETTY_FUNCTION__ + ": " + msg,			\
+		    boost::stacktrace::stacktrace())
 
 #endif

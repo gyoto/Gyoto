@@ -222,7 +222,7 @@ Factory::Factory(char * data)
   
   doc_ = parser_ -> getDocument();
   root_ = doc_ -> getDocumentElement();
-  if (!root_ ) throw(Error( "empty XML document" ));
+  if (!root_ ) GYOTO_ERROR( "empty XML document" );
   resolver_=doc_->createNSResolver(root_);
 
   kind_=(C(root_->getTagName()));

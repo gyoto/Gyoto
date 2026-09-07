@@ -18,17 +18,30 @@
  */
 
 #include <GyotoError.h>
-#include <boost/stacktrace.hpp>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <cstdlib>
 using namespace Gyoto;
 using namespace std;
 
-Error::Error( const std::string m ) :
+Error::Error( const std::string &m, boost::stacktrace::stacktrace const &st) :
   message(m),
-  stacktrace(boost::stacktrace::to_string(boost::stacktrace::stacktrace())),
+  stacktrace(),
   errcode(EXIT_FAILURE) {
-  fullmessage = stacktrace + "\n" + message;
+  std::ostringstream oss;
+  for (size_t i = 0; i < st.size(); ++i) {
+    auto frame = st[i];
+
+    oss << "\n";
+    oss << setw(std::to_string(st.size()-1).length()) << i << "# ";
+    oss << (i == 0 ? GYOTO_ANSI_BOLD GYOTO_ANSI_FG_RED : "")
+        << frame;
+    oss << GYOTO_ANSI_RESET;
+
+  }
+  stacktrace += oss.str();
+  fullmessage = stacktrace + "\n\n" GYOTO_ANSI_BOLD GYOTO_ANSI_FG_RED + message;
 }
 
 Error::Error( const Gyoto::Error &o):
@@ -51,9 +64,10 @@ static Gyoto::Error::Handler_t * GyotoErrorHandler = NULL;
 void Gyoto::Error::setHandler( Gyoto::Error::Handler_t* handler )
 { GyotoErrorHandler = handler ; }
 
-void Gyoto::throwError( const std::string m ) {
-  if (GyotoErrorHandler) (*GyotoErrorHandler)(Error(m));
-  else throw Error(m);
+void Gyoto::throwError(const std::string &m,
+		       boost::stacktrace::stacktrace const &trace) {
+  if (GyotoErrorHandler) (*GyotoErrorHandler)(Error(m, trace));
+  else throw Error(m, trace);
 }
 
 Gyoto::Error::operator const char * () const {
