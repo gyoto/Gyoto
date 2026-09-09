@@ -84,9 +84,7 @@ KerrBL::KerrBL() :
   difftol_(GYOTO_KERRBL_DEFAULT_DIFFTOL),
   rsink_(2.+GYOTO_KERR_HORIZON_SECURITY),
   drhor_(GYOTO_KERR_HORIZON_SECURITY), generic_integrator_(false)
-{
-  GYOTO_ERROR("Sample error");
-}
+{}
 
 // default copy constructor should be fine 
 KerrBL * KerrBL::clone () const { return new KerrBL(*this); }
