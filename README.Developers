@@ -24,15 +24,19 @@ Before each commit:
 To add a new class:
 ===================
 
-* Create your lib/NewClass.C and include/GyotoNewClass.h
-(eg by copy-pasting some old file that has a similar architecture)
+* Create your lib/NewClass.C and include/GyotoNewClass.h (eg by
+  copy-pasting some old file that has a similar architecture)
 
 * Update lib/Makefile.am by adding your NewClass where it fits
-(typically in the list libgyoto_stdplug_la_SOURCES)
+  (typically in the list libgyoto_stdplug_la_SOURCES)
+
+* Update lib/StdPlug.C (or the file corresponding to the plug-in in
+  which you want this class to appear) by adding the two lines needed
+  for your class.
 
 * Update python/include/gyoto_std.i by adding your class where it fits
-(check how other similar classes are cited to have examples),
-and python/include/gyoto_std_swig.h to include your class
+  (check how other similar classes are cited to have examples), and
+  python/include/gyoto_std_swig.h to include your class
 
 * Run autoreconf
 

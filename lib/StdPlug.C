@@ -20,6 +20,7 @@
 // include Metric headers
 #include "GyotoComplexMetric.h"
 #include "GyotoShift.h"
+#include "GyotoKerr2PN.h"
 #include "GyotoKerrBL.h"
 #include "GyotoKerrKS.h"
 #include "GyotoMinkowski.h"
@@ -83,6 +84,7 @@ extern "C" void __GyotostdplugInit() {
   // Register Metrics
   Metric::Register("Complex",   &(Metric::Subcontractor<Metric::Complex>));
   Metric::Register("Shift", &(Metric::Subcontractor<Metric::Shift>));
+  Metric::Register("Kerr2PN", &(Metric::Subcontractor<Metric::Kerr2PN>));
   Metric::Register("KerrBL", &(Metric::Subcontractor<Metric::KerrBL>));
   Metric::Register("KerrKS", &(Metric::Subcontractor<Metric::KerrKS>));
   Metric::Register("Minkowski", &(Metric::Subcontractor<Metric::Minkowski>));
