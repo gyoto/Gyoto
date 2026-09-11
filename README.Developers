@@ -36,8 +36,13 @@ and python/include/gyoto_std_swig.h to include your class
 
 * Run autoreconf
 
-* Push lib/Makefile.am and lib/Makefile.in together with your
-.C and .h class files
+* Push:
+  - lib/Makefile.am
+  - lib/Makefile.in
+  - your NewClass.C
+  - your GyotoNewClass.h
+  - python/include/gyoto_std.i
+  - python/include/gyoto_std_swig.h
 
 To make a new release:
 ======================
