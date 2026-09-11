@@ -249,8 +249,6 @@ class TestStdMetric(unittest.TestCase):
         gyoto.core.verbose(self.default_verbosity)
 
     def pos(self, metric):
-        if isinstance(metric, gyoto.std.BalasinGrumiller):
-            return (10, 1e5, numpy.pi/4, numpy.pi/3)
         if metric.coordKind() is gyoto.core.GYOTO_COORDKIND_SPHERICAL:
             pos=(10, 6., numpy.pi/4, numpy.pi/3)
         else:
@@ -291,10 +289,7 @@ class TestStdMetric(unittest.TestCase):
             if (self.invalid(classname, cls)):
                 continue
             metric=self.metric(cls)
-            if cls is gyoto.std.BalasinGrumiller:
-                abstol = 5.
-            else:
-                abstol = 1e-6
+            abstol = 1e-6
             try:
                 gyoto.metric.check_christoffel(metric,
                                                poslist=(self.pos(metric),),
@@ -302,8 +297,6 @@ class TestStdMetric(unittest.TestCase):
                                                abstol=abstol)
             except AssertionError as e:
                 self.fail(e.__str__())
-            if cls is gyoto.std.BalasinGrumiller:
-                continue
             pos=self.pos(metric)
             G=metric.christoffel(pos)
             G2=numpy.ones((4,4,4))
@@ -436,42 +429,3 @@ class TestStdSpectrum(unittest.TestCase):
                                      module=gyoto.std,
                                      nspace=gyoto.spectrum,
                                      special={})
-
-class TestBalasinGrumiller(unittest.TestCase):
-   def setUp(self):
-       """Set up a BalasinGrumiller metric instance before each test"""
-       self.metric = gyoto.core.Metric("BalasinGrumiller")
-       # Set standard parameter values
-       self.metric.set("V0", 0.000733333)
-       self.metric.set("R", 100.0)
-       self.metric.set("r0", 1.0)
-
-   def test_parameters(self):
-       """Test parameter getting/setting"""
-       self.assertAlmostEqual(self.metric.get("V0"), 0.000733333, places=6)
-       self.assertAlmostEqual(self.metric.get("R"), 100.0, places=6)
-       self.assertAlmostEqual(self.metric.get("r0"), 1.0, places=6)
-
-   def test_metric_components(self):
-       """Test metric tensor components at a specific point, against independently computed values"""
-       pos = [0., 50., numpy.pi/2, 0.]
-
-       # Test individual components - keeping 6 significant figures
-       self.assertAlmostEqual(self.metric.gmunu(pos, 0, 0), -1.00000, places=5)    # exact
-       self.assertAlmostEqual(self.metric.gmunu(pos, 0, 3), 0.0272848, places=7)   # 6 sig figs
-       self.assertAlmostEqual(self.metric.gmunu(pos, 1, 1), 1.00000, places=5)     # exact
-       self.assertAlmostEqual(self.metric.gmunu(pos, 2, 2), 2500.00, places=2)     # exact
-       self.assertAlmostEqual(self.metric.gmunu(pos, 3, 0), 0.0272848, places=7)   # 6 sig figs
-       self.assertAlmostEqual(self.metric.gmunu(pos, 3, 3), 2500.00, places=2)     # 6 sig figs
-
-   def test_christoffel(self):
-       """Test Christoffel symbols at a specific point, against independently computed values"""
-       pos = [0., 50., numpy.pi/2, 0.]
-
-       # Test individual Christoffel components with 6 significant figures
-       self.assertAlmostEqual(self.metric.christoffel(pos, 0, 0, 1), 2.21133e-9, places=14)   # Γ⁰₀₁
-       self.assertAlmostEqual(self.metric.christoffel(pos, 0, 1, 3), 0.000343082, places=9)   # Γ⁰₁₃
-       self.assertAlmostEqual(self.metric.christoffel(pos, 1, 0, 3), -0.000202615, places=9)  # Γ¹₀₃
-       self.assertAlmostEqual(self.metric.christoffel(pos, 1, 2, 2), -50.0000, places=4)      # Γ¹₂₂
-       self.assertAlmostEqual(self.metric.christoffel(pos, 2, 1, 2), 0.0200000, places=7)     # Γ²₁₂ = 1/50
-       self.assertAlmostEqual(self.metric.christoffel(pos, 3, 1, 3), 0.0200000, places=7)     # Γ³₁₃
