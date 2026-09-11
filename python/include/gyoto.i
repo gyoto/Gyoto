@@ -812,7 +812,18 @@ ExtendArrayNumPy(array_size_t, size_t);
 
 // Expose the Gyoto::Error class
 // Not a SmartPointee
+%ignore Gyoto::throwError(std::string const &, boost::stacktrace::stacktrace const &trace);
+void throwError(std::string const &m);
+%{
+  void throwError(std::string const &m) {
+    throwError(m, boost::stacktrace::stacktrace());
+  }
+%}
+%ignore Gyoto::Error(const std::string &m, boost::stacktrace::stacktrace const &trace);
 %extend Gyoto::Error {
+  Error(const std::string &m) {
+    return new Error(m, boost::stacktrace::stacktrace());
+  }
   const char *__str__() {
     return *($self);
   }
