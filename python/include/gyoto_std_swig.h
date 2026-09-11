@@ -11,6 +11,7 @@
 #include "GyotoReissnerNordstrom.h"
 #include "GyotoRezzollaZhidenko.h"
 #include "GyotoSchwarzschildHarmonic.h"
+#include "GyotoKerr2PN.h"
 #include "GyotoShift.h"
 
 // include Astrobj headers

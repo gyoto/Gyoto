@@ -104,6 +104,7 @@ GyotoSmPtrTypeMapClassDerived(Metric, ReissnerNordstrom)
 GyotoSmPtrTypeMapClassDerived(Metric, RezzollaZhidenko)
 GyotoSmPtrTypeMapClassDerived(Metric, Shift)
 GyotoSmPtrTypeMapClassDerived(Metric, SchwarzschildHarmonic)
+GyotoSmPtrTypeMapClassDerived(Metric, Kerr2PN)
 
 GyotoSmPtrTypeMapClassDerived(Spectrum, BlackBody)
 GyotoSmPtrTypeMapClassDerived(Spectrum, KappaDistributionSynchrotron)
@@ -217,6 +218,8 @@ GyotoSmPtrClassDerivedMetric(ReissnerNordstrom)
 GyotoSmPtrClassDerivedMetric(RezzollaZhidenko)
 GyotoSmPtrClassDerivedMetric(Shift)
 GyotoSmPtrClassDerivedMetric(SchwarzschildHarmonic)
+GyotoSmPtrClassDerivedMetric(Kerr2PN)
+
 
 GyotoSmPtrClassDerivedHdr(Spectrum, BlackBody, GyotoBlackBodySpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, KappaDistributionSynchrotron,
