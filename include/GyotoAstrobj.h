@@ -159,7 +159,7 @@ namespace Gyoto{
  *    - make sure  Generic::Impact() works (see below).
  *
  *  In addition, you should make sure that your object plays nicely in
- *  the Yorick plug-in, which means:
+ *  the Python interface, which means:
  *    - implement the copy constructor and the Generic::clone() method;
  *    - implement the fillElement method, used for printing and saving to
  *      XML.
@@ -291,7 +291,7 @@ private:
    * \endcode
    *
    * Cloning is necessary for multi-threading, recommended for
-   * interaction with the Yorick plug-in etc.
+   * interaction with the Python interface etc.
    *
    * Implementing it is very straightforward, as long as the copy
    * constructor Generic(const Generic& ) has been implemented:
@@ -815,7 +815,7 @@ private:
  *  Scenery::operator()() increments the Properties between each
  *  Photon using Properties::operator++().
  *
- *  The main application (gyoto, the yorick plug-in, or your user
+ *  The main application (gyoto, the Python interpreted, or your user
  *  application) is responsible for allocating the various arrays,
  *  filling the various members of Properties, and doing whatever
  *  meaninful with the arrays after they have been filled with values
