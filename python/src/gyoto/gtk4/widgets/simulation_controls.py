@@ -195,7 +195,7 @@ class SimulationControls(Gtk.Box):
         )
         self.stop_button.connect(
             "toggled",
-            lambda *_: self.emit("stop")
+            self.on_stop
         )
 
         self.reset_button.add_css_class("flat")
@@ -281,3 +281,14 @@ class SimulationControls(Gtk.Box):
         self.running = not self.running
         self.set_running(self.running)
         self.emit("play-pause")
+
+    def on_stop(self, button):
+        """Handle stop button click.
+
+        Sets the running state to False and updates the button icons.
+
+        Args:
+            button (Gtk.ToggleButton): The stop button that was clicked
+        """
+        self.set_running(False)
+        self.emit("stop")

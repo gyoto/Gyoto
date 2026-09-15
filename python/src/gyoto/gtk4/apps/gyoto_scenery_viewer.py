@@ -138,7 +138,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
                 break
 
             elif cmd[0] == DEBUG:
-                if cmd[2]:
+                if cmd[1]:
                     verbose(default_verbosity)
                     debug(True)
                 else:
@@ -147,6 +147,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
 
             elif cmd[0] == RUN_SIM:
                 end_msg = ('done',)
+                pausing_msg = ('pausing',)
                 try:
                     _, scenery, ilim, jlim, nframes = cmd
 
@@ -212,6 +213,12 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event,
                     last_update = time.time()
 
                     for k in range(nframes):
+                        pausing = False
+                        while pause_event.is_set() and not stop_event.is_set():
+                            if not pausing:
+                                control_queue.put(pausing_msg)
+                                pausing = True
+                            time.sleep(0.1)
                         if stop_event.is_set():
                             end_msg = ('aborted',)
                             break
@@ -1237,9 +1244,11 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             if msg[0] == 'log':
                 print(msg[1])
             elif msg[0] == 'done':
-                self.computation_epilogue(msg="Computation finished.")
+                self.computation_epilogue("Computation finished.")
+            elif msg[0] == 'pausing':
+                self.controls.set_status("Computation paused.")
             elif msg[0] == 'aborted':
-                self.computation_epilogue(msg="Computation aborted.")
+                self.computation_epilogue("Computation aborted. Holding integration.")
             elif msg[0] == 'error':
                 self.computation_epilogue(
                     msg="Computation ended in error.",
@@ -1268,6 +1277,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         """
         self.controls.set_running(False)
+        self.pause_event.clear()
         self.controls.set_status(msg, error)
         self.right.set_sensitive(True)
         self.quantity_dropdown.set_sensitive(True)
@@ -1464,7 +1474,7 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
 
         # replot the photons, if any
         for pd in self.photon_data.values():
-            pd.draw_marker(self.viewer2d.axes)
+            pd.draw_marker()
 
         self.viewer2d.draw()
 
@@ -1485,8 +1495,8 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             if not self.simulation_running:
                 self.compute_and_draw()
         else:
+            self.controls.set_status("Pausing integration...")
             self.pause_event.set()
-            self.controls.set_status("Integration paused...")
 
     def on_stop(self, wdgt):
         """Handle stop button click.
@@ -1497,15 +1507,16 @@ class GyotoSceneryViewerApplicationWindow(Gtk.ApplicationWindow):
             wdgt: The SimulationControls widget
 
         """
-        hold = wdgt.stop_button.get_active()
+        hold = wdgt.is_stop_active()
         if hold:
+            if self.simulation_running:
+                self.controls.set_status("Stopping integration...")
+            else:
+                self.controls.set_status("Holding integration.")
             self.stop_event.set()
-            self.controls.set_status(
-                "Holding integration (press play)."
-            )
         else:
+            self.controls.set_status("Allowing for integration.")
             self.stop_event.clear()
-            self.controls.set_status("Ready for integration.")
 
     ####################################################################
     # Setters / getters

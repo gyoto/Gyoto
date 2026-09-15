@@ -140,7 +140,8 @@ GYOTO_SWIGFILES = $(srcdir)/include/gyoto.i $(srcdir)/include/gyoto_std.i includ
 @HAVE_LORENE_TRUE@GYOTO_CXXFILES += src/lorene_wrap.cxx
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/include/gyoto_lorene.i
 # Static (non-generated) .py files
-GYOTO_STATIC_SRC = $(addprefix $(abs_builddir)/, $(filter-out $(GYOTO_PYFILES),$(addprefix src/gyoto/, $(notdir $(wildcard $(srcdir)/src/gyoto/*.py)))))
+GYOTO_ALL_PY := $(shell find $(srcdir)/src/gyoto -name "*.py" -type f)
+GYOTO_STATIC_SRC = $(addprefix $(abs_builddir)/, $(filter-out $(GYOTO_PYFILES),$(patsubst $(srcdir)/%,%,$(GYOTO_ALL_PY))))
 
 ## The Python plugin .la file in plugins/python
 GYOTO_PYTHON_LA := ../plugins/python/lib/$(shell sed -n \
