@@ -916,8 +916,8 @@ with_python
 with_python_install_scheme
 with_pythondir
 with_virtualenv
-with_mpi
 with_boost
+with_mpi
 enable_static_boost
 enable_native
 enable_hardening
@@ -1673,10 +1673,10 @@ Optional Packages:
                           not specified, find out based on
                           --with-python-install-scheme.
   --with-virtualenv       install to a Python virtualenv
+  --with-boost=DIR        prefix of Boost 1.65.0 [guess]
   --with-mpi              compile with MPI (parallelization) support. If none
                           is found, MPI is not used. Default: auto
 
-  --with-boost=DIR        prefix of Boost 1.53.1 [guess]
   --with-yorick[=yorick-executable]
                           force using yorick and optionnally specify which one
                           [default=yorick, only if found]
@@ -21291,29 +21291,12 @@ fi
 # Checks for programs.
 
 
-############### CHECK FOR OPTIONAL FEATURES #########################
+############### CHECK FOR BOOST FEATURES #########################
 
 
-# Check whether --with-mpi was given.
-if test ${with_mpi+y}
-then :
-  withval=$with_mpi;
-else case e in #(
-  e) with_mpi=auto ;;
-esac
-fi
-
-
-# Check for boost
-
-have_boost=no
-
-if test "x$with_boost" != "xno"
-then :
-  have_boost=yes
-   echo "$as_me: this is boost.m4 serial 22" >&5
+echo "$as_me: this is boost.m4 serial 39" >&5
 boost_save_IFS=$IFS
-boost_version_req=1.53.1
+boost_version_req=1.65.0
 IFS=.
 set x $boost_version_req 0 0 0
 IFS=$boost_save_IFS
@@ -21443,7 +21426,7 @@ printf "%s\n" "$boost_cv_inc_path" >&6; }
         boost_errmsg="cannot find Boost headers version >= $boost_version_req_string"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: $boost_errmsg" >&5
 printf "%s\n" "$as_me: $boost_errmsg" >&6;}
-        have_boost=no
+        as_fn_error $? "Boost is required to build Gyoto" "$LINENO" 5
         ;;#(
       yes)
         BOOST_CPPFLAGS=
@@ -21473,8 +21456,11 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 boost-lib-version = BOOST_LIB_VERSION
 _ACEOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  grep -v '#' |
+  grep -v '^[[:space:]]*$' |
   tr -d '\r' |
-  $SED -n -e "/^boost-lib-version = /{s///;s/\"//g;p;q;}" >conftest.i 2>&1
+  tr -s '\n' ' ' |
+  $SED -n -e "/^.*boost-lib-version = /{s///;s/[\" ]//g;p;q;}" >conftest.i 2>&1
 then :
   boost_cv_lib_version=`cat conftest.i`
 fi
@@ -21493,18 +21479,14 @@ printf "%s\n" "$boost_cv_lib_version" >&6; }
     boost_major_version=`echo "$boost_cv_lib_version" | sed 's/_//;s/_.*//'`
     case $boost_major_version in #(
       '' | *[!0-9]*)
-        as_fn_error $? "invalid value: boost_major_version=$boost_major_version" "$LINENO" 5
+        as_fn_error $? "invalid value: boost_major_version='$boost_major_version'" "$LINENO" 5
         ;;
     esac
 fi
 CPPFLAGS=$boost_save_CPPFLAGS
 
-   if test "x$have_boost" == "xyes"
-then :
-  if test x"$boost_cv_inc_path" = xno; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Boost.multiprecision not found" >&5
-printf "%s\n" "$as_me: WARNING: Boost.multiprecision not found" >&2;}
-	 have_boost=partial
+if test x"$boost_cv_inc_path" = xno; then
+  as_fn_error $? "Boost.Multiprecision not found" "$LINENO" 5
 else
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -21520,9 +21502,7 @@ then :
 printf "%s\n" "#define HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Boost.multiprecision not found" >&5
-printf "%s\n" "$as_me: WARNING: Boost.multiprecision not found" >&2;}
-	 have_boost=partial ;;
+  e) as_fn_error $? "Boost.Multiprecision not found" "$LINENO" 5 ;;
 esac
 fi
 
@@ -21534,10 +21514,8 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 fi
 
-      if test x"$boost_cv_inc_path" = xno; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: boost/array.hpp not found" >&5
-printf "%s\n" "$as_me: WARNING: boost/array.hpp not found" >&2;}
-	 have_boost=partial
+if test x"$boost_cv_inc_path" = xno; then
+  as_fn_error $? "Boost.Array not found" "$LINENO" 5
 else
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -21553,9 +21531,7 @@ then :
 printf "%s\n" "#define HAVE_BOOST_ARRAY_HPP 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: boost/array.hpp not found" >&5
-printf "%s\n" "$as_me: WARNING: boost/array.hpp not found" >&2;}
-	 have_boost=partial ;;
+  e) as_fn_error $? "Boost.Array not found" "$LINENO" 5 ;;
 esac
 fi
 
@@ -21567,10 +21543,8 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 fi
 
-      if test x"$boost_cv_inc_path" = xno; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Boost.odeint not found" >&5
-printf "%s\n" "$as_me: WARNING: Boost.odeint not found" >&2;}
-	 have_boost=partial
+if test x"$boost_cv_inc_path" = xno; then
+  as_fn_error $? "Boost.Odeint not found" "$LINENO" 5
 else
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -21586,9 +21560,7 @@ then :
 printf "%s\n" "#define HAVE_BOOST_NUMERIC_ODEINT_STEPPER_CONTROLLED_STEP_RESULT_HPP 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Boost.odeint not found" >&5
-printf "%s\n" "$as_me: WARNING: Boost.odeint not found" >&2;}
-	 have_boost=partial ;;
+  e) as_fn_error $? "Boost.Odeint not found" "$LINENO" 5 ;;
 esac
 fi
 
@@ -21600,10 +21572,8 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 fi
 
-      if test x"$boost_cv_inc_path" = xno; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Boost spectial functions not found" >&5
-printf "%s\n" "$as_me: WARNING: Boost spectial functions not found" >&2;}
-	 have_boost=partial
+if test x"$boost_cv_inc_path" = xno; then
+  as_fn_error $? "Boost.Math/SpecialFunctions not found" "$LINENO" 5
 else
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -21619,9 +21589,7 @@ then :
 printf "%s\n" "#define HAVE_BOOST_MATH_SPECIAL_FUNCTIONS_ELLINT_1_HPP 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Boost spectial functions not found" >&5
-printf "%s\n" "$as_me: WARNING: Boost spectial functions not found" >&2;}
-	 have_boost=partial ;;
+  e) as_fn_error $? "Boost.Math/SpecialFunctions not found" "$LINENO" 5 ;;
 esac
 fi
 
@@ -21634,27 +21602,18 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 fi
 
 
-fi
+############### CHECK FOR OPTIONAL FEATURES #########################
 
+
+# Check whether --with-mpi was given.
+if test ${with_mpi+y}
+then :
+  withval=$with_mpi;
 else case e in #(
-  e) have_boost=no
- ;;
+  e) with_mpi=auto ;;
 esac
 fi
 
-if test "x$ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp" == xyes
-then :
-
-printf "%s\n" "#define GYOTO_HAVE_BOOST_INTEGRATORS 1" >>confdefs.h
-
-
-fi
-
-if test "x$have_boost" != "xyes"
-then :
-  FEATURES+="-noboost"
-
-fi
 
 # If --with-mpi=auto is used, try to find MPI, but use standard C compiler if it is not found.
 # If --with-mpi=yes is used, try to find MPI and fail if it isn't found.
@@ -21736,6 +21695,157 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # I'm not sure about my test for `il' (be careful: Intel's ICC pre-defines
   # the same defines as GCC's).
   for i in \
+    "defined __clang__ && __clang_major__ == 14 && __clang_minor__ == 0 @ clang140" \
+    "defined __clang__ && __clang_major__ == 13 && __clang_minor__ == 0 @ clang130" \
+    "defined __clang__ && __clang_major__ == 12 && __clang_minor__ == 0 @ clang120" \
+    "defined __clang__ && __clang_major__ == 11 && __clang_minor__ == 1 @ clang111" \
+    "defined __clang__ && __clang_major__ == 11 && __clang_minor__ == 0 @ clang110" \
+    "defined __clang__ && __clang_major__ == 10 && __clang_minor__ == 0 @ clang100" \
+    "defined __clang__ && __clang_major__ == 9 && __clang_minor__ == 0 @ clang90" \
+    "defined __clang__ && __clang_major__ == 8 && __clang_minor__ == 0 @ clang80" \
+    "defined __clang__ && __clang_major__ == 7 && __clang_minor__ == 0 @ clang70" \
+    "defined __clang__ && __clang_major__ == 6 && __clang_minor__ == 0 @ clang60" \
+    "defined __clang__ && __clang_major__ == 5 && __clang_minor__ == 0 @ clang50" \
+    "defined __clang__ && __clang_major__ == 4 && __clang_minor__ == 0 @ clang40" \
+    "defined __clang__ && __clang_major__ == 3 && __clang_minor__ == 9 @ clang39" \
+    "defined __clang__ && __clang_major__ == 3 && __clang_minor__ == 8 @ clang38" \
+    "defined __clang__ && __clang_major__ == 3 && __clang_minor__ == 7 @ clang37" \
+    "defined __GNUC__ && __GNUC__ == 11 && __GNUC_MINOR__ == 2 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw112" \
+    "defined __GNUC__ && __GNUC__ == 11 && __GNUC_MINOR__ == 2 && !defined __ICC @ gcc112" \
+    "defined __GNUC__ && __GNUC__ == 11 && __GNUC_MINOR__ == 1 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw111" \
+    "defined __GNUC__ && __GNUC__ == 11 && __GNUC_MINOR__ == 1 && !defined __ICC @ gcc111" \
+    "defined __GNUC__ && __GNUC__ == 10 && __GNUC_MINOR__ == 3 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw103" \
+    "defined __GNUC__ && __GNUC__ == 10 && __GNUC_MINOR__ == 3 && !defined __ICC @ gcc103" \
+    "defined __GNUC__ && __GNUC__ == 10 && __GNUC_MINOR__ == 2 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw102" \
+    "defined __GNUC__ && __GNUC__ == 10 && __GNUC_MINOR__ == 2 && !defined __ICC @ gcc102" \
+    "defined __GNUC__ && __GNUC__ == 10 && __GNUC_MINOR__ == 1 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw101" \
+    "defined __GNUC__ && __GNUC__ == 10 && __GNUC_MINOR__ == 1 && !defined __ICC @ gcc101" \
+    "defined __GNUC__ && __GNUC__ == 9 && __GNUC_MINOR__ == 3 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw93" \
+    "defined __GNUC__ && __GNUC__ == 9 && __GNUC_MINOR__ == 3 && !defined __ICC @ gcc93" \
+    "defined __GNUC__ && __GNUC__ == 9 && __GNUC_MINOR__ == 2 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw92" \
+    "defined __GNUC__ && __GNUC__ == 9 && __GNUC_MINOR__ == 2 && !defined __ICC @ gcc92" \
+    "defined __GNUC__ && __GNUC__ == 9 && __GNUC_MINOR__ == 1 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw91" \
+    "defined __GNUC__ && __GNUC__ == 9 && __GNUC_MINOR__ == 1 && !defined __ICC @ gcc91" \
+    "defined __GNUC__ && __GNUC__ == 9 && __GNUC_MINOR__ == 0 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw90" \
+    "defined __GNUC__ && __GNUC__ == 9 && __GNUC_MINOR__ == 0 && !defined __ICC @ gcc90" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 5 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw85" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 5 && !defined __ICC @ gcc85" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 4 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw84" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 4 && !defined __ICC @ gcc84" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 3 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw83" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 3 && !defined __ICC @ gcc83" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 2 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw82" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 2 && !defined __ICC @ gcc82" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 1 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw81" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 1 && !defined __ICC @ gcc81" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 0 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw80" \
+    "defined __GNUC__ && __GNUC__ == 8 && __GNUC_MINOR__ == 0 && !defined __ICC @ gcc80" \
+    "defined __GNUC__ && __GNUC__ == 7 && __GNUC_MINOR__ == 4 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw74" \
+    "defined __GNUC__ && __GNUC__ == 7 && __GNUC_MINOR__ == 4 && !defined __ICC @ gcc74" \
+    "defined __GNUC__ && __GNUC__ == 7 && __GNUC_MINOR__ == 3 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw73" \
+    "defined __GNUC__ && __GNUC__ == 7 && __GNUC_MINOR__ == 3 && !defined __ICC @ gcc73" \
+    "defined __GNUC__ && __GNUC__ == 7 && __GNUC_MINOR__ == 2 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw72" \
+    "defined __GNUC__ && __GNUC__ == 7 && __GNUC_MINOR__ == 2 && !defined __ICC @ gcc72" \
+    "defined __GNUC__ && __GNUC__ == 7 && __GNUC_MINOR__ == 1 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw71" \
+    "defined __GNUC__ && __GNUC__ == 7 && __GNUC_MINOR__ == 1 && !defined __ICC @ gcc71" \
+    "defined __GNUC__ && __GNUC__ == 7 && __GNUC_MINOR__ == 0 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw70" \
+    "defined __GNUC__ && __GNUC__ == 7 && __GNUC_MINOR__ == 0 && !defined __ICC @ gcc70" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 5 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw65" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 5 && !defined __ICC @ gcc65" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 4 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw64" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 4 && !defined __ICC @ gcc64" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 3 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw63" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 3 && !defined __ICC @ gcc63" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 2 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw62" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 2 && !defined __ICC @ gcc62" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 1 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw61" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 1 && !defined __ICC @ gcc61" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 0 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw60" \
+    "defined __GNUC__ && __GNUC__ == 6 && __GNUC_MINOR__ == 0 && !defined __ICC @ gcc60" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 5 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw55" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 5 && !defined __ICC @ gcc55" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 4 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw54" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 4 && !defined __ICC @ gcc54" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 3 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw53" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 3 && !defined __ICC @ gcc53" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 2 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw52" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 2 && !defined __ICC @ gcc52" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 1 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw51" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 1 && !defined __ICC @ gcc51" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 0 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw50" \
+    "defined __GNUC__ && __GNUC__ == 5 && __GNUC_MINOR__ == 0 && !defined __ICC @ gcc50" \
+    "defined __GNUC__ && __GNUC__ == 4 && __GNUC_MINOR__ == 10 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw410" \
+    "defined __GNUC__ && __GNUC__ == 4 && __GNUC_MINOR__ == 10 && !defined __ICC @ gcc410" \
+    "defined __GNUC__ && __GNUC__ == 4 && __GNUC_MINOR__ == 9 && !defined __ICC && \
+  (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw49" \
+    "defined __GNUC__ && __GNUC__ == 4 && __GNUC_MINOR__ == 9 && !defined __ICC @ gcc49" \
     "defined __GNUC__ && __GNUC__ == 4 && __GNUC_MINOR__ == 8 && !defined __ICC && \
   (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
          || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw48" \
@@ -21897,7 +22007,7 @@ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
-if test "x$MPICXX" != x && test "x$have_boost" == xyes && test "x$with_mpi" != xno
+if test "x$MPICXX" != x && test "x$with_mpi" != xno
 then :
 
    ax_save_CXX=$CXX
@@ -21933,9 +22043,12 @@ ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+if test x"" = "xno"
+then :
+  not_found_header='true'
+fi
 if test x"$boost_cv_inc_path" = xno; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for boost/mpi/environment.hpp" >&5
-printf "%s\n" "$as_me: Boost not available, not searching for boost/mpi/environment.hpp" >&6;}
+  $not_found_header
 else
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -21951,7 +22064,7 @@ then :
 printf "%s\n" "#define HAVE_BOOST_MPI_ENVIRONMENT_HPP 1" >>confdefs.h
 
 else case e in #(
-  e) as_fn_error $? "cannot find boost/mpi/environment.hpp" "$LINENO" 5 ;;
+  e) $not_found_header ;;
 esac
 fi
 
@@ -21998,6 +22111,7 @@ else case e in #(
   # Generate the test file.
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+
 #include <boost/mpi/environment.hpp>
 
 int
@@ -22012,7 +22126,13 @@ _ACEOF
 then :
   ac_objext=do_not_rm_me_plz
 else case e in #(
-  e) as_fn_error $? "cannot compile a test that uses Boost mpi" "$LINENO" 5 ;;
+  e) if test x"" != x"no"
+then :
+
+       as_fn_error $? "cannot compile a test that uses Boost mpi" "$LINENO" 5
+
+fi
+     ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam
@@ -22025,12 +22145,15 @@ for boost_tag_ in -$boost_cv_lib_tag ''; do
 for boost_ver_ in -$boost_cv_lib_version ''; do
 for boost_mt_ in $boost_mt -mt ''; do
 for boost_rtopt_ in $boost_rtopt '' -d; do
-  for boost_lib in \
-    boost_$boost_lib_$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
-    boost_$boost_lib_$boost_tag_$boost_rtopt_$boost_ver_ \
-    boost_$boost_lib_$boost_tag_$boost_mt_$boost_ver_ \
-    boost_$boost_lib_$boost_tag_$boost_ver_
+  for boost_full_suffix in \
+    $boost_last_suffix \
+    x$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
+    x$boost_tag_$boost_rtopt_$boost_ver_ \
+    x$boost_tag_$boost_mt_$boost_ver_ \
+    x$boost_tag_$boost_ver_
   do
+    boost_real_suffix=`echo "$boost_full_suffix" | sed 's/^x//'`
+    boost_lib="boost_$boost_lib_$boost_real_suffix"
     # Avoid testing twice the same lib
     case $boost_failed_libs in #(
       (*@$boost_lib@*) continue;;
@@ -22122,7 +22245,7 @@ else case e in #(
            *)
             for boost_cv_rpath_link_ldflag in -Wl,-R, -Wl,-rpath,; do
               LDFLAGS="$boost_save_LDFLAGS -L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
-              LIBS="$boost_save_LIBS $boost_cv_lib_mpi_LIBS"
+              LIBS="$boost_cv_lib_mpi_LIBS $boost_save_LIBS"
               rm -f conftest$ac_exeext
 boost_save_ac_ext=$ac_ext
 boost_use_source=:
@@ -22184,6 +22307,7 @@ fi
         test x"$boost_ldpath" != x &&
           boost_cv_lib_mpi_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
         boost_cv_lib_mpi_LDPATH="$boost_ldpath"
+        boost_last_suffix="$boost_full_suffix"
         break 7
       else
         boost_failed_libs="$boost_failed_libs@$boost_lib@"
@@ -22202,16 +22326,27 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_mpi" >&5
 printf "%s\n" "$boost_cv_lib_mpi" >&6; }
 case $boost_cv_lib_mpi in #(
+  (yes) printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+printf "%s\n" "#define HAVE_BOOST_MPI 1" >>confdefs.h
+    BOOST_MPI_LDFLAGS=$boost_cv_lib_mpi_LDFLAGS
+    BOOST_MPI_LDPATH=$boost_cv_lib_mpi_LDPATH
+    BOOST_LDPATH=$boost_cv_lib_mpi_LDPATH
+    BOOST_MPI_LIBS=$boost_cv_lib_mpi_LIBS
+    ;;
   (no) printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-    as_fn_error $? "cannot find the flags to link with Boost mpi" "$LINENO" 5
+    if test x"" != "xno"
+then :
+
+      as_fn_error $? "cannot find flags to link with the Boost mpi library (libboost-mpi)" "$LINENO" 5
+
+fi
     ;;
 esac
-BOOST_MPI_LDFLAGS=$boost_cv_lib_mpi_LDFLAGS
-BOOST_MPI_LDPATH=$boost_cv_lib_mpi_LDPATH
-BOOST_LDPATH=$boost_cv_lib_mpi_LDPATH
-BOOST_MPI_LIBS=$boost_cv_lib_mpi_LIBS
 CPPFLAGS=$boost_save_CPPFLAGS
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -22229,9 +22364,12 @@ ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+if test x"" = "xno"
+then :
+  not_found_header='true'
+fi
 if test x"$boost_cv_inc_path" = xno; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for boost/serialization/base_object.hpp" >&5
-printf "%s\n" "$as_me: Boost not available, not searching for boost/serialization/base_object.hpp" >&6;}
+  $not_found_header
 else
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -22247,7 +22385,7 @@ then :
 printf "%s\n" "#define HAVE_BOOST_SERIALIZATION_BASE_OBJECT_HPP 1" >>confdefs.h
 
 else case e in #(
-  e) as_fn_error $? "cannot find boost/serialization/base_object.hpp" "$LINENO" 5 ;;
+  e) $not_found_header ;;
 esac
 fi
 
@@ -22294,6 +22432,7 @@ else case e in #(
   # Generate the test file.
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+
 #include <boost/serialization/base_object.hpp>
 
 int
@@ -22308,7 +22447,13 @@ _ACEOF
 then :
   ac_objext=do_not_rm_me_plz
 else case e in #(
-  e) as_fn_error $? "cannot compile a test that uses Boost serialization" "$LINENO" 5 ;;
+  e) if test x"" != x"no"
+then :
+
+       as_fn_error $? "cannot compile a test that uses Boost serialization" "$LINENO" 5
+
+fi
+     ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam
@@ -22321,12 +22466,15 @@ for boost_tag_ in -$boost_cv_lib_tag ''; do
 for boost_ver_ in -$boost_cv_lib_version ''; do
 for boost_mt_ in $boost_mt -mt ''; do
 for boost_rtopt_ in $boost_rtopt '' -d; do
-  for boost_lib in \
-    boost_$boost_lib_$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
-    boost_$boost_lib_$boost_tag_$boost_rtopt_$boost_ver_ \
-    boost_$boost_lib_$boost_tag_$boost_mt_$boost_ver_ \
-    boost_$boost_lib_$boost_tag_$boost_ver_
+  for boost_full_suffix in \
+    $boost_last_suffix \
+    x$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
+    x$boost_tag_$boost_rtopt_$boost_ver_ \
+    x$boost_tag_$boost_mt_$boost_ver_ \
+    x$boost_tag_$boost_ver_
   do
+    boost_real_suffix=`echo "$boost_full_suffix" | sed 's/^x//'`
+    boost_lib="boost_$boost_lib_$boost_real_suffix"
     # Avoid testing twice the same lib
     case $boost_failed_libs in #(
       (*@$boost_lib@*) continue;;
@@ -22418,7 +22566,7 @@ else case e in #(
            *)
             for boost_cv_rpath_link_ldflag in -Wl,-R, -Wl,-rpath,; do
               LDFLAGS="$boost_save_LDFLAGS -L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
-              LIBS="$boost_save_LIBS $boost_cv_lib_serialization_LIBS"
+              LIBS="$boost_cv_lib_serialization_LIBS $boost_save_LIBS"
               rm -f conftest$ac_exeext
 boost_save_ac_ext=$ac_ext
 boost_use_source=:
@@ -22480,6 +22628,7 @@ fi
         test x"$boost_ldpath" != x &&
           boost_cv_lib_serialization_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
         boost_cv_lib_serialization_LDPATH="$boost_ldpath"
+        boost_last_suffix="$boost_full_suffix"
         break 7
       else
         boost_failed_libs="$boost_failed_libs@$boost_lib@"
@@ -22498,16 +22647,27 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_serialization" >&5
 printf "%s\n" "$boost_cv_lib_serialization" >&6; }
 case $boost_cv_lib_serialization in #(
+  (yes) printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+printf "%s\n" "#define HAVE_BOOST_SERIALIZATION 1" >>confdefs.h
+    BOOST_SERIALIZATION_LDFLAGS=$boost_cv_lib_serialization_LDFLAGS
+    BOOST_SERIALIZATION_LDPATH=$boost_cv_lib_serialization_LDPATH
+    BOOST_LDPATH=$boost_cv_lib_serialization_LDPATH
+    BOOST_SERIALIZATION_LIBS=$boost_cv_lib_serialization_LIBS
+    ;;
   (no) printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-    as_fn_error $? "cannot find the flags to link with Boost serialization" "$LINENO" 5
+    if test x"" != "xno"
+then :
+
+      as_fn_error $? "cannot find flags to link with the Boost serialization library (libboost-serialization)" "$LINENO" 5
+
+fi
     ;;
 esac
-BOOST_SERIALIZATION_LDFLAGS=$boost_cv_lib_serialization_LDFLAGS
-BOOST_SERIALIZATION_LDPATH=$boost_cv_lib_serialization_LDPATH
-BOOST_LDPATH=$boost_cv_lib_serialization_LDPATH
-BOOST_SERIALIZATION_LIBS=$boost_cv_lib_serialization_LIBS
 CPPFLAGS=$boost_save_CPPFLAGS
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -29831,30 +29991,6 @@ printf "%s\n" "$as_me: WARNING:
                          Building without udunits
 
                      *** Unit conversions disabled ***
-
-     " >&2;}
-
-fi
-
-if test "x$have_boost" == "xno"
-then :
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
-
-                         Building without boost
-
-                   *** Advanced integrators disabled ***
-
-        The advanced integrators require the Boost library (>=1.53)
-
-     " >&5
-printf "%s\n" "$as_me: WARNING:
-
-                         Building without boost
-
-                   *** Advanced integrators disabled ***
-
-        The advanced integrators require the Boost library (>=1.53)
 
      " >&2;}
 

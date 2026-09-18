@@ -1496,14 +1496,12 @@ GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUn
 
 enum CoordType_e;
 
-#ifdef HAVE_BOOST_ARRAY_HPP
 namespace boost {
 template <typename T, size_t sz> class array {
  public:
     T& operator[](size_t c) { return buf[c] ; }
   };
 }
-#endif
 %extend GYOTO_ARRAY {
   T __getitem__(size_t c) {
     return $self->operator[](c);

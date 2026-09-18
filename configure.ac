@@ -221,6 +221,18 @@ AM_CONDITIONAL(HAVE_PYTHON, [test "x$PYTHON" != "x"])
 # Checks for programs.
 
 
+############### CHECK FOR BOOST FEATURES #########################
+
+BOOST_REQUIRE([1.65.0],[AC_MSG_ERROR([Boost is required to build Gyoto])])
+BOOST_FIND_HEADER([boost/multiprecision/cpp_dec_float.hpp],
+	[AC_MSG_ERROR([Boost.Multiprecision not found])], [])
+BOOST_FIND_HEADER([boost/array.hpp],
+        [AC_MSG_ERROR([Boost.Array not found])], [])
+BOOST_FIND_HEADER([boost/numeric/odeint/stepper/controlled_step_result.hpp],
+        [AC_MSG_ERROR([Boost.Odeint not found])], [])
+BOOST_FIND_HEADER([boost/math/special_functions/ellint_1.hpp],
+        [AC_MSG_ERROR([Boost.Math/SpecialFunctions not found])], [])
+
 ############### CHECK FOR OPTIONAL FEATURES #########################
 
 AC_ARG_WITH([mpi], [AS_HELP_STRING([--with-mpi],
@@ -228,50 +240,13 @@ AC_ARG_WITH([mpi], [AS_HELP_STRING([--with-mpi],
     MPI is not used. Default: auto])
 ],,[with_mpi=auto])
 
-# Check for boost
-
-have_boost=no
-AS_IF([test "x$with_boost" != "xno"],
-  [have_boost=yes
-   BOOST_REQUIRE([1.53.1], [have_boost=no])
-   AS_IF([test "x$have_boost" == "xyes"],
-     [BOOST_FIND_HEADER([boost/multiprecision/cpp_dec_float.hpp],
-        [AC_MSG_WARN([Boost.multiprecision not found])
-	 have_boost=partial],
-        [])
-      BOOST_FIND_HEADER([boost/array.hpp],
-        [AC_MSG_WARN([boost/array.hpp not found])
-	 have_boost=partial],
-        [])
-      BOOST_FIND_HEADER([boost/numeric/odeint/stepper/controlled_step_result.hpp],
-        [AC_MSG_WARN([Boost.odeint not found])
-	 have_boost=partial],
-        [])
-      BOOST_FIND_HEADER([boost/math/special_functions/ellint_1.hpp],
-        [AC_MSG_WARN([Boost spectial functions not found])
-	 have_boost=partial],
-        [])
-     ])
-   ],
-   [have_boost=no]
-)
-
-AS_IF([test "x$ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp" == xyes],
-  [AC_DEFINE([GYOTO_HAVE_BOOST_INTEGRATORS], [1], [Define to 1 if Boost.odeintis available]
-  )]
-)
-
-AS_IF([test "x$have_boost" != "xyes"],
-  [FEATURES+="-noboost"]
-)
-
 # If --with-mpi=auto is used, try to find MPI, but use standard C compiler if it is not found.
 # If --with-mpi=yes is used, try to find MPI and fail if it isn't found.
 # If --with-mpi=no is used, use a standard C compiler instead.
 
 have_mpi=no
 AC_CHECK_PROGS([MPICXX], [mpic++ mpicxx])
-AS_IF([test "x$MPICXX" != x && test "x$have_boost" == xyes && test "x$with_mpi" != xno],
+AS_IF([test "x$MPICXX" != x && test "x$with_mpi" != xno],
   [
    ax_save_CXX=$CXX
    ax_save_CPP=$CXXCPP
@@ -938,20 +913,6 @@ AS_IF([test "x$have_udunits" == "xno"],
                          Building without udunits
 
                      *** Unit conversions disabled ***
-
-     ])
-  ])
-
-AS_IF([test "x$have_boost" == "xno"],
-  [
-   AC_MSG_WARN(
-     [
-
-                         Building without boost
-
-                   *** Advanced integrators disabled ***
-
-        The advanced integrators require the Boost library (>=1.53)
 
      ])
   ])

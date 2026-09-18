@@ -32,15 +32,11 @@
 
 #include <GyotoDefs.h>
 
-#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
-# include <functional>
-# include <array>
-# include <boost/numeric/odeint/stepper/controlled_step_result.hpp>
-# include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
-# include <boost/numeric/odeint/stepper/controlled_runge_kutta.hpp>
-
-
-#endif
+#include <functional>
+#include <array>
+#include <boost/numeric/odeint/stepper/controlled_step_result.hpp>
+#include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
+#include <boost/numeric/odeint/stepper/controlled_runge_kutta.hpp>
 
 namespace Gyoto {
   class Worldline;
@@ -505,7 +501,7 @@ class Gyoto::Worldline
    *
    * Initialize #state_ to use the required integrator.
    *
-   * \param[in] type Either "Legacy" or (if GYOTO_HAVE_BOOST_INTEGRATORS) one of
+   * \param[in] type Either "Legacy" or one of
    *                 "runge_kutta_cash_karp54",
    *                 "runge_kutta_fehlberg78", "runge_kutta_dopri5",
    *                 "runge_kutta_cash_karp54_classic"
@@ -887,9 +883,7 @@ class Gyoto::Worldline
   public:
     class Generic;
     class Legacy;
-#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
     class Boost;
-#endif
   };
 
 
@@ -1054,7 +1048,6 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
   virtual ~Legacy();
 };
 
-#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
 /**
  * \class Gyoto::Worldline::IntegState::Boost
  * \brief Boost integrator
@@ -1183,6 +1176,5 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
     void reorthonormalizeBasis(state_t &coord) const;
   
 };
-#endif /// GYOTO_HAVE_BOOST_INTEGRATORS
 #endif /// GYOTO_SWIGIMPORTED
 #endif

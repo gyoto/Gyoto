@@ -31,12 +31,7 @@
 using namespace std;
 using namespace Gyoto;
 
-#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
-# define _GYOTO_DEFAULT_INTEGRATOR "runge_kutta_fehlberg78"
-#else
-# define _GYOTO_DEFAULT_INTEGRATOR "Legacy"
-#endif
-
+#define _GYOTO_DEFAULT_INTEGRATOR "runge_kutta_fehlberg78"
 
 Worldline::Worldline() : stopcond(0), metric_(NULL),
                          ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
@@ -373,11 +368,7 @@ void Worldline::tell(Gyoto::Hook::Teller* msg) {
 
 void Worldline::integrator(std::string const &type) {
   if (type=="Legacy") state_ = new IntegState::Legacy(this);
-#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
   else state_ = new IntegState::Boost(this, type);
-#else
-  else GYOTO_ERROR("unrecognized integrator (recompile with boost?)");
-#endif
 }
 
 std::string Worldline::integrator() const {

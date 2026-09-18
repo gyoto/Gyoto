@@ -35,9 +35,7 @@
     { fits_get_errstatus(status, ermsg); GYOTO_ERROR(ermsg); }
 #endif
 
-#ifdef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
 #include <boost/multiprecision/cpp_dec_float.hpp>
-#endif
 
 using namespace std ; 
 using namespace Gyoto;
@@ -613,7 +611,6 @@ void Screen::getRayTriad(double angle1, double angle2,
       --> Following transformations are OK even for non-small alpha, delta
     */
 
-#ifdef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
     // using boost multiprecision to avoid information loss in trigonometry
     {
       boost::multiprecision::cpp_dec_float_100
@@ -623,15 +620,6 @@ void Screen::getRayTriad(double angle1, double angle2,
       spherical_angle_a=a.convert_to<double>();
       spherical_angle_b=b.convert_to<double>();
     }
-#else
-    if (abs(angle1)<1e-6 || abs(angle2) < 1e-6) {
-      spherical_angle_a = sqrt(angle1*angle1+angle2*angle2);
-    } else {
-      spherical_angle_a = acos(cos(angle1)*cos(angle2));
-    }
-    spherical_angle_b =
-		   (angle1==0. && angle2==0.) ? 0. : atan2(tan(angle2),sin(angle1));
-#endif
     break;
   default:
     spherical_angle_a=spherical_angle_b=0.;
@@ -1507,13 +1495,7 @@ Screen::Grid::~Grid(){
 }
 
 GYOTO_ARRAY<size_t, 2> Screen::Grid::operator* () const {
-#if defined HAVE_BOOST_ARRAY_HPP
   GYOTO_ARRAY<size_t, 2> ij = {*iset_, *jset_};
-#else
-  GYOTO_ARRAY<size_t, 2> ij;
-  ij[0]=*iset_;
-  ij[1]=*jset_;
-#endif
   return ij;
 }
 void Screen::Grid::begin() {iset_.begin(); jset_.begin();}
@@ -1636,23 +1618,11 @@ size_t Screen::Bucket::size(){return alpha_.size();}
 Screen::Coord2dSet& Screen::Bucket::operator++(){
   ++alpha_; ++delta_; return *this;}
 GYOTO_ARRAY<double, 2> Screen::Bucket::angles() const {
-#if defined HAVE_BOOST_ARRAY_HPP
   GYOTO_ARRAY<double, 2> out {alpha_.angle(), delta_.angle()};
-#else
-  GYOTO_ARRAY<double, 2> out;
-  out[0]=alpha_.angle();
-  out[1]=delta_.angle();
-#endif
   return out;
 }
 GYOTO_ARRAY<size_t, 2> Screen::Bucket::operator* () const {
-#if defined HAVE_BOOST_ARRAY_HPP
   GYOTO_ARRAY<size_t, 2> ij = {*alpha_, *delta_};
-#else
-  GYOTO_ARRAY<size_t, 2> ij;
-  ij[0]=*alpha_;
-  ij[1]=*delta_;
-#endif
   return ij;
 }
 
