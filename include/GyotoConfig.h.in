@@ -51,6 +51,20 @@
 # endif
 #endif
 
+/** \def BOOST_STACKTRACE_ADDR2LINE_LOCATION
+ *  \brief Absolute path to the addr2line executable
+ *
+ *  Necessary if BOOST_STACKTRACE_USE_ADDR2LINE and if it is not
+ *  /usr/bin/addr2line.
+ *
+ */
+#undef BOOST_STACKTRACE_ADDR2LINE_LOCATION
+#ifdef DOXYGEN_RUN
+# ifndef BOOST_STACKTRACE_ADDR2LINE_LOCATION
+#  define BOOST_STACKTRACE_ADDR2LINE_LOCATION (undefined)
+# endif
+#endif
+
 /** \def BOOST_STACKTRACE_USE_ADDR2LINE
  *  \brief Whether Boost.Stacktrace should use addr2line
  *

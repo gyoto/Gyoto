@@ -736,10 +736,21 @@ BOOST_SERIALIZATION_LIBS
 BOOST_SERIALIZATION_LDPATH
 BOOST_SERIALIZATION_LDFLAGS
 BOOST_MPI_LIBS
-BOOST_LDPATH
 BOOST_MPI_LDPATH
 BOOST_MPI_LDFLAGS
 MPICXX
+GYOTO_STACKTRACE_LIBS
+BOOST_ADDR2LINE_LIBS
+BOOST_ADDR2LINE_LDPATH
+BOOST_ADDR2LINE_LDFLAGS
+BOOST_BASIC_LIBS
+BOOST_BASIC_LDPATH
+BOOST_BASIC_LDFLAGS
+BOOST_BACKTRACE_LIBS
+BOOST_LDPATH
+BOOST_BACKTRACE_LDPATH
+BOOST_BACKTRACE_LDFLAGS
+ADDR2LINE
 BOOST_CPPFLAGS
 DISTCHECK_CONFIGURE_FLAGS
 BOOST_ROOT
@@ -917,8 +928,10 @@ with_python_install_scheme
 with_pythondir
 with_virtualenv
 with_boost
-with_mpi
+with_boost_stacktrace_backend
+with_boost_stacktrace_link
 enable_static_boost
+with_mpi
 enable_native
 enable_hardening
 enable_deprecated
@@ -969,6 +982,7 @@ PYTHON
 PYTHON_CONFIG
 VIRTUALENV_FLAGS
 BOOST_ROOT
+ADDR2LINE
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
@@ -1674,6 +1688,12 @@ Optional Packages:
                           --with-python-install-scheme.
   --with-virtualenv       install to a Python virtualenv
   --with-boost=DIR        prefix of Boost 1.65.0 [guess]
+  --with-boost-stacktrace-backend=BACKEND
+                          Boost.Stacktrace backend: auto, backtrace, basic, or
+                          addr2line [default=auto]
+  --with-boost-stacktrace-link=MODE
+                          Boost.Stacktrace linking mode: linked or header-only
+                          [default=linked]
   --with-mpi              compile with MPI (parallelization) support. If none
                           is found, MPI is not used. Default: auto
 
@@ -1802,6 +1822,7 @@ Some influential environment variables:
   VIRTUALENV_FLAGS
               flags to pass to the virtualenv command
   BOOST_ROOT  Location of Boost installation
+  ADDR2LINE   absolute path to the addr2line executable
   PKG_CONFIG  path to pkg-config utility
   PKG_CONFIG_PATH
               directories to add to pkg-config's search path
@@ -21602,72 +21623,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 fi
 
 
-############### CHECK FOR OPTIONAL FEATURES #########################
-
-
-# Check whether --with-mpi was given.
-if test ${with_mpi+y}
-then :
-  withval=$with_mpi;
-else case e in #(
-  e) with_mpi=auto ;;
-esac
-fi
-
-
-# If --with-mpi=auto is used, try to find MPI, but use standard C compiler if it is not found.
-# If --with-mpi=yes is used, try to find MPI and fail if it isn't found.
-# If --with-mpi=no is used, use a standard C compiler instead.
-
-have_mpi=no
-for ac_prog in mpic++ mpicxx
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_MPICXX+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test -n "$MPICXX"; then
-  ac_cv_prog_MPICXX="$MPICXX" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_MPICXX="$ac_prog"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi ;;
-esac
-fi
-MPICXX=$ac_cv_prog_MPICXX
-if test -n "$MPICXX"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $MPICXX" >&5
-printf "%s\n" "$MPICXX" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-  test -n "$MPICXX" && break
-done
-
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the toolset name used by Boost for $CXX" >&5
 printf %s "checking for the toolset name used by Boost for $CXX... " >&6; }
 if test ${boost_cv_lib_tag+y}
@@ -22006,6 +21961,1412 @@ ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+
+  if test x"$boost_cv_inc_path" = xno; then
+  as_fn_error $? "Boost.Stacktrace not found" "$LINENO" 5
+else
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+boost_save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+ac_fn_cxx_check_header_compile "$LINENO" "boost/stacktrace.hpp" "ac_cv_header_boost_stacktrace_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_boost_stacktrace_hpp" = xyes
+then :
+
+printf "%s\n" "#define HAVE_BOOST_STACKTRACE_HPP 1" >>confdefs.h
+
+else case e in #(
+  e) as_fn_error $? "Boost.Stacktrace not found" "$LINENO" 5 ;;
+esac
+fi
+
+CPPFLAGS=$boost_save_CPPFLAGS
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+fi
+
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking which Boost.Stacktrace backend should be used" >&5
+printf %s "checking which Boost.Stacktrace backend should be used... " >&6; }
+
+
+# Check whether --with-boost-stacktrace-backend was given.
+if test ${with_boost_stacktrace_backend+y}
+then :
+  withval=$with_boost_stacktrace_backend; gyoto_stacktrace_backend="$withval"
+else case e in #(
+  e) gyoto_stacktrace_backend=auto
+   ;;
+esac
+fi
+
+
+  case $gyoto_stacktrace_backend in #(
+  auto|backtrace|basic|addr2line) :
+     ;; #(
+  *) :
+    as_fn_error $? "invalid Boost.Stacktrace backend: $gyoto_stacktrace_backend
+       (expected auto, backtrace, basic, or addr2line)
+    " "$LINENO" 5
+   ;;
+esac
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $gyoto_stacktrace_backend" >&5
+printf "%s\n" "$gyoto_stacktrace_backend" >&6; }
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking how to link Boost.Stacktrace" >&5
+printf %s "checking how to link Boost.Stacktrace... " >&6; }
+
+
+# Check whether --with-boost-stacktrace-link was given.
+if test ${with_boost_stacktrace_link+y}
+then :
+  withval=$with_boost_stacktrace_link; gyoto_stacktrace_link="$withval"
+else case e in #(
+  e) gyoto_stacktrace_link=header-only
+   ;;
+esac
+fi
+
+
+  GYOTO_STACKTRACE_LIBS=
+
+  case $gyoto_stacktrace_link in #(
+  linked) :
+     ;; #(
+  header-only) :
+     ;; #(
+  *) :
+    as_fn_error $? "invalid Boost.Stacktrace linking mode: $gyoto_stacktrace_link
+       (expected linked or header-only)
+    " "$LINENO" 5
+   ;;
+esac
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $gyoto_stacktrace_link" >&5
+printf "%s\n" "$gyoto_stacktrace_link" >&6; }
+
+  if test "x$gyoto_stacktrace_backend" = xauto ||
+     test "x$gyoto_stacktrace_backend" = xbacktrace
+then :
+
+             for ac_header in backtrace.h
+do :
+  ac_fn_cxx_check_header_compile "$LINENO" "backtrace.h" "ac_cv_header_backtrace_h" "$ac_includes_default"
+if test "x$ac_cv_header_backtrace_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_BACKTRACE_H 1" >>confdefs.h
+ have_backtrace_h=yes
+else case e in #(
+  e) have_backtrace_h=no
+       ;;
+esac
+fi
+
+done
+
+      have_libbacktrace=no
+      if test "x$have_backtrace_h" = xyes
+then :
+
+          ax_gyoto_stacktrace_save_LIBS="$LIBS"
+          { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for backtrace_create_state in -lbacktrace" >&5
+printf %s "checking for backtrace_create_state in -lbacktrace... " >&6; }
+if test ${ac_cv_lib_backtrace_backtrace_create_state+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lbacktrace  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+namespace conftest {
+  extern "C" int backtrace_create_state ();
+}
+int
+main (void)
+{
+return conftest::backtrace_create_state ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"
+then :
+  ac_cv_lib_backtrace_backtrace_create_state=yes
+else case e in #(
+  e) ac_cv_lib_backtrace_backtrace_create_state=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_backtrace_backtrace_create_state" >&5
+printf "%s\n" "$ac_cv_lib_backtrace_backtrace_create_state" >&6; }
+if test "x$ac_cv_lib_backtrace_backtrace_create_state" = xyes
+then :
+  have_libbacktrace=yes
+else case e in #(
+  e) have_libbacktrace=no
+           ;;
+esac
+fi
+
+          LIBS="$ax_gyoto_stacktrace_save_LIBS"
+
+
+fi
+
+      if test "x$gyoto_stacktrace_backend" = xbacktrace &&
+         test "x$have_libbacktrace" != xyes
+then :
+
+          as_fn_error $? "Boost.Stacktrace backtrace backend requested,
+             but libbacktrace could not be found
+          " "$LINENO" 5
+
+
+fi
+
+
+fi
+
+  if test "x$gyoto_stacktrace_backend" = xauto
+then :
+
+      if test "x$have_libbacktrace" = xyes
+then :
+  gyoto_stacktrace_backend=backtrace
+else case e in #(
+  e) gyoto_stacktrace_backend=basic
+       ;;
+esac
+fi
+
+
+fi
+
+  if test "x$gyoto_stacktrace_backend" = xauto ||
+     test "x$gyoto_stacktrace_backend" = xaddr2line
+then :
+
+
+      # Extract the first word of "addr2line", so it can be a program name with args.
+set dummy addr2line; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_ADDR2LINE+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $ADDR2LINE in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ADDR2LINE="$ADDR2LINE" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_ADDR2LINE="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_ADDR2LINE" && ac_cv_path_ADDR2LINE="notfound"
+  ;;
+esac ;;
+esac
+fi
+ADDR2LINE=$ac_cv_path_ADDR2LINE
+if test -n "$ADDR2LINE"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ADDR2LINE" >&5
+printf "%s\n" "$ADDR2LINE" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+      if test "x$ADDR2LINE" = xnotfound
+then :
+
+	 as_fn_error $? "Boost.Stacktrace addr2line backend requested,
+             but program addr2line could not be found
+          " "$LINENO" 5
+
+
+fi
+      if test "x$ADDR2LINE" != x/usr/bin/addr2line
+then :
+
+
+printf "%s\n" "#define BOOST_STACKTRACE_ADDR2LINE_LOCATION \"$ADDR2LINE\"" >>confdefs.h
+
+
+
+fi
+
+
+
+fi
+
+  case $gyoto_stacktrace_backend in #(
+  backtrace) :
+
+
+printf "%s\n" "#define BOOST_STACKTRACE_USE_BACKTRACE 1" >>confdefs.h
+
+
+      if test "x$gyoto_stacktrace_link" = xlinked
+then :
+
+
+  ax_gyoto_stacktrace_save_LIBS="$LIBS"
+  LIBS="-lbacktrace
+           $LIBS"
+
+  if test x"$boost_cv_inc_path" = xno; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for the Boost backtrace library" >&5
+printf "%s\n" "$as_me: Boost not available, not searching for the Boost backtrace library" >&6;}
+else
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+if test x"yes
+  " = "xno"
+then :
+  not_found_header='true'
+fi
+if test x"$boost_cv_inc_path" = xno; then
+  $not_found_header
+else
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+boost_save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+ac_fn_cxx_check_header_compile "$LINENO" "boost/stacktrace.hpp" "ac_cv_header_boost_stacktrace_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_boost_stacktrace_hpp" = xyes
+then :
+
+printf "%s\n" "#define HAVE_BOOST_STACKTRACE_HPP 1" >>confdefs.h
+
+else case e in #(
+  e) $not_found_header ;;
+esac
+fi
+
+CPPFLAGS=$boost_save_CPPFLAGS
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+fi
+
+boost_save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the Boost backtrace library" >&5
+printf %s "checking for the Boost backtrace library... " >&6; }
+if test ${boost_cv_lib_backtrace+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) boost_cv_lib_backtrace=no
+  case "" in #(
+    (mt | mt-) boost_mt=-mt; boost_rtopt=;; #(
+    (mt* | mt-*) boost_mt=-mt; boost_rtopt=`expr "X" : 'Xmt-*\(.*\)'`;; #(
+    (*) boost_mt=; boost_rtopt=;;
+  esac
+  if test $enable_static_boost = yes; then
+    boost_rtopt="s$boost_rtopt"
+  fi
+  # Find the proper debug variant depending on what we've been asked to find.
+  case $boost_rtopt in #(
+    (*d*) boost_rt_d=$boost_rtopt;; #(
+    (*[sgpn]*) # Insert the `d' at the right place (in between `sg' and `pn')
+      boost_rt_d=`echo "$boost_rtopt" | sed 's/\(s*g*\)\(p*n*\)/\1\2/'`;; #(
+    (*) boost_rt_d='-d';;
+  esac
+  # If the PREFERRED-RT-OPT are not empty, prepend a `-'.
+  test -n "$boost_rtopt" && boost_rtopt="-$boost_rtopt"
+  $boost_guess_use_mt && boost_mt=-mt
+  # Look for the abs path the static archive.
+  # $libext is computed by Libtool but let's make sure it's non empty.
+  test -z "$libext" &&
+    as_fn_error $? "the libext variable is empty, did you invoke Libtool?" "$LINENO" 5
+  boost_save_ac_objext=$ac_objext
+  # Generate the test file.
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <boost/stacktrace.hpp>
+
+int
+main (void)
+{
+boost::stacktrace::stacktrace()
+  ;
+  return 0;
+}
+_ACEOF
+  if ac_fn_cxx_try_compile "$LINENO"
+then :
+  ac_objext=do_not_rm_me_plz
+else case e in #(
+  e) if test x"yes
+  " != x"no"
+then :
+
+       as_fn_error $? "cannot compile a test that uses Boost backtrace" "$LINENO" 5
+
+fi
+     ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam
+  ac_objext=$boost_save_ac_objext
+  boost_failed_libs=
+# Don't bother to ident the following nested for loops, only the 2
+# innermost ones matter.
+for boost_lib_ in backtrace; do
+for boost_tag_ in -$boost_cv_lib_tag ''; do
+for boost_ver_ in -$boost_cv_lib_version ''; do
+for boost_mt_ in $boost_mt -mt ''; do
+for boost_rtopt_ in $boost_rtopt '' -d; do
+  for boost_full_suffix in \
+    $boost_last_suffix \
+    x$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
+    x$boost_tag_$boost_rtopt_$boost_ver_ \
+    x$boost_tag_$boost_mt_$boost_ver_ \
+    x$boost_tag_$boost_ver_
+  do
+    boost_real_suffix=`echo "$boost_full_suffix" | sed 's/^x//'`
+    boost_lib="boost_$boost_lib_$boost_real_suffix"
+    # Avoid testing twice the same lib
+    case $boost_failed_libs in #(
+      (*@$boost_lib@*) continue;;
+    esac
+    # If with_boost is empty, we'll search in /lib first, which is not quite
+    # right so instead we'll try to a location based on where the headers are.
+    boost_tmp_lib=$with_boost
+    test x"$with_boost" = x && boost_tmp_lib=${boost_cv_inc_path%/include}
+    for boost_ldpath in "$boost_tmp_lib/lib" '' \
+             /opt/local/lib* /usr/local/lib* /opt/lib* /usr/lib* \
+             "$with_boost" C:/Boost/lib /lib*
+    do
+      # Don't waste time with directories that don't exist.
+      if test x"$boost_ldpath" != x && test ! -e "$boost_ldpath"; then
+        continue
+      fi
+      boost_save_LDFLAGS=$LDFLAGS
+      # Are we looking for a static library?
+      case $boost_ldpath:$boost_rtopt_ in #(
+        (*?*:*s*) # Yes (Non empty boost_ldpath + s in rt opt)
+          boost_cv_lib_backtrace_LIBS="$boost_ldpath/lib$boost_lib.$libext"
+          test -e "$boost_cv_lib_backtrace_LIBS" || continue;; #(
+        (*) # No: use -lboost_foo to find the shared library.
+          boost_cv_lib_backtrace_LIBS="-l$boost_lib";;
+      esac
+      boost_save_LIBS=$LIBS
+      LIBS="$boost_cv_lib_backtrace_LIBS $LIBS"
+      test x"$boost_ldpath" != x && LDFLAGS="$LDFLAGS -L$boost_ldpath"
+      rm -f conftest$ac_exeext
+boost_save_ac_ext=$ac_ext
+boost_use_source=:
+# If we already have a .o, re-use it.  We change $ac_ext so that $ac_link
+# tries to link the existing object file instead of compiling from source.
+test -f conftest.$ac_objext && ac_ext=$ac_objext && boost_use_source=false &&
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: re-using the existing conftest.$ac_objext" >&5
+if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+         test -z "$ac_cxx_werror_flag" ||
+         test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+         test "$cross_compiling" = yes ||
+         $as_executable_p conftest$ac_exeext
+       }
+then :
+  boost_cv_lib_backtrace=yes
+else case e in #(
+  e) if $boost_use_source; then
+         printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+       fi
+       boost_cv_lib_backtrace=no ;;
+esac
+fi
+ac_objext=$boost_save_ac_objext
+ac_ext=$boost_save_ac_ext
+rm -f core conftest.err conftest_ipa8_conftest.oo \
+      conftest$ac_exeext
+      ac_objext=$boost_save_ac_objext
+      LDFLAGS=$boost_save_LDFLAGS
+      LIBS=$boost_save_LIBS
+      if test x"$boost_cv_lib_backtrace" = xyes; then
+        # Check or used cached result of whether or not using -R or
+        # -rpath makes sense.  Some implementations of ld, such as for
+        # Mac OSX, require -rpath but -R is the flag known to work on
+        # other systems.  https://github.com/tsuna/boost.m4/issues/19
+        if test ${boost_cv_rpath_link_ldflag+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $boost_ldpath in
+           '') # Nothing to do.
+             boost_cv_rpath_link_ldflag=
+             boost_rpath_link_ldflag_found=yes;;
+           *)
+            for boost_cv_rpath_link_ldflag in -Wl,-R, -Wl,-rpath,; do
+              LDFLAGS="$boost_save_LDFLAGS -L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+              LIBS="$boost_cv_lib_backtrace_LIBS $boost_save_LIBS"
+              rm -f conftest$ac_exeext
+boost_save_ac_ext=$ac_ext
+boost_use_source=:
+# If we already have a .o, re-use it.  We change $ac_ext so that $ac_link
+# tries to link the existing object file instead of compiling from source.
+test -f conftest.$ac_objext && ac_ext=$ac_objext && boost_use_source=false &&
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: re-using the existing conftest.$ac_objext" >&5
+if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+         test -z "$ac_cxx_werror_flag" ||
+         test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+         test "$cross_compiling" = yes ||
+         $as_executable_p conftest$ac_exeext
+       }
+then :
+  boost_rpath_link_ldflag_found=yes
+                break
+else case e in #(
+  e) if $boost_use_source; then
+         printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+       fi
+       boost_rpath_link_ldflag_found=no ;;
+esac
+fi
+ac_objext=$boost_save_ac_objext
+ac_ext=$boost_save_ac_ext
+rm -f core conftest.err conftest_ipa8_conftest.oo \
+      conftest$ac_exeext
+            done
+            ;;
+          esac
+          if test "x$boost_rpath_link_ldflag_found" != "xyes"
+then :
+  as_fn_error $? "Unable to determine whether to use -R or -rpath" "$LINENO" 5
+fi
+          LDFLAGS=$boost_save_LDFLAGS
+          LIBS=$boost_save_LIBS
+           ;;
+esac
+fi
+
+        test x"$boost_ldpath" != x &&
+          boost_cv_lib_backtrace_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+        boost_cv_lib_backtrace_LDPATH="$boost_ldpath"
+        boost_last_suffix="$boost_full_suffix"
+        break 7
+      else
+        boost_failed_libs="$boost_failed_libs@$boost_lib@"
+      fi
+    done
+  done
+done
+done
+done
+done
+done # boost_lib_
+rm -f conftest.$ac_objext
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_backtrace" >&5
+printf "%s\n" "$boost_cv_lib_backtrace" >&6; }
+case $boost_cv_lib_backtrace in #(
+  (yes) printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+printf "%s\n" "#define HAVE_BOOST_BACKTRACE 1" >>confdefs.h
+    BOOST_BACKTRACE_LDFLAGS=$boost_cv_lib_backtrace_LDFLAGS
+    BOOST_BACKTRACE_LDPATH=$boost_cv_lib_backtrace_LDPATH
+    BOOST_LDPATH=$boost_cv_lib_backtrace_LDPATH
+    BOOST_BACKTRACE_LIBS=$boost_cv_lib_backtrace_LIBS
+    ;;
+  (no) printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+    if test x"yes
+  " != "xno"
+then :
+
+      as_fn_error $? "cannot find flags to link with the Boost backtrace library (libboost-backtrace)" "$LINENO" 5
+
+fi
+    ;;
+esac
+CPPFLAGS=$boost_save_CPPFLAGS
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+fi
+
+
+  LIBS="$ax_gyoto_stacktrace_save_LIBS"
+
+  GYOTO_STACKTRACE_LIBS=$BOOST_BACKTRACE_LDFLAGS
+     $BOOST_BACKTRACE_LIBS -lbacktrace
+
+
+
+
+else case e in #(
+  e)
+          GYOTO_STACKTRACE_LIBS="-lbacktrace"
+
+       ;;
+esac
+fi
+     ;; #(
+  basic) :
+
+
+      if test "x$gyoto_stacktrace_link" = xlinked
+then :
+
+
+  ax_gyoto_stacktrace_save_LIBS="$LIBS"
+  LIBS="
+           $LIBS"
+
+  if test x"$boost_cv_inc_path" = xno; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for the Boost basic library" >&5
+printf "%s\n" "$as_me: Boost not available, not searching for the Boost basic library" >&6;}
+else
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+if test x"yes
+  " = "xno"
+then :
+  not_found_header='true'
+fi
+if test x"$boost_cv_inc_path" = xno; then
+  $not_found_header
+else
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+boost_save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+ac_fn_cxx_check_header_compile "$LINENO" "boost/stacktrace.hpp" "ac_cv_header_boost_stacktrace_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_boost_stacktrace_hpp" = xyes
+then :
+
+printf "%s\n" "#define HAVE_BOOST_STACKTRACE_HPP 1" >>confdefs.h
+
+else case e in #(
+  e) $not_found_header ;;
+esac
+fi
+
+CPPFLAGS=$boost_save_CPPFLAGS
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+fi
+
+boost_save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the Boost basic library" >&5
+printf %s "checking for the Boost basic library... " >&6; }
+if test ${boost_cv_lib_basic+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) boost_cv_lib_basic=no
+  case "" in #(
+    (mt | mt-) boost_mt=-mt; boost_rtopt=;; #(
+    (mt* | mt-*) boost_mt=-mt; boost_rtopt=`expr "X" : 'Xmt-*\(.*\)'`;; #(
+    (*) boost_mt=; boost_rtopt=;;
+  esac
+  if test $enable_static_boost = yes; then
+    boost_rtopt="s$boost_rtopt"
+  fi
+  # Find the proper debug variant depending on what we've been asked to find.
+  case $boost_rtopt in #(
+    (*d*) boost_rt_d=$boost_rtopt;; #(
+    (*[sgpn]*) # Insert the `d' at the right place (in between `sg' and `pn')
+      boost_rt_d=`echo "$boost_rtopt" | sed 's/\(s*g*\)\(p*n*\)/\1\2/'`;; #(
+    (*) boost_rt_d='-d';;
+  esac
+  # If the PREFERRED-RT-OPT are not empty, prepend a `-'.
+  test -n "$boost_rtopt" && boost_rtopt="-$boost_rtopt"
+  $boost_guess_use_mt && boost_mt=-mt
+  # Look for the abs path the static archive.
+  # $libext is computed by Libtool but let's make sure it's non empty.
+  test -z "$libext" &&
+    as_fn_error $? "the libext variable is empty, did you invoke Libtool?" "$LINENO" 5
+  boost_save_ac_objext=$ac_objext
+  # Generate the test file.
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <boost/stacktrace.hpp>
+
+int
+main (void)
+{
+boost::stacktrace::stacktrace()
+  ;
+  return 0;
+}
+_ACEOF
+  if ac_fn_cxx_try_compile "$LINENO"
+then :
+  ac_objext=do_not_rm_me_plz
+else case e in #(
+  e) if test x"yes
+  " != x"no"
+then :
+
+       as_fn_error $? "cannot compile a test that uses Boost basic" "$LINENO" 5
+
+fi
+     ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam
+  ac_objext=$boost_save_ac_objext
+  boost_failed_libs=
+# Don't bother to ident the following nested for loops, only the 2
+# innermost ones matter.
+for boost_lib_ in basic; do
+for boost_tag_ in -$boost_cv_lib_tag ''; do
+for boost_ver_ in -$boost_cv_lib_version ''; do
+for boost_mt_ in $boost_mt -mt ''; do
+for boost_rtopt_ in $boost_rtopt '' -d; do
+  for boost_full_suffix in \
+    $boost_last_suffix \
+    x$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
+    x$boost_tag_$boost_rtopt_$boost_ver_ \
+    x$boost_tag_$boost_mt_$boost_ver_ \
+    x$boost_tag_$boost_ver_
+  do
+    boost_real_suffix=`echo "$boost_full_suffix" | sed 's/^x//'`
+    boost_lib="boost_$boost_lib_$boost_real_suffix"
+    # Avoid testing twice the same lib
+    case $boost_failed_libs in #(
+      (*@$boost_lib@*) continue;;
+    esac
+    # If with_boost is empty, we'll search in /lib first, which is not quite
+    # right so instead we'll try to a location based on where the headers are.
+    boost_tmp_lib=$with_boost
+    test x"$with_boost" = x && boost_tmp_lib=${boost_cv_inc_path%/include}
+    for boost_ldpath in "$boost_tmp_lib/lib" '' \
+             /opt/local/lib* /usr/local/lib* /opt/lib* /usr/lib* \
+             "$with_boost" C:/Boost/lib /lib*
+    do
+      # Don't waste time with directories that don't exist.
+      if test x"$boost_ldpath" != x && test ! -e "$boost_ldpath"; then
+        continue
+      fi
+      boost_save_LDFLAGS=$LDFLAGS
+      # Are we looking for a static library?
+      case $boost_ldpath:$boost_rtopt_ in #(
+        (*?*:*s*) # Yes (Non empty boost_ldpath + s in rt opt)
+          boost_cv_lib_basic_LIBS="$boost_ldpath/lib$boost_lib.$libext"
+          test -e "$boost_cv_lib_basic_LIBS" || continue;; #(
+        (*) # No: use -lboost_foo to find the shared library.
+          boost_cv_lib_basic_LIBS="-l$boost_lib";;
+      esac
+      boost_save_LIBS=$LIBS
+      LIBS="$boost_cv_lib_basic_LIBS $LIBS"
+      test x"$boost_ldpath" != x && LDFLAGS="$LDFLAGS -L$boost_ldpath"
+      rm -f conftest$ac_exeext
+boost_save_ac_ext=$ac_ext
+boost_use_source=:
+# If we already have a .o, re-use it.  We change $ac_ext so that $ac_link
+# tries to link the existing object file instead of compiling from source.
+test -f conftest.$ac_objext && ac_ext=$ac_objext && boost_use_source=false &&
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: re-using the existing conftest.$ac_objext" >&5
+if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+         test -z "$ac_cxx_werror_flag" ||
+         test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+         test "$cross_compiling" = yes ||
+         $as_executable_p conftest$ac_exeext
+       }
+then :
+  boost_cv_lib_basic=yes
+else case e in #(
+  e) if $boost_use_source; then
+         printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+       fi
+       boost_cv_lib_basic=no ;;
+esac
+fi
+ac_objext=$boost_save_ac_objext
+ac_ext=$boost_save_ac_ext
+rm -f core conftest.err conftest_ipa8_conftest.oo \
+      conftest$ac_exeext
+      ac_objext=$boost_save_ac_objext
+      LDFLAGS=$boost_save_LDFLAGS
+      LIBS=$boost_save_LIBS
+      if test x"$boost_cv_lib_basic" = xyes; then
+        # Check or used cached result of whether or not using -R or
+        # -rpath makes sense.  Some implementations of ld, such as for
+        # Mac OSX, require -rpath but -R is the flag known to work on
+        # other systems.  https://github.com/tsuna/boost.m4/issues/19
+        if test ${boost_cv_rpath_link_ldflag+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $boost_ldpath in
+           '') # Nothing to do.
+             boost_cv_rpath_link_ldflag=
+             boost_rpath_link_ldflag_found=yes;;
+           *)
+            for boost_cv_rpath_link_ldflag in -Wl,-R, -Wl,-rpath,; do
+              LDFLAGS="$boost_save_LDFLAGS -L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+              LIBS="$boost_cv_lib_basic_LIBS $boost_save_LIBS"
+              rm -f conftest$ac_exeext
+boost_save_ac_ext=$ac_ext
+boost_use_source=:
+# If we already have a .o, re-use it.  We change $ac_ext so that $ac_link
+# tries to link the existing object file instead of compiling from source.
+test -f conftest.$ac_objext && ac_ext=$ac_objext && boost_use_source=false &&
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: re-using the existing conftest.$ac_objext" >&5
+if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+         test -z "$ac_cxx_werror_flag" ||
+         test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+         test "$cross_compiling" = yes ||
+         $as_executable_p conftest$ac_exeext
+       }
+then :
+  boost_rpath_link_ldflag_found=yes
+                break
+else case e in #(
+  e) if $boost_use_source; then
+         printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+       fi
+       boost_rpath_link_ldflag_found=no ;;
+esac
+fi
+ac_objext=$boost_save_ac_objext
+ac_ext=$boost_save_ac_ext
+rm -f core conftest.err conftest_ipa8_conftest.oo \
+      conftest$ac_exeext
+            done
+            ;;
+          esac
+          if test "x$boost_rpath_link_ldflag_found" != "xyes"
+then :
+  as_fn_error $? "Unable to determine whether to use -R or -rpath" "$LINENO" 5
+fi
+          LDFLAGS=$boost_save_LDFLAGS
+          LIBS=$boost_save_LIBS
+           ;;
+esac
+fi
+
+        test x"$boost_ldpath" != x &&
+          boost_cv_lib_basic_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+        boost_cv_lib_basic_LDPATH="$boost_ldpath"
+        boost_last_suffix="$boost_full_suffix"
+        break 7
+      else
+        boost_failed_libs="$boost_failed_libs@$boost_lib@"
+      fi
+    done
+  done
+done
+done
+done
+done
+done # boost_lib_
+rm -f conftest.$ac_objext
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_basic" >&5
+printf "%s\n" "$boost_cv_lib_basic" >&6; }
+case $boost_cv_lib_basic in #(
+  (yes) printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+printf "%s\n" "#define HAVE_BOOST_BASIC 1" >>confdefs.h
+    BOOST_BASIC_LDFLAGS=$boost_cv_lib_basic_LDFLAGS
+    BOOST_BASIC_LDPATH=$boost_cv_lib_basic_LDPATH
+    BOOST_LDPATH=$boost_cv_lib_basic_LDPATH
+    BOOST_BASIC_LIBS=$boost_cv_lib_basic_LIBS
+    ;;
+  (no) printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+    if test x"yes
+  " != "xno"
+then :
+
+      as_fn_error $? "cannot find flags to link with the Boost basic library (libboost-basic)" "$LINENO" 5
+
+fi
+    ;;
+esac
+CPPFLAGS=$boost_save_CPPFLAGS
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+fi
+
+
+  LIBS="$ax_gyoto_stacktrace_save_LIBS"
+
+  GYOTO_STACKTRACE_LIBS=$BOOST_BASIC_LDFLAGS
+     $BOOST_BASIC_LIBS
+
+
+
+
+
+fi
+     ;; #(
+  addr2line) :
+
+
+printf "%s\n" "#define BOOST_STACKTRACE_USE_ADDR2LINE 1" >>confdefs.h
+
+
+      if test "x$gyoto_stacktrace_link" = xlinked
+then :
+
+
+  ax_gyoto_stacktrace_save_LIBS="$LIBS"
+  LIBS="
+           $LIBS"
+
+  if test x"$boost_cv_inc_path" = xno; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for the Boost addr2line library" >&5
+printf "%s\n" "$as_me: Boost not available, not searching for the Boost addr2line library" >&6;}
+else
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+if test x"yes
+  " = "xno"
+then :
+  not_found_header='true'
+fi
+if test x"$boost_cv_inc_path" = xno; then
+  $not_found_header
+else
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+boost_save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+ac_fn_cxx_check_header_compile "$LINENO" "boost/stacktrace.hpp" "ac_cv_header_boost_stacktrace_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_boost_stacktrace_hpp" = xyes
+then :
+
+printf "%s\n" "#define HAVE_BOOST_STACKTRACE_HPP 1" >>confdefs.h
+
+else case e in #(
+  e) $not_found_header ;;
+esac
+fi
+
+CPPFLAGS=$boost_save_CPPFLAGS
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+fi
+
+boost_save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the Boost addr2line library" >&5
+printf %s "checking for the Boost addr2line library... " >&6; }
+if test ${boost_cv_lib_addr2line+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) boost_cv_lib_addr2line=no
+  case "" in #(
+    (mt | mt-) boost_mt=-mt; boost_rtopt=;; #(
+    (mt* | mt-*) boost_mt=-mt; boost_rtopt=`expr "X" : 'Xmt-*\(.*\)'`;; #(
+    (*) boost_mt=; boost_rtopt=;;
+  esac
+  if test $enable_static_boost = yes; then
+    boost_rtopt="s$boost_rtopt"
+  fi
+  # Find the proper debug variant depending on what we've been asked to find.
+  case $boost_rtopt in #(
+    (*d*) boost_rt_d=$boost_rtopt;; #(
+    (*[sgpn]*) # Insert the `d' at the right place (in between `sg' and `pn')
+      boost_rt_d=`echo "$boost_rtopt" | sed 's/\(s*g*\)\(p*n*\)/\1\2/'`;; #(
+    (*) boost_rt_d='-d';;
+  esac
+  # If the PREFERRED-RT-OPT are not empty, prepend a `-'.
+  test -n "$boost_rtopt" && boost_rtopt="-$boost_rtopt"
+  $boost_guess_use_mt && boost_mt=-mt
+  # Look for the abs path the static archive.
+  # $libext is computed by Libtool but let's make sure it's non empty.
+  test -z "$libext" &&
+    as_fn_error $? "the libext variable is empty, did you invoke Libtool?" "$LINENO" 5
+  boost_save_ac_objext=$ac_objext
+  # Generate the test file.
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <boost/stacktrace.hpp>
+
+int
+main (void)
+{
+boost::stacktrace::stacktrace()
+  ;
+  return 0;
+}
+_ACEOF
+  if ac_fn_cxx_try_compile "$LINENO"
+then :
+  ac_objext=do_not_rm_me_plz
+else case e in #(
+  e) if test x"yes
+  " != x"no"
+then :
+
+       as_fn_error $? "cannot compile a test that uses Boost addr2line" "$LINENO" 5
+
+fi
+     ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam
+  ac_objext=$boost_save_ac_objext
+  boost_failed_libs=
+# Don't bother to ident the following nested for loops, only the 2
+# innermost ones matter.
+for boost_lib_ in addr2line; do
+for boost_tag_ in -$boost_cv_lib_tag ''; do
+for boost_ver_ in -$boost_cv_lib_version ''; do
+for boost_mt_ in $boost_mt -mt ''; do
+for boost_rtopt_ in $boost_rtopt '' -d; do
+  for boost_full_suffix in \
+    $boost_last_suffix \
+    x$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
+    x$boost_tag_$boost_rtopt_$boost_ver_ \
+    x$boost_tag_$boost_mt_$boost_ver_ \
+    x$boost_tag_$boost_ver_
+  do
+    boost_real_suffix=`echo "$boost_full_suffix" | sed 's/^x//'`
+    boost_lib="boost_$boost_lib_$boost_real_suffix"
+    # Avoid testing twice the same lib
+    case $boost_failed_libs in #(
+      (*@$boost_lib@*) continue;;
+    esac
+    # If with_boost is empty, we'll search in /lib first, which is not quite
+    # right so instead we'll try to a location based on where the headers are.
+    boost_tmp_lib=$with_boost
+    test x"$with_boost" = x && boost_tmp_lib=${boost_cv_inc_path%/include}
+    for boost_ldpath in "$boost_tmp_lib/lib" '' \
+             /opt/local/lib* /usr/local/lib* /opt/lib* /usr/lib* \
+             "$with_boost" C:/Boost/lib /lib*
+    do
+      # Don't waste time with directories that don't exist.
+      if test x"$boost_ldpath" != x && test ! -e "$boost_ldpath"; then
+        continue
+      fi
+      boost_save_LDFLAGS=$LDFLAGS
+      # Are we looking for a static library?
+      case $boost_ldpath:$boost_rtopt_ in #(
+        (*?*:*s*) # Yes (Non empty boost_ldpath + s in rt opt)
+          boost_cv_lib_addr2line_LIBS="$boost_ldpath/lib$boost_lib.$libext"
+          test -e "$boost_cv_lib_addr2line_LIBS" || continue;; #(
+        (*) # No: use -lboost_foo to find the shared library.
+          boost_cv_lib_addr2line_LIBS="-l$boost_lib";;
+      esac
+      boost_save_LIBS=$LIBS
+      LIBS="$boost_cv_lib_addr2line_LIBS $LIBS"
+      test x"$boost_ldpath" != x && LDFLAGS="$LDFLAGS -L$boost_ldpath"
+      rm -f conftest$ac_exeext
+boost_save_ac_ext=$ac_ext
+boost_use_source=:
+# If we already have a .o, re-use it.  We change $ac_ext so that $ac_link
+# tries to link the existing object file instead of compiling from source.
+test -f conftest.$ac_objext && ac_ext=$ac_objext && boost_use_source=false &&
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: re-using the existing conftest.$ac_objext" >&5
+if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+         test -z "$ac_cxx_werror_flag" ||
+         test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+         test "$cross_compiling" = yes ||
+         $as_executable_p conftest$ac_exeext
+       }
+then :
+  boost_cv_lib_addr2line=yes
+else case e in #(
+  e) if $boost_use_source; then
+         printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+       fi
+       boost_cv_lib_addr2line=no ;;
+esac
+fi
+ac_objext=$boost_save_ac_objext
+ac_ext=$boost_save_ac_ext
+rm -f core conftest.err conftest_ipa8_conftest.oo \
+      conftest$ac_exeext
+      ac_objext=$boost_save_ac_objext
+      LDFLAGS=$boost_save_LDFLAGS
+      LIBS=$boost_save_LIBS
+      if test x"$boost_cv_lib_addr2line" = xyes; then
+        # Check or used cached result of whether or not using -R or
+        # -rpath makes sense.  Some implementations of ld, such as for
+        # Mac OSX, require -rpath but -R is the flag known to work on
+        # other systems.  https://github.com/tsuna/boost.m4/issues/19
+        if test ${boost_cv_rpath_link_ldflag+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $boost_ldpath in
+           '') # Nothing to do.
+             boost_cv_rpath_link_ldflag=
+             boost_rpath_link_ldflag_found=yes;;
+           *)
+            for boost_cv_rpath_link_ldflag in -Wl,-R, -Wl,-rpath,; do
+              LDFLAGS="$boost_save_LDFLAGS -L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+              LIBS="$boost_cv_lib_addr2line_LIBS $boost_save_LIBS"
+              rm -f conftest$ac_exeext
+boost_save_ac_ext=$ac_ext
+boost_use_source=:
+# If we already have a .o, re-use it.  We change $ac_ext so that $ac_link
+# tries to link the existing object file instead of compiling from source.
+test -f conftest.$ac_objext && ac_ext=$ac_objext && boost_use_source=false &&
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: re-using the existing conftest.$ac_objext" >&5
+if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+         test -z "$ac_cxx_werror_flag" ||
+         test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+         test "$cross_compiling" = yes ||
+         $as_executable_p conftest$ac_exeext
+       }
+then :
+  boost_rpath_link_ldflag_found=yes
+                break
+else case e in #(
+  e) if $boost_use_source; then
+         printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+       fi
+       boost_rpath_link_ldflag_found=no ;;
+esac
+fi
+ac_objext=$boost_save_ac_objext
+ac_ext=$boost_save_ac_ext
+rm -f core conftest.err conftest_ipa8_conftest.oo \
+      conftest$ac_exeext
+            done
+            ;;
+          esac
+          if test "x$boost_rpath_link_ldflag_found" != "xyes"
+then :
+  as_fn_error $? "Unable to determine whether to use -R or -rpath" "$LINENO" 5
+fi
+          LDFLAGS=$boost_save_LDFLAGS
+          LIBS=$boost_save_LIBS
+           ;;
+esac
+fi
+
+        test x"$boost_ldpath" != x &&
+          boost_cv_lib_addr2line_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+        boost_cv_lib_addr2line_LDPATH="$boost_ldpath"
+        boost_last_suffix="$boost_full_suffix"
+        break 7
+      else
+        boost_failed_libs="$boost_failed_libs@$boost_lib@"
+      fi
+    done
+  done
+done
+done
+done
+done
+done # boost_lib_
+rm -f conftest.$ac_objext
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_addr2line" >&5
+printf "%s\n" "$boost_cv_lib_addr2line" >&6; }
+case $boost_cv_lib_addr2line in #(
+  (yes) printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+printf "%s\n" "#define HAVE_BOOST_ADDR2LINE 1" >>confdefs.h
+    BOOST_ADDR2LINE_LDFLAGS=$boost_cv_lib_addr2line_LDFLAGS
+    BOOST_ADDR2LINE_LDPATH=$boost_cv_lib_addr2line_LDPATH
+    BOOST_LDPATH=$boost_cv_lib_addr2line_LDPATH
+    BOOST_ADDR2LINE_LIBS=$boost_cv_lib_addr2line_LIBS
+    ;;
+  (no) printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+    if test x"yes
+  " != "xno"
+then :
+
+      as_fn_error $? "cannot find flags to link with the Boost addr2line library (libboost-addr2line)" "$LINENO" 5
+
+fi
+    ;;
+esac
+CPPFLAGS=$boost_save_CPPFLAGS
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+fi
+
+
+  LIBS="$ax_gyoto_stacktrace_save_LIBS"
+
+  GYOTO_STACKTRACE_LIBS=$BOOST_ADDR2LINE_LDFLAGS
+     $BOOST_ADDR2LINE_LIBS
+
+
+
+
+
+fi
+
+   ;; #(
+  *) :
+     ;;
+esac
+
+
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for final Boost.Stacktrace backend" >&5
+printf %s "checking for final Boost.Stacktrace backend... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $gyoto_stacktrace_backend" >&5
+printf "%s\n" "$gyoto_stacktrace_backend" >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Boost.Stacktrace libs" >&5
+printf %s "checking for Boost.Stacktrace libs... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $GYOTO_STACKTRACE_LIBS" >&5
+printf "%s\n" "$GYOTO_STACKTRACE_LIBS" >&6; }
+
+
+############### CHECK FOR OPTIONAL FEATURES #########################
+
+
+# Check whether --with-mpi was given.
+if test ${with_mpi+y}
+then :
+  withval=$with_mpi;
+else case e in #(
+  e) with_mpi=auto ;;
+esac
+fi
+
+
+# If --with-mpi=auto is used, try to find MPI, but use standard C compiler if it is not found.
+# If --with-mpi=yes is used, try to find MPI and fail if it isn't found.
+# If --with-mpi=no is used, use a standard C compiler instead.
+
+have_mpi=no
+for ac_prog in mpic++ mpicxx
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_MPICXX+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$MPICXX"; then
+  ac_cv_prog_MPICXX="$MPICXX" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_MPICXX="$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+MPICXX=$ac_cv_prog_MPICXX
+if test -n "$MPICXX"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $MPICXX" >&5
+printf "%s\n" "$MPICXX" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  test -n "$MPICXX" && break
+done
 
 if test "x$MPICXX" != x && test "x$with_mpi" != xno
 then :

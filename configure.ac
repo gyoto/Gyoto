@@ -233,6 +233,8 @@ BOOST_FIND_HEADER([boost/numeric/odeint/stepper/controlled_step_result.hpp],
 BOOST_FIND_HEADER([boost/math/special_functions/ellint_1.hpp],
         [AC_MSG_ERROR([Boost.Math/SpecialFunctions not found])], [])
 
+GYOTO_CHECK_BOOST_STACKTRACE
+
 ############### CHECK FOR OPTIONAL FEATURES #########################
 
 AC_ARG_WITH([mpi], [AS_HELP_STRING([--with-mpi],

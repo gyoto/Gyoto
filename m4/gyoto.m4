@@ -163,3 +163,249 @@ AC_SUBST(translit([$1], [a-z], [A-Z])[_CFLAGS])
 
 
 ])
+
+# GYOTO_BOOST_STACKTRACE_FIND_LIB([backend], [extra libs])
+#
+# Find the Boost.Stacktrace library for the given backend and add the
+# resulting linker flags to GYOTO_STACKTRACE_LIBS.
+#
+# [backend] is one of:
+#   backtrace
+#   basic
+#   addr2line
+#
+# [extra libs] are libraries required by the backend, e.g. -lbacktrace.
+
+AC_DEFUN([GYOTO_BOOST_STACKTRACE_FIND_LIB], [
+  ax_gyoto_stacktrace_save_LIBS="$LIBS"
+  LIBS="$2 $LIBS"
+
+  BOOST_FIND_LIBS(
+    [$1],
+    [$1],
+    [],
+    [boost/stacktrace.hpp],
+    [boost::stacktrace::stacktrace()],
+    [],
+    [],
+    [yes]
+  )
+
+  LIBS="$ax_gyoto_stacktrace_save_LIBS"
+
+  AS_VAR_SET(
+    [GYOTO_STACKTRACE_LIBS],
+    [AS_VAR_GET([AS_TR_CPP([BOOST_$1_LDFLAGS])])
+     AS_VAR_GET([AS_TR_CPP([BOOST_$1_LIBS])]) $2]
+  )
+])
+
+# GYOTO_CHECK_BOOST_STACKTRACE
+# No-arg macro for checking the Boost.Stacktrace configuration
+AC_DEFUN([GYOTO_CHECK_BOOST_STACKTRACE], [
+
+  BOOST_FIND_HEADER([boost/stacktrace.hpp],
+        [AC_MSG_ERROR([Boost.Stacktrace not found])], [])
+
+  AC_MSG_CHECKING([which Boost.Stacktrace backend should be used])
+
+  AC_ARG_WITH(
+    [boost-stacktrace-backend],
+    [AS_HELP_STRING(
+      [--with-boost-stacktrace-backend=BACKEND],
+      [Boost.Stacktrace backend: auto, backtrace, basic, or addr2line
+       @<:@default=auto@:>@]
+    )],
+    [gyoto_stacktrace_backend="$withval"],
+    [gyoto_stacktrace_backend=auto]
+  )
+
+  AS_CASE(
+    [$gyoto_stacktrace_backend],
+
+    [auto|backtrace|basic|addr2line], [],
+
+    [AC_MSG_ERROR(
+      [invalid Boost.Stacktrace backend: $gyoto_stacktrace_backend
+       (expected auto, backtrace, basic, or addr2line)]
+    )]
+  )
+
+  AC_MSG_RESULT([$gyoto_stacktrace_backend])
+
+  AC_MSG_CHECKING([how to link Boost.Stacktrace])
+
+  AC_ARG_WITH(
+    [boost-stacktrace-link],
+    [AS_HELP_STRING(
+      [--with-boost-stacktrace-link=MODE],
+      [Boost.Stacktrace linking mode: linked or header-only
+       @<:@default=linked@:>@]
+    )],
+    [gyoto_stacktrace_link="$withval"],
+    [gyoto_stacktrace_link=header-only]
+  )
+
+  GYOTO_STACKTRACE_LIBS=
+
+  AS_CASE(
+    [$gyoto_stacktrace_link],
+
+    [linked], [],
+
+    [header-only], [],
+
+    [AC_MSG_ERROR(
+      [invalid Boost.Stacktrace linking mode: $gyoto_stacktrace_link
+       (expected linked or header-only)]
+    )]
+  )
+
+  AC_MSG_RESULT([$gyoto_stacktrace_link])
+
+  AS_IF(
+    [test "x$gyoto_stacktrace_backend" = xauto ||
+     test "x$gyoto_stacktrace_backend" = xbacktrace],
+    [
+      AC_CHECK_HEADERS(
+        [backtrace.h],
+        [have_backtrace_h=yes],
+        [have_backtrace_h=no]
+      )
+
+      have_libbacktrace=no
+      AS_IF(
+        [test "x$have_backtrace_h" = xyes],
+        [
+          ax_gyoto_stacktrace_save_LIBS="$LIBS"
+          AC_CHECK_LIB(
+            [backtrace],
+            [backtrace_create_state],
+            [have_libbacktrace=yes],
+            [have_libbacktrace=no]
+          )
+          LIBS="$ax_gyoto_stacktrace_save_LIBS"
+        ]
+      )
+
+      AS_IF(
+        [test "x$gyoto_stacktrace_backend" = xbacktrace &&
+         test "x$have_libbacktrace" != xyes],
+        [
+          AC_MSG_ERROR(
+            [Boost.Stacktrace backtrace backend requested,
+             but libbacktrace could not be found]
+          )
+        ]
+      )
+    ]
+  )
+
+  AS_IF(
+    [test "x$gyoto_stacktrace_backend" = xauto],
+    [
+      AS_IF(
+        [test "x$have_libbacktrace" = xyes],
+        [gyoto_stacktrace_backend=backtrace],
+        [gyoto_stacktrace_backend=basic]
+      )
+    ]
+  )
+
+  AS_IF(
+    [test "x$gyoto_stacktrace_backend" = xauto ||
+     test "x$gyoto_stacktrace_backend" = xaddr2line],
+    [
+      AC_ARG_VAR([ADDR2LINE], [absolute path to the addr2line executable])
+      AC_PATH_PROG([ADDR2LINE], [addr2line], [notfound])
+      AS_IF(
+        [test "x$ADDR2LINE" = xnotfound],
+	[
+	 AC_MSG_ERROR(
+            [Boost.Stacktrace addr2line backend requested,
+             but program addr2line could not be found]
+          )
+        ]
+      )
+      AS_IF(
+        [test "x$ADDR2LINE" != x/usr/bin/addr2line],
+	[
+	 AC_DEFINE_UNQUOTED(
+           [BOOST_STACKTRACE_ADDR2LINE_LOCATION],
+	   ["$ADDR2LINE"],
+           [Absolute path to the addr2line executable
+	    if the Boost.Stacktrace backend is addr2line])
+        ]
+      )
+
+     ]
+  )
+
+  AS_CASE(
+    [$gyoto_stacktrace_backend],
+
+    [backtrace],
+    [
+      AC_DEFINE(
+        [BOOST_STACKTRACE_USE_BACKTRACE],
+        [1],
+        [Use Boost.Stacktrace backtrace backend]
+      )
+
+      AS_IF(
+        [test "x$gyoto_stacktrace_link" = xlinked],
+        [
+          GYOTO_BOOST_STACKTRACE_FIND_LIB(
+            [backtrace],
+            [-lbacktrace]
+          )
+        ],
+        [
+          GYOTO_STACKTRACE_LIBS="-lbacktrace"
+        ]
+      )
+    ],
+
+    [basic],
+    [
+      dnl The basic backend is the default POSIX backend of Boost.Stacktrace.
+      dnl Therefore no BOOST_STACKTRACE_USE_BASIC is necessary.
+
+      AS_IF(
+        [test "x$gyoto_stacktrace_link" = xlinked],
+        [
+          GYOTO_BOOST_STACKTRACE_FIND_LIB(
+            [basic],
+            []
+          )
+        ]
+      )
+    ],
+
+    [addr2line],
+    [
+      AC_DEFINE(
+        [BOOST_STACKTRACE_USE_ADDR2LINE],
+        [1],
+        [Use Boost.Stacktrace addr2line backend]
+      )
+
+      AS_IF(
+        [test "x$gyoto_stacktrace_link" = xlinked],
+        [
+          GYOTO_BOOST_STACKTRACE_FIND_LIB(
+            [addr2line],
+            []
+          )
+        ]
+      )
+    ]
+  )
+
+  AC_SUBST([GYOTO_STACKTRACE_LIBS])
+
+  AC_MSG_CHECKING([for final Boost.Stacktrace backend])
+  AC_MSG_RESULT([$gyoto_stacktrace_backend])
+  AC_MSG_CHECKING([for Boost.Stacktrace libs])
+  AC_MSG_RESULT([$GYOTO_STACKTRACE_LIBS])
+])

@@ -58,10 +58,10 @@
  * \brief Namespace for the Gyoto library
  */
 
+#include "GyotoDefs.h"
+
 #include <string>
 #include <boost/stacktrace.hpp>
-
-#include "GyotoDefs.h"
 
 namespace Gyoto {
   class Error;
