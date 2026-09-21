@@ -4,6 +4,9 @@
    is addr2line */
 #undef BOOST_STACKTRACE_ADDR2LINE_LOCATION
 
+/* Whether Boost.Stacktrace should be linked */
+#undef BOOST_STACKTRACE_LINK
+
 /* Use Boost.Stacktrace addr2line backend */
 #undef BOOST_STACKTRACE_USE_ADDR2LINE
 
@@ -49,17 +52,8 @@
 /* Defined if the requested minimum BOOST version is satisfied */
 #undef HAVE_BOOST
 
-/* Defined if the Boost addr2line library is available */
-#undef HAVE_BOOST_ADDR2LINE
-
 /* Define to 1 if you have <boost/array.hpp> */
 #undef HAVE_BOOST_ARRAY_HPP
-
-/* Defined if the Boost backtrace library is available */
-#undef HAVE_BOOST_BACKTRACE
-
-/* Defined if the Boost basic library is available */
-#undef HAVE_BOOST_BASIC
 
 /* Define to 1 if you have <boost/math/special_functions/ellint_1.hpp> */
 #undef HAVE_BOOST_MATH_SPECIAL_FUNCTIONS_ELLINT_1_HPP
@@ -82,6 +76,15 @@
 
 /* Define to 1 if you have <boost/serialization/base_object.hpp> */
 #undef HAVE_BOOST_SERIALIZATION_BASE_OBJECT_HPP
+
+/* Defined if the Boost stacktrace_addr2line library is available */
+#undef HAVE_BOOST_STACKTRACE_ADDR2LINE
+
+/* Defined if the Boost stacktrace_backtrace library is available */
+#undef HAVE_BOOST_STACKTRACE_BACKTRACE
+
+/* Defined if the Boost stacktrace_basic library is available */
+#undef HAVE_BOOST_STACKTRACE_BASIC
 
 /* Define to 1 if you have <boost/stacktrace.hpp> */
 #undef HAVE_BOOST_STACKTRACE_HPP

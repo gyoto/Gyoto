@@ -65,6 +65,19 @@
 # endif
 #endif
 
+/** \def BOOST_STACKTRACE_LINK
+ *  \brief Whether Boost.Stacktrace should be linked
+ *
+ *  Else it is header-only.
+ *
+ */
+#undef BOOST_STACKTRACE_LINK
+#ifdef DOXYGEN_RUN
+# ifndef BOOST_STACKTRACE_LINK
+#  define BOOST_STACKTRACE_LINK (undefined)
+# endif
+#endif
+
 /** \def BOOST_STACKTRACE_USE_ADDR2LINE
  *  \brief Whether Boost.Stacktrace should use addr2line
  *

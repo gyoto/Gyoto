@@ -740,16 +740,16 @@ BOOST_MPI_LDPATH
 BOOST_MPI_LDFLAGS
 MPICXX
 GYOTO_STACKTRACE_LIBS
-BOOST_ADDR2LINE_LIBS
-BOOST_ADDR2LINE_LDPATH
-BOOST_ADDR2LINE_LDFLAGS
-BOOST_BASIC_LIBS
-BOOST_BASIC_LDPATH
-BOOST_BASIC_LDFLAGS
-BOOST_BACKTRACE_LIBS
+BOOST_STACKTRACE_ADDR2LINE_LIBS
+BOOST_STACKTRACE_ADDR2LINE_LDPATH
+BOOST_STACKTRACE_ADDR2LINE_LDFLAGS
+BOOST_STACKTRACE_BASIC_LIBS
+BOOST_STACKTRACE_BASIC_LDPATH
+BOOST_STACKTRACE_BASIC_LDFLAGS
+BOOST_STACKTRACE_BACKTRACE_LIBS
 BOOST_LDPATH
-BOOST_BACKTRACE_LDPATH
-BOOST_BACKTRACE_LDFLAGS
+BOOST_STACKTRACE_BACKTRACE_LDPATH
+BOOST_STACKTRACE_BACKTRACE_LDFLAGS
 ADDR2LINE
 BOOST_CPPFLAGS
 DISTCHECK_CONFIGURE_FLAGS
@@ -22030,6 +22030,9 @@ printf %s "checking how to link Boost.Stacktrace... " >&6; }
 if test ${with_boost_stacktrace_link+y}
 then :
   withval=$with_boost_stacktrace_link; gyoto_stacktrace_link="$withval"
+
+printf "%s\n" "#define BOOST_STACKTRACE_LINK 1" >>confdefs.h
+
 else case e in #(
   e) gyoto_stacktrace_link=header-only
    ;;
@@ -22248,8 +22251,8 @@ then :
            $LIBS"
 
   if test x"$boost_cv_inc_path" = xno; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for the Boost backtrace library" >&5
-printf "%s\n" "$as_me: Boost not available, not searching for the Boost backtrace library" >&6;}
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for the Boost stacktrace_backtrace library" >&5
+printf "%s\n" "$as_me: Boost not available, not searching for the Boost stacktrace_backtrace library" >&6;}
 else
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -22292,13 +22295,13 @@ fi
 
 boost_save_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the Boost backtrace library" >&5
-printf %s "checking for the Boost backtrace library... " >&6; }
-if test ${boost_cv_lib_backtrace+y}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the Boost stacktrace_backtrace library" >&5
+printf %s "checking for the Boost stacktrace_backtrace library... " >&6; }
+if test ${boost_cv_lib_stacktrace_backtrace+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) boost_cv_lib_backtrace=no
+  e) boost_cv_lib_stacktrace_backtrace=no
   case "" in #(
     (mt | mt-) boost_mt=-mt; boost_rtopt=;; #(
     (mt* | mt-*) boost_mt=-mt; boost_rtopt=`expr "X" : 'Xmt-*\(.*\)'`;; #(
@@ -22344,7 +22347,7 @@ else case e in #(
   " != x"no"
 then :
 
-       as_fn_error $? "cannot compile a test that uses Boost backtrace" "$LINENO" 5
+       as_fn_error $? "cannot compile a test that uses Boost stacktrace_backtrace" "$LINENO" 5
 
 fi
      ;;
@@ -22355,7 +22358,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam
   boost_failed_libs=
 # Don't bother to ident the following nested for loops, only the 2
 # innermost ones matter.
-for boost_lib_ in backtrace; do
+for boost_lib_ in stacktrace_backtrace; do
 for boost_tag_ in -$boost_cv_lib_tag ''; do
 for boost_ver_ in -$boost_cv_lib_version ''; do
 for boost_mt_ in $boost_mt -mt ''; do
@@ -22389,13 +22392,13 @@ for boost_rtopt_ in $boost_rtopt '' -d; do
       # Are we looking for a static library?
       case $boost_ldpath:$boost_rtopt_ in #(
         (*?*:*s*) # Yes (Non empty boost_ldpath + s in rt opt)
-          boost_cv_lib_backtrace_LIBS="$boost_ldpath/lib$boost_lib.$libext"
-          test -e "$boost_cv_lib_backtrace_LIBS" || continue;; #(
+          boost_cv_lib_stacktrace_backtrace_LIBS="$boost_ldpath/lib$boost_lib.$libext"
+          test -e "$boost_cv_lib_stacktrace_backtrace_LIBS" || continue;; #(
         (*) # No: use -lboost_foo to find the shared library.
-          boost_cv_lib_backtrace_LIBS="-l$boost_lib";;
+          boost_cv_lib_stacktrace_backtrace_LIBS="-l$boost_lib";;
       esac
       boost_save_LIBS=$LIBS
-      LIBS="$boost_cv_lib_backtrace_LIBS $LIBS"
+      LIBS="$boost_cv_lib_stacktrace_backtrace_LIBS $LIBS"
       test x"$boost_ldpath" != x && LDFLAGS="$LDFLAGS -L$boost_ldpath"
       rm -f conftest$ac_exeext
 boost_save_ac_ext=$ac_ext
@@ -22427,14 +22430,14 @@ printf "%s\n" "$ac_try_echo"; } >&5
          $as_executable_p conftest$ac_exeext
        }
 then :
-  boost_cv_lib_backtrace=yes
+  boost_cv_lib_stacktrace_backtrace=yes
 else case e in #(
   e) if $boost_use_source; then
          printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
        fi
-       boost_cv_lib_backtrace=no ;;
+       boost_cv_lib_stacktrace_backtrace=no ;;
 esac
 fi
 ac_objext=$boost_save_ac_objext
@@ -22444,7 +22447,7 @@ rm -f core conftest.err conftest_ipa8_conftest.oo \
       ac_objext=$boost_save_ac_objext
       LDFLAGS=$boost_save_LDFLAGS
       LIBS=$boost_save_LIBS
-      if test x"$boost_cv_lib_backtrace" = xyes; then
+      if test x"$boost_cv_lib_stacktrace_backtrace" = xyes; then
         # Check or used cached result of whether or not using -R or
         # -rpath makes sense.  Some implementations of ld, such as for
         # Mac OSX, require -rpath but -R is the flag known to work on
@@ -22460,7 +22463,7 @@ else case e in #(
            *)
             for boost_cv_rpath_link_ldflag in -Wl,-R, -Wl,-rpath,; do
               LDFLAGS="$boost_save_LDFLAGS -L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
-              LIBS="$boost_cv_lib_backtrace_LIBS $boost_save_LIBS"
+              LIBS="$boost_cv_lib_stacktrace_backtrace_LIBS $boost_save_LIBS"
               rm -f conftest$ac_exeext
 boost_save_ac_ext=$ac_ext
 boost_use_source=:
@@ -22520,8 +22523,8 @@ esac
 fi
 
         test x"$boost_ldpath" != x &&
-          boost_cv_lib_backtrace_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
-        boost_cv_lib_backtrace_LDPATH="$boost_ldpath"
+          boost_cv_lib_stacktrace_backtrace_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+        boost_cv_lib_stacktrace_backtrace_LDPATH="$boost_ldpath"
         boost_last_suffix="$boost_full_suffix"
         break 7
       else
@@ -22538,18 +22541,18 @@ rm -f conftest.$ac_objext
  ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_backtrace" >&5
-printf "%s\n" "$boost_cv_lib_backtrace" >&6; }
-case $boost_cv_lib_backtrace in #(
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_stacktrace_backtrace" >&5
+printf "%s\n" "$boost_cv_lib_stacktrace_backtrace" >&6; }
+case $boost_cv_lib_stacktrace_backtrace in #(
   (yes) printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 
-printf "%s\n" "#define HAVE_BOOST_BACKTRACE 1" >>confdefs.h
-    BOOST_BACKTRACE_LDFLAGS=$boost_cv_lib_backtrace_LDFLAGS
-    BOOST_BACKTRACE_LDPATH=$boost_cv_lib_backtrace_LDPATH
-    BOOST_LDPATH=$boost_cv_lib_backtrace_LDPATH
-    BOOST_BACKTRACE_LIBS=$boost_cv_lib_backtrace_LIBS
+printf "%s\n" "#define HAVE_BOOST_STACKTRACE_BACKTRACE 1" >>confdefs.h
+    BOOST_STACKTRACE_BACKTRACE_LDFLAGS=$boost_cv_lib_stacktrace_backtrace_LDFLAGS
+    BOOST_STACKTRACE_BACKTRACE_LDPATH=$boost_cv_lib_stacktrace_backtrace_LDPATH
+    BOOST_LDPATH=$boost_cv_lib_stacktrace_backtrace_LDPATH
+    BOOST_STACKTRACE_BACKTRACE_LIBS=$boost_cv_lib_stacktrace_backtrace_LIBS
     ;;
   (no) printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
@@ -22558,7 +22561,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
   " != "xno"
 then :
 
-      as_fn_error $? "cannot find flags to link with the Boost backtrace library (libboost-backtrace)" "$LINENO" 5
+      as_fn_error $? "cannot find flags to link with the Boost stacktrace_backtrace library (libboost-stacktrace_backtrace)" "$LINENO" 5
 
 fi
     ;;
@@ -22574,11 +22577,12 @@ fi
 
   LIBS="$ax_gyoto_stacktrace_save_LIBS"
 
-  GYOTO_STACKTRACE_LIBS=$BOOST_BACKTRACE_LDFLAGS
-     $BOOST_BACKTRACE_LIBS -lbacktrace
+  GYOTO_STACKTRACE_LIBS=$BOOST_STACKTRACE_BACKTRACE_LDFLAGS
+     $BOOST_STACKTRACE_BACKTRACE_LIBS -lbacktrace
 
 
 
+	  GYOTO_STACKTRACE_LIBS="$BOOST_STACKTRACE_BACKTRACE_LDFLAGS $BOOST_STACKTRACE_BACKTRACE_LIBS -lbacktrace"
 
 else case e in #(
   e)
@@ -22600,8 +22604,8 @@ then :
            $LIBS"
 
   if test x"$boost_cv_inc_path" = xno; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for the Boost basic library" >&5
-printf "%s\n" "$as_me: Boost not available, not searching for the Boost basic library" >&6;}
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for the Boost stacktrace_basic library" >&5
+printf "%s\n" "$as_me: Boost not available, not searching for the Boost stacktrace_basic library" >&6;}
 else
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -22644,13 +22648,13 @@ fi
 
 boost_save_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the Boost basic library" >&5
-printf %s "checking for the Boost basic library... " >&6; }
-if test ${boost_cv_lib_basic+y}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the Boost stacktrace_basic library" >&5
+printf %s "checking for the Boost stacktrace_basic library... " >&6; }
+if test ${boost_cv_lib_stacktrace_basic+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) boost_cv_lib_basic=no
+  e) boost_cv_lib_stacktrace_basic=no
   case "" in #(
     (mt | mt-) boost_mt=-mt; boost_rtopt=;; #(
     (mt* | mt-*) boost_mt=-mt; boost_rtopt=`expr "X" : 'Xmt-*\(.*\)'`;; #(
@@ -22696,7 +22700,7 @@ else case e in #(
   " != x"no"
 then :
 
-       as_fn_error $? "cannot compile a test that uses Boost basic" "$LINENO" 5
+       as_fn_error $? "cannot compile a test that uses Boost stacktrace_basic" "$LINENO" 5
 
 fi
      ;;
@@ -22707,7 +22711,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam
   boost_failed_libs=
 # Don't bother to ident the following nested for loops, only the 2
 # innermost ones matter.
-for boost_lib_ in basic; do
+for boost_lib_ in stacktrace_basic; do
 for boost_tag_ in -$boost_cv_lib_tag ''; do
 for boost_ver_ in -$boost_cv_lib_version ''; do
 for boost_mt_ in $boost_mt -mt ''; do
@@ -22741,13 +22745,13 @@ for boost_rtopt_ in $boost_rtopt '' -d; do
       # Are we looking for a static library?
       case $boost_ldpath:$boost_rtopt_ in #(
         (*?*:*s*) # Yes (Non empty boost_ldpath + s in rt opt)
-          boost_cv_lib_basic_LIBS="$boost_ldpath/lib$boost_lib.$libext"
-          test -e "$boost_cv_lib_basic_LIBS" || continue;; #(
+          boost_cv_lib_stacktrace_basic_LIBS="$boost_ldpath/lib$boost_lib.$libext"
+          test -e "$boost_cv_lib_stacktrace_basic_LIBS" || continue;; #(
         (*) # No: use -lboost_foo to find the shared library.
-          boost_cv_lib_basic_LIBS="-l$boost_lib";;
+          boost_cv_lib_stacktrace_basic_LIBS="-l$boost_lib";;
       esac
       boost_save_LIBS=$LIBS
-      LIBS="$boost_cv_lib_basic_LIBS $LIBS"
+      LIBS="$boost_cv_lib_stacktrace_basic_LIBS $LIBS"
       test x"$boost_ldpath" != x && LDFLAGS="$LDFLAGS -L$boost_ldpath"
       rm -f conftest$ac_exeext
 boost_save_ac_ext=$ac_ext
@@ -22779,14 +22783,14 @@ printf "%s\n" "$ac_try_echo"; } >&5
          $as_executable_p conftest$ac_exeext
        }
 then :
-  boost_cv_lib_basic=yes
+  boost_cv_lib_stacktrace_basic=yes
 else case e in #(
   e) if $boost_use_source; then
          printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
        fi
-       boost_cv_lib_basic=no ;;
+       boost_cv_lib_stacktrace_basic=no ;;
 esac
 fi
 ac_objext=$boost_save_ac_objext
@@ -22796,7 +22800,7 @@ rm -f core conftest.err conftest_ipa8_conftest.oo \
       ac_objext=$boost_save_ac_objext
       LDFLAGS=$boost_save_LDFLAGS
       LIBS=$boost_save_LIBS
-      if test x"$boost_cv_lib_basic" = xyes; then
+      if test x"$boost_cv_lib_stacktrace_basic" = xyes; then
         # Check or used cached result of whether or not using -R or
         # -rpath makes sense.  Some implementations of ld, such as for
         # Mac OSX, require -rpath but -R is the flag known to work on
@@ -22812,7 +22816,7 @@ else case e in #(
            *)
             for boost_cv_rpath_link_ldflag in -Wl,-R, -Wl,-rpath,; do
               LDFLAGS="$boost_save_LDFLAGS -L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
-              LIBS="$boost_cv_lib_basic_LIBS $boost_save_LIBS"
+              LIBS="$boost_cv_lib_stacktrace_basic_LIBS $boost_save_LIBS"
               rm -f conftest$ac_exeext
 boost_save_ac_ext=$ac_ext
 boost_use_source=:
@@ -22872,8 +22876,8 @@ esac
 fi
 
         test x"$boost_ldpath" != x &&
-          boost_cv_lib_basic_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
-        boost_cv_lib_basic_LDPATH="$boost_ldpath"
+          boost_cv_lib_stacktrace_basic_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+        boost_cv_lib_stacktrace_basic_LDPATH="$boost_ldpath"
         boost_last_suffix="$boost_full_suffix"
         break 7
       else
@@ -22890,18 +22894,18 @@ rm -f conftest.$ac_objext
  ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_basic" >&5
-printf "%s\n" "$boost_cv_lib_basic" >&6; }
-case $boost_cv_lib_basic in #(
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_stacktrace_basic" >&5
+printf "%s\n" "$boost_cv_lib_stacktrace_basic" >&6; }
+case $boost_cv_lib_stacktrace_basic in #(
   (yes) printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 
-printf "%s\n" "#define HAVE_BOOST_BASIC 1" >>confdefs.h
-    BOOST_BASIC_LDFLAGS=$boost_cv_lib_basic_LDFLAGS
-    BOOST_BASIC_LDPATH=$boost_cv_lib_basic_LDPATH
-    BOOST_LDPATH=$boost_cv_lib_basic_LDPATH
-    BOOST_BASIC_LIBS=$boost_cv_lib_basic_LIBS
+printf "%s\n" "#define HAVE_BOOST_STACKTRACE_BASIC 1" >>confdefs.h
+    BOOST_STACKTRACE_BASIC_LDFLAGS=$boost_cv_lib_stacktrace_basic_LDFLAGS
+    BOOST_STACKTRACE_BASIC_LDPATH=$boost_cv_lib_stacktrace_basic_LDPATH
+    BOOST_LDPATH=$boost_cv_lib_stacktrace_basic_LDPATH
+    BOOST_STACKTRACE_BASIC_LIBS=$boost_cv_lib_stacktrace_basic_LIBS
     ;;
   (no) printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
@@ -22910,7 +22914,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
   " != "xno"
 then :
 
-      as_fn_error $? "cannot find flags to link with the Boost basic library (libboost-basic)" "$LINENO" 5
+      as_fn_error $? "cannot find flags to link with the Boost stacktrace_basic library (libboost-stacktrace_basic)" "$LINENO" 5
 
 fi
     ;;
@@ -22926,11 +22930,12 @@ fi
 
   LIBS="$ax_gyoto_stacktrace_save_LIBS"
 
-  GYOTO_STACKTRACE_LIBS=$BOOST_BASIC_LDFLAGS
-     $BOOST_BASIC_LIBS
+  GYOTO_STACKTRACE_LIBS=$BOOST_STACKTRACE_BASIC_LDFLAGS
+     $BOOST_STACKTRACE_BASIC_LIBS
 
 
 
+	  GYOTO_STACKTRACE_LIBS="$BOOST_STACKTRACE_BASIC_LDFLAGS $BOOST_STACKTRACE_BASIC_LIBS"
 
 
 fi
@@ -22950,8 +22955,8 @@ then :
            $LIBS"
 
   if test x"$boost_cv_inc_path" = xno; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for the Boost addr2line library" >&5
-printf "%s\n" "$as_me: Boost not available, not searching for the Boost addr2line library" >&6;}
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Boost not available, not searching for the Boost stacktrace_addr2line library" >&5
+printf "%s\n" "$as_me: Boost not available, not searching for the Boost stacktrace_addr2line library" >&6;}
 else
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -22994,13 +22999,13 @@ fi
 
 boost_save_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the Boost addr2line library" >&5
-printf %s "checking for the Boost addr2line library... " >&6; }
-if test ${boost_cv_lib_addr2line+y}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the Boost stacktrace_addr2line library" >&5
+printf %s "checking for the Boost stacktrace_addr2line library... " >&6; }
+if test ${boost_cv_lib_stacktrace_addr2line+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) boost_cv_lib_addr2line=no
+  e) boost_cv_lib_stacktrace_addr2line=no
   case "" in #(
     (mt | mt-) boost_mt=-mt; boost_rtopt=;; #(
     (mt* | mt-*) boost_mt=-mt; boost_rtopt=`expr "X" : 'Xmt-*\(.*\)'`;; #(
@@ -23046,7 +23051,7 @@ else case e in #(
   " != x"no"
 then :
 
-       as_fn_error $? "cannot compile a test that uses Boost addr2line" "$LINENO" 5
+       as_fn_error $? "cannot compile a test that uses Boost stacktrace_addr2line" "$LINENO" 5
 
 fi
      ;;
@@ -23057,7 +23062,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam
   boost_failed_libs=
 # Don't bother to ident the following nested for loops, only the 2
 # innermost ones matter.
-for boost_lib_ in addr2line; do
+for boost_lib_ in stacktrace_addr2line; do
 for boost_tag_ in -$boost_cv_lib_tag ''; do
 for boost_ver_ in -$boost_cv_lib_version ''; do
 for boost_mt_ in $boost_mt -mt ''; do
@@ -23091,13 +23096,13 @@ for boost_rtopt_ in $boost_rtopt '' -d; do
       # Are we looking for a static library?
       case $boost_ldpath:$boost_rtopt_ in #(
         (*?*:*s*) # Yes (Non empty boost_ldpath + s in rt opt)
-          boost_cv_lib_addr2line_LIBS="$boost_ldpath/lib$boost_lib.$libext"
-          test -e "$boost_cv_lib_addr2line_LIBS" || continue;; #(
+          boost_cv_lib_stacktrace_addr2line_LIBS="$boost_ldpath/lib$boost_lib.$libext"
+          test -e "$boost_cv_lib_stacktrace_addr2line_LIBS" || continue;; #(
         (*) # No: use -lboost_foo to find the shared library.
-          boost_cv_lib_addr2line_LIBS="-l$boost_lib";;
+          boost_cv_lib_stacktrace_addr2line_LIBS="-l$boost_lib";;
       esac
       boost_save_LIBS=$LIBS
-      LIBS="$boost_cv_lib_addr2line_LIBS $LIBS"
+      LIBS="$boost_cv_lib_stacktrace_addr2line_LIBS $LIBS"
       test x"$boost_ldpath" != x && LDFLAGS="$LDFLAGS -L$boost_ldpath"
       rm -f conftest$ac_exeext
 boost_save_ac_ext=$ac_ext
@@ -23129,14 +23134,14 @@ printf "%s\n" "$ac_try_echo"; } >&5
          $as_executable_p conftest$ac_exeext
        }
 then :
-  boost_cv_lib_addr2line=yes
+  boost_cv_lib_stacktrace_addr2line=yes
 else case e in #(
   e) if $boost_use_source; then
          printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
        fi
-       boost_cv_lib_addr2line=no ;;
+       boost_cv_lib_stacktrace_addr2line=no ;;
 esac
 fi
 ac_objext=$boost_save_ac_objext
@@ -23146,7 +23151,7 @@ rm -f core conftest.err conftest_ipa8_conftest.oo \
       ac_objext=$boost_save_ac_objext
       LDFLAGS=$boost_save_LDFLAGS
       LIBS=$boost_save_LIBS
-      if test x"$boost_cv_lib_addr2line" = xyes; then
+      if test x"$boost_cv_lib_stacktrace_addr2line" = xyes; then
         # Check or used cached result of whether or not using -R or
         # -rpath makes sense.  Some implementations of ld, such as for
         # Mac OSX, require -rpath but -R is the flag known to work on
@@ -23162,7 +23167,7 @@ else case e in #(
            *)
             for boost_cv_rpath_link_ldflag in -Wl,-R, -Wl,-rpath,; do
               LDFLAGS="$boost_save_LDFLAGS -L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
-              LIBS="$boost_cv_lib_addr2line_LIBS $boost_save_LIBS"
+              LIBS="$boost_cv_lib_stacktrace_addr2line_LIBS $boost_save_LIBS"
               rm -f conftest$ac_exeext
 boost_save_ac_ext=$ac_ext
 boost_use_source=:
@@ -23222,8 +23227,8 @@ esac
 fi
 
         test x"$boost_ldpath" != x &&
-          boost_cv_lib_addr2line_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
-        boost_cv_lib_addr2line_LDPATH="$boost_ldpath"
+          boost_cv_lib_stacktrace_addr2line_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+        boost_cv_lib_stacktrace_addr2line_LDPATH="$boost_ldpath"
         boost_last_suffix="$boost_full_suffix"
         break 7
       else
@@ -23240,18 +23245,18 @@ rm -f conftest.$ac_objext
  ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_addr2line" >&5
-printf "%s\n" "$boost_cv_lib_addr2line" >&6; }
-case $boost_cv_lib_addr2line in #(
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $boost_cv_lib_stacktrace_addr2line" >&5
+printf "%s\n" "$boost_cv_lib_stacktrace_addr2line" >&6; }
+case $boost_cv_lib_stacktrace_addr2line in #(
   (yes) printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 
-printf "%s\n" "#define HAVE_BOOST_ADDR2LINE 1" >>confdefs.h
-    BOOST_ADDR2LINE_LDFLAGS=$boost_cv_lib_addr2line_LDFLAGS
-    BOOST_ADDR2LINE_LDPATH=$boost_cv_lib_addr2line_LDPATH
-    BOOST_LDPATH=$boost_cv_lib_addr2line_LDPATH
-    BOOST_ADDR2LINE_LIBS=$boost_cv_lib_addr2line_LIBS
+printf "%s\n" "#define HAVE_BOOST_STACKTRACE_ADDR2LINE 1" >>confdefs.h
+    BOOST_STACKTRACE_ADDR2LINE_LDFLAGS=$boost_cv_lib_stacktrace_addr2line_LDFLAGS
+    BOOST_STACKTRACE_ADDR2LINE_LDPATH=$boost_cv_lib_stacktrace_addr2line_LDPATH
+    BOOST_LDPATH=$boost_cv_lib_stacktrace_addr2line_LDPATH
+    BOOST_STACKTRACE_ADDR2LINE_LIBS=$boost_cv_lib_stacktrace_addr2line_LIBS
     ;;
   (no) printf "%s\n" "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
@@ -23260,7 +23265,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
   " != "xno"
 then :
 
-      as_fn_error $? "cannot find flags to link with the Boost addr2line library (libboost-addr2line)" "$LINENO" 5
+      as_fn_error $? "cannot find flags to link with the Boost stacktrace_addr2line library (libboost-stacktrace_addr2line)" "$LINENO" 5
 
 fi
     ;;
@@ -23276,11 +23281,12 @@ fi
 
   LIBS="$ax_gyoto_stacktrace_save_LIBS"
 
-  GYOTO_STACKTRACE_LIBS=$BOOST_ADDR2LINE_LDFLAGS
-     $BOOST_ADDR2LINE_LIBS
+  GYOTO_STACKTRACE_LIBS=$BOOST_STACKTRACE_ADDR2LINE_LDFLAGS
+     $BOOST_STACKTRACE_ADDR2LINE_LIBS
 
 
 
+	  GYOTO_STACKTRACE_LIBS="$BOOST_STACKTRACE_ADDR2LINE_LDFLAGS $BOOST_STACKTRACE_ADDR2LINE_LIBS"
 
 
 fi

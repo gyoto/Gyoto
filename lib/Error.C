@@ -17,7 +17,7 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <GyotoError.h>
+#include "GyotoError.h"
 
 // GyotoConfig.h must be included before boost/stacktrace.hpp
 // It is included indirectly from GyotoError.h which include GyotoDefs.h
@@ -27,6 +27,9 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
+
+#include "GyotoUtils.h"
+
 using namespace Gyoto;
 using namespace std;
 
@@ -49,11 +52,11 @@ Error::Error(const std::string &m, size_t skip) :
 
   }
   #if BOOST_STACKTRACE_USE_BACKTRACE
-  GYOTO_DEBUG_THIS_EXPR(BOOST_STACKTRACE_USE_BACKTRACE);
+  GYOTO_DEBUG_EXPR(BOOST_STACKTRACE_USE_BACKTRACE);
   #elif BOOST_STACKTRACE_USE_ADDR2LINE
-  GYOTO_DEBUG_THIS_EXPR(BOOST_STACKTRACE_USE_ADDR2LINE);
+  GYOTO_DEBUG_EXPR(BOOST_STACKTRACE_USE_ADDR2LINE);
   #else
-  GYOTO_DEBUG_THIS << "Boost.stacktrace uses basic backend" << endl;
+  GYOTO_DEBUG << "Boost.stacktrace uses basic backend" << endl;
   #endif
   stacktrace += oss.str();
   fullmessage = stacktrace + "\n\n" GYOTO_ANSI_ERROR + message

@@ -242,7 +242,9 @@ AC_DEFUN([GYOTO_CHECK_BOOST_STACKTRACE], [
       [Boost.Stacktrace linking mode: linked or header-only
        @<:@default=linked@:>@]
     )],
-    [gyoto_stacktrace_link="$withval"],
+    [gyoto_stacktrace_link="$withval"
+     AC_DEFINE([BOOST_STACKTRACE_LINK], [1],
+       [Whether Boost.Stacktrace should be linked])],
     [gyoto_stacktrace_link=header-only]
   )
 
@@ -356,9 +358,10 @@ AC_DEFUN([GYOTO_CHECK_BOOST_STACKTRACE], [
         [test "x$gyoto_stacktrace_link" = xlinked],
         [
           GYOTO_BOOST_STACKTRACE_FIND_LIB(
-            [backtrace],
+            [stacktrace_backtrace],
             [-lbacktrace]
           )
+	  GYOTO_STACKTRACE_LIBS="$BOOST_STACKTRACE_BACKTRACE_LDFLAGS $BOOST_STACKTRACE_BACKTRACE_LIBS -lbacktrace"
         ],
         [
           GYOTO_STACKTRACE_LIBS="-lbacktrace"
@@ -375,9 +378,10 @@ AC_DEFUN([GYOTO_CHECK_BOOST_STACKTRACE], [
         [test "x$gyoto_stacktrace_link" = xlinked],
         [
           GYOTO_BOOST_STACKTRACE_FIND_LIB(
-            [basic],
+            [stacktrace_basic],
             []
           )
+	  GYOTO_STACKTRACE_LIBS="$BOOST_STACKTRACE_BASIC_LDFLAGS $BOOST_STACKTRACE_BASIC_LIBS"
         ]
       )
     ],
@@ -394,9 +398,10 @@ AC_DEFUN([GYOTO_CHECK_BOOST_STACKTRACE], [
         [test "x$gyoto_stacktrace_link" = xlinked],
         [
           GYOTO_BOOST_STACKTRACE_FIND_LIB(
-            [addr2line],
+            [stacktrace_addr2line],
             []
           )
+	  GYOTO_STACKTRACE_LIBS="$BOOST_STACKTRACE_ADDR2LINE_LDFLAGS $BOOST_STACKTRACE_ADDR2LINE_LIBS"
         ]
       )
     ]
