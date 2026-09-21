@@ -222,6 +222,10 @@
 /// \brief Format info message
 #define GYOTO_ANSI_INFO GYOTO_ANSI_RESET GYOTO_ANSI_FG_GREEN
 
+/// \brief Format "ERROR:" tag
+#define GYOTO_ANSI_ERROR_TAG					\
+  GYOTO_ANSI_RESET GYOTO_ANSI_BOLD GYOTO_ANSI_FG_BRIGHT_RED
+
 /// \brief Format "DEBUG:" tag
 #define GYOTO_ANSI_DEBUG_TAG					\
   GYOTO_ANSI_RESET GYOTO_ANSI_BOLD GYOTO_ANSI_FG_BRIGHT_BLUE
@@ -229,6 +233,10 @@
 /// \brief Format pretty function in debug message
 #define GYOTO_ANSI_DEBUG_PRETTY_FUNCTION	\
   GYOTO_ANSI_RESET GYOTO_ANSI_FG_BRIGHT_CYAN
+
+/// \brief Format debug message
+#define GYOTO_ANSI_ERROR			\
+  GYOTO_ANSI_RESET GYOTO_ANSI_BOLD GYOTO_ANSI_FG_RED
 
 /// \brief Format debug message
 #define GYOTO_ANSI_DEBUG			\

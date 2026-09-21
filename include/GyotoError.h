@@ -32,7 +32,7 @@
  *
  */
 /*
-    Copyright 2011, 2013 Thibaut Paumard
+    Copyright 2011, 2013, 2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -61,7 +61,6 @@
 #include "GyotoDefs.h"
 
 #include <string>
-#include <boost/stacktrace.hpp>
 
 namespace Gyoto {
   class Error;
@@ -117,7 +116,15 @@ class Gyoto::Error
  public:
 
   /// Constructor with an error message.
-  Error(const std::string &m, boost::stacktrace::stacktrace const &trace);
+  /**
+   * Initializes #message from the #msg and #stacktrace using
+   * boost::stacktrace, skipping #skip_frames frames (defaulting to 1,
+   * i.e. the Error constructor frame itself).
+   *
+   * \param[in] msg Error message
+   * \param[in] skip_frames Number of stack frames to skip
+   */
+  Error(const std::string &msg, size_t skip_frames=1);
 
   // Copy constructor
   Error( const Gyoto::Error &o);
@@ -199,7 +206,7 @@ namespace Gyoto {
   /**
    * Most code should use the GYOTO_ERROR macro instead
    */
-  void throwError(std::string const &, boost::stacktrace::stacktrace const &trace);
+  void throwError(std::string const &);
 }
 
 
@@ -209,8 +216,13 @@ namespace Gyoto {
  * Gyoto::throwError(std::string).
  */
 #define GYOTO_ERROR(msg)						\
-  Gyoto::throwError(std::string(__FILE__ ":" GYOTO_STRINGIFY(__LINE__) " in ") \
-		    + __PRETTY_FUNCTION__ + ": " + msg,			\
-		    boost::stacktrace::stacktrace())
+  Gyoto::throwError(std::string(GYOTO_ANSI_ERROR_TAG "ERROR: ") +	\
+  GYOTO_ANSI_RESET GYOTO_ANSI_FG_BRIGHT_RED + __FILE__ +		\
+  GYOTO_ANSI_RESET ": "       				       		\
+  GYOTO_ANSI_FG_YELLOW GYOTO_STRINGIFY(__LINE__)			\
+  GYOTO_ANSI_RESET " in "						\
+  GYOTO_ANSI_DEBUG_PRETTY_FUNCTION + __PRETTY_FUNCTION__ +		\
+  GYOTO_ANSI_RESET ": \n\n"						\
+  GYOTO_ANSI_ERROR + msg)
 
 #endif

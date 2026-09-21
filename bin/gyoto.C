@@ -200,7 +200,8 @@ static std::unordered_map<std::string, std::string> app_codes = {
 };
 
 void gyotoErrorHandler( const Gyoto::Error e ) {
-  cerr << curmsg << e << endl;
+  cerr << endl << GYOTO_ANSI_ERROR << curmsg
+       << endl << e << endl;
   if (debug()) abort(); // to keep stack for debugger
   exit (curretval);
 }

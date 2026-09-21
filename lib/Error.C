@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013 Thibaut Paumard
+    Copyright 2011, 2013, 2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -18,6 +18,11 @@
  */
 
 #include <GyotoError.h>
+
+// GyotoConfig.h must be included before boost/stacktrace.hpp
+// It is included indirectly from GyotoError.h which include GyotoDefs.h
+#include <boost/stacktrace.hpp>
+
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -25,23 +30,34 @@
 using namespace Gyoto;
 using namespace std;
 
-Error::Error( const std::string &m, boost::stacktrace::stacktrace const &st) :
+Error::Error(const std::string &m, size_t skip) :
   message(m),
   stacktrace(),
   errcode(EXIT_FAILURE) {
+  boost::stacktrace::stacktrace st = boost::stacktrace::stacktrace();
   std::ostringstream oss;
-  for (size_t i = 0; i < st.size(); ++i) {
+  oss << GYOTO_ANSI_ERROR_TAG << "Backtrace from error frame:"
+      << GYOTO_ANSI_RESET;
+  for (size_t i = skip; i < st.size(); ++i) {
     auto frame = st[i];
 
     oss << "\n";
-    oss << setw(std::to_string(st.size()-1).length()) << i << "# ";
-    oss << (i == 0 ? GYOTO_ANSI_BOLD GYOTO_ANSI_FG_RED : "")
+    oss << setw(std::to_string(st.size()-1-skip).length()) << i-skip << "# ";
+    oss << (i == skip ? GYOTO_ANSI_BOLD : "")
         << frame;
     oss << GYOTO_ANSI_RESET;
 
   }
+  #if BOOST_STACKTRACE_USE_BACKTRACE
+  GYOTO_DEBUG_THIS_EXPR(BOOST_STACKTRACE_USE_BACKTRACE);
+  #elif BOOST_STACKTRACE_USE_ADDR2LINE
+  GYOTO_DEBUG_THIS_EXPR(BOOST_STACKTRACE_USE_ADDR2LINE);
+  #else
+  GYOTO_DEBUG_THIS << "Boost.stacktrace uses basic backend" << endl;
+  #endif
   stacktrace += oss.str();
-  fullmessage = stacktrace + "\n\n" GYOTO_ANSI_BOLD GYOTO_ANSI_FG_RED + message;
+  fullmessage = stacktrace + "\n\n" GYOTO_ANSI_ERROR + message
+    + "\n\n" + GYOTO_ANSI_RESET;
 }
 
 Error::Error( const Gyoto::Error &o):
@@ -64,10 +80,10 @@ static Gyoto::Error::Handler_t * GyotoErrorHandler = NULL;
 void Gyoto::Error::setHandler( Gyoto::Error::Handler_t* handler )
 { GyotoErrorHandler = handler ; }
 
-void Gyoto::throwError(const std::string &m,
-		       boost::stacktrace::stacktrace const &trace) {
-  if (GyotoErrorHandler) (*GyotoErrorHandler)(Error(m, trace));
-  else throw Error(m, trace);
+void Gyoto::throwError(const std::string &m) {
+  Error e(m, 2); // skip 2 frames: throwError and Error::Error()
+  if (GyotoErrorHandler) (*GyotoErrorHandler)(e);
+  else throw e;
 }
 
 Gyoto::Error::operator const char * () const {
