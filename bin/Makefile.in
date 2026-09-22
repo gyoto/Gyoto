@@ -856,13 +856,15 @@ info: info-am
 info-am:
 
 install-data-am: install-man
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
 install-exec-am: install-binPROGRAMS
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 install-html: install-html-am
 
 install-html-am:
@@ -903,25 +905,28 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-man
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 uninstall-man: uninstall-man1
 
-.MAKE: install-am install-strip
+.MAKE: install-am install-data-am install-exec-am install-strip \
+	uninstall-am
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
 	clean-binPROGRAMS clean-generic clean-libtool clean-local \
 	cscopelist-am ctags ctags-am distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-man1 install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-man \
+	install-binPROGRAMS install-data install-data-am \
+	install-data-hook install-dvi install-dvi-am install-exec \
+	install-exec-am install-exec-hook install-html install-html-am \
+	install-info install-info-am install-man install-man1 \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-binPROGRAMS uninstall-hook uninstall-man \
 	uninstall-man1
 
 .PRECIOUS: Makefile
@@ -929,6 +934,21 @@ uninstall-man: uninstall-man1
 
 gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
 	cp $^ $@
+
+# create gyotoy symlink upon installation
+install-exec-hook:
+	cd $(DESTDIR)$(bindir) && \
+	  $(LN_S) -f gyoto$(EXEEXT) gyotoy$(EXEEXT)
+
+# create gyotoy.1 symlink upon installation
+install-data-hook:
+	cd $(DESTDIR)$(man1dir) && \
+	  $(LN_S) -f gyoto.1 gyotoy.1
+
+# remove symlinks on uninstallation
+uninstall-hook:
+	-rm -f $(DESTDIR)$(bindir)/gyotoy$(EXEEXT)
+	-rm -f $(DESTDIR)$(man1dir)/gyotoy.1
 
 export PATH := .:$(PATH)
 

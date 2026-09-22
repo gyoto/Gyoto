@@ -374,8 +374,7 @@ yorick_exe=yorick
 YORICK=
 AC_MSG_CHECKING([whether to use yorick])
 AC_ARG_WITH([yorick],
-  [AS_HELP_STRING([--with-yorick[[=yorick-executable]]],[force using yorick and optionnally specify which one [default=yorick,
-      only if found]])],
+  [AS_HELP_STRING([--with-yorick[[=yorick-executable]]],[use yorick (optionally specify which one) @<:@default=no@:>@])],
   [AS_IF([test "x$with_yorick" == "xno"],
      [AC_MSG_RESULT([no])],
      [AS_IF([test "x$with_yorick" != "xyes"],
@@ -385,11 +384,10 @@ AC_ARG_WITH([yorick],
         [AC_MSG_RESULT([$YORICK])],
         [AC_MSG_ERROR([$YORICK does not work])])
      ])
-   AC_SUBST([YORICK])
   ],
-  [AC_CHECK_PROGS([YORICK],$yorick_exe)]
+  [AC_MSG_RESULT([no])]
 )
-
+AC_SUBST([YORICK])
 AM_CONDITIONAL(HAVE_YORICK, [test "x$YORICK" != "x"])
 
 # Only if YORICK available, check for install directories

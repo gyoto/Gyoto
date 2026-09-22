@@ -35,6 +35,21 @@ gyoto_mpi_worker_@sovers@_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIO_LIBS) -export-dynam
 gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
 	cp $^ $@
 
+# create gyotoy symlink upon installation
+install-exec-hook:
+	cd $(DESTDIR)$(bindir) && \
+	  $(LN_S) -f gyoto$(EXEEXT) gyotoy$(EXEEXT)
+
+# create gyotoy.1 symlink upon installation
+install-data-hook:
+	cd $(DESTDIR)$(man1dir) && \
+	  $(LN_S) -f gyoto.1 gyotoy.1
+
+# remove symlinks on uninstallation
+uninstall-hook:
+	-rm -f $(DESTDIR)$(bindir)/gyotoy$(EXEEXT)
+	-rm -f $(DESTDIR)$(man1dir)/gyotoy.1
+
 export PATH := .:$(PATH)
 
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
