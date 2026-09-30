@@ -23,6 +23,7 @@
 #include "GyotoKerr2PN.h"
 #include "GyotoKerrBL.h"
 #include "GyotoKerrKS.h"
+#include "GyotoKerrHarmonic.h"
 #include "GyotoMinkowski.h"
 #include "GyotoChernSimons.h"
 #include "GyotoRezzollaZhidenko.h"
@@ -87,6 +88,7 @@ extern "C" void __GyotostdplugInit() {
   Metric::Register("Kerr2PN", &(Metric::Subcontractor<Metric::Kerr2PN>));
   Metric::Register("KerrBL", &(Metric::Subcontractor<Metric::KerrBL>));
   Metric::Register("KerrKS", &(Metric::Subcontractor<Metric::KerrKS>));
+  Metric::Register("KerrHarmonic", &(Metric::Subcontractor<Metric::KerrHarmonic>));
   Metric::Register("Minkowski", &(Metric::Subcontractor<Metric::Minkowski>));
   Metric::Register("ChernSimons", &(Metric::Subcontractor<Metric::ChernSimons>));
   Metric::Register("RezzollaZhidenko", &(Metric::Subcontractor<Metric::RezzollaZhidenko>));
