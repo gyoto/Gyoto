@@ -45,6 +45,7 @@ To add a new class:
   - lib/Makefile.in
   - your NewClass.C
   - your GyotoNewClass.h
+  - lib/StdPlug.C
   - python/include/gyoto_std.i
   - python/include/gyoto_std_swig.h
 
