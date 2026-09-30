@@ -125,6 +125,15 @@ class Gyoto::Astrobj::PageThorneDisk
   virtual double bolometricEmission(double nuem, double dsem,
 				    double const c_obj[8]) const;
 
+    /**
+   * \brief Radius projected on equatorial plane
+   *
+   * Reimplements ThinDisk::projectedRadius to allow taking
+   * care of the various Kerr flavors easily.
+   */
+  virtual double projectedRadius(double const coord[]) const ;
+  ///< Projected radius of position coord on the equatorial plane
+  
   /**
    * \brief 
    * processHitQuantities fills the requested data in Impact. For

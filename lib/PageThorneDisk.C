@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2014, 2016, 2018-2020 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2014, 2016, 2018-2020, 2026 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -24,6 +24,35 @@
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
 #include "GyotoKerrKS.h"
+#include "GyotoKerrHarmonic.h"
+
+/*
+***Important remark:
+
+This class is made to work with any representation of the Kerr metric,
+and is so far implemented in KerrBL (spherical coord), KerrKS, and KerrHarmonic
+(Cartesian coord).
+
+All coordinate radii appearing in this class should be understood as BL radii.
+For non-KerrBL metrics, the BL radius is computed from the local coordinates.
+Remember that the BL and KS radii are the same, so one could just as well
+speak of the KS radius.
+
+The formulas that link the Cartesian KerrKS and KerrHarmonic coordinates
+to the KerrBL radius are well known and are used below when needed.
+
+It is thus fine to always use the KerrBL formulas of Page & Thorne, whatever
+the background metric, as is done in the bolometricEmission method.
+
+Also, the projectedRadius method allows to define the disk
+inner and outer radius in terms of BL radius. This means that, whatever
+the metric (KerrBL, KS, or Harmonic), a disk defined by eg rin_=10M
+and rout_=20M is the same physical disk. This would not be the case,
+should one use the default ThinDisk::projectedRadius which defines
+the disk's limit radii in terms of the Euclidian rbar^2 = x^2+y^2+z^2.
+This Euclidian radius does not coincide with the BL radius.
+
+*/
 
 
 #include <iostream>
@@ -94,8 +123,16 @@ void PageThorneDisk::updateSpin() {
     aa_ = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
     break;
   case GYOTO_COORDKIND_CARTESIAN:
-    aa_ = static_cast<SmartPointer<Metric::KerrKS> >(gg_) -> spin();
-    break;
+    if (gg_->kind() == "KerrKS"){
+      aa_ = static_cast<SmartPointer<Metric::KerrKS> >(gg_) -> spin();
+      break;
+    }
+    else if (gg_->kind() == "KerrHarmonic"){
+      aa_ = static_cast<SmartPointer<Metric::KerrHarmonic> >(gg_) -> spin();
+      break;
+    }
+    else
+      GYOTO_ERROR("Unknown Cartesian coordinates metric");
   default:
     GYOTO_ERROR("PageThorneDisk::getSpin(): unknown COORDKIND");
   }
@@ -119,9 +156,12 @@ void PageThorneDisk::metric(SmartPointer<Metric::Generic> gg) {
     return;
   }
   string kin = gg->kind();
-  if (kin != "KerrBL" && kin != "KerrKS")
+  if (kin != "KerrBL" && kin != "KerrKS" && kin != "KerrHarmonic")
     GYOTO_ERROR
-      ("PageThorneDisk::metric(): metric must be KerrBL or KerrKS");
+      ("PageThorneDisk::metric(): metric must be KerrBL, KerrKS "
+       "or KerrHarmonic");
+  // NB: Page-Thorne formulas are generalizable to non-Kerr
+  // spacetimes, but here we focus on Kerr quantities (eg, the spin).
   ThinDisk::metric(gg);
   updateSpin();
   gg->hook(this);
@@ -170,8 +210,20 @@ double PageThorneDisk::bolometricEmission(double /* nuem */, double dsem,
     xx=sqrt(coord_obj[1]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
-    xx=pow(coord_obj[1]*coord_obj[1]+coord_obj[2]*coord_obj[2]-aa2_, 0.25);
-    break;
+    if (gg_->kind() == "KerrKS"){
+      // KerrKS expression of BL/KS sqrt(radius) in eq plane:
+      xx=pow(coord_obj[1]*coord_obj[1]+coord_obj[2]*coord_obj[2]-aa2_, 0.25);
+      break;
+    } else if (gg_->kind() == "KerrHarmonic"){
+      // KerrHarmonic expression of BL/KS sqrt(radius) in eq plane,
+      // where the radius is just +M compared to the previous one:
+      xx=pow(1. + pow(coord_obj[1]*coord_obj[1]+coord_obj[2]*coord_obj[2]-aa2_,
+		      0.5),
+	     0.5); 
+      break;
+    } else {
+      GYOTO_ERROR("Unknown Cartesian coordinates metric");
+    }
   default:
     GYOTO_ERROR("Unknown coordinate system kind");
     xx=0;
@@ -221,6 +273,32 @@ double PageThorneDisk::bolometricEmission(double /* nuem */, double dsem,
   return Iem*GYOTO_INU_CGS_TO_SI; // in SI
   
 }
+
+double PageThorneDisk::projectedRadius(double const coord[4]) const {
+  // This method returns the *BL* projected radius on the equatorial plane
+  // whatever the Kerr metric coordinate kind.
+  // See the Important remark at the beginning of the file.
+  switch (gg_ -> coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    return coord[1];
+  case GYOTO_COORDKIND_CARTESIAN:
+    if (gg_->kind() == "KerrKS"){
+      double rbar = sqrt(coord[1]*coord[1]+coord[2]*coord[2]),
+	rKS = pow(coord[1]*coord[1]+coord[2]*coord[2] - aa2_,0.5);
+      return rKS; // BL or KS radius corresponding to (x,y)
+    } else if (gg_->kind() == "KerrHarmonic"){
+      double rbar = sqrt(coord[1]*coord[1]+coord[2]*coord[2]),
+	rKS = 1. + pow(coord[1]*coord[1]+coord[2]*coord[2] - aa2_,0.5);
+      return rKS;
+    } else {
+      GYOTO_ERROR("Unknown Cartesian coordinates metric");
+    }
+  default:
+    GYOTO_ERROR("PageThorne::projectedRadius(): unknown COORDKIND");
+    return 0.;
+  }
+}
+
 
 void PageThorneDisk::processHitQuantities(Photon* ph, state_t const &coord_ph_hit,
 				     double const *coord_obj_hit, double dt,
