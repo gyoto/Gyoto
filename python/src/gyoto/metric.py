@@ -7,6 +7,7 @@ all Metrics from std, lorene, and any other loaded plugin.
 
 import numpy
 import sys
+from numpy.linalg import inv
 
 from . import _namespaces
 from .core import Metric as Generic
@@ -179,3 +180,79 @@ def check_christoffel(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e
                     avg=numpy.abs(0.5*(G[a, m, n]-Gn[a, m, n]))
                     if avg > abstol:
                         assert e/avg <= reltol, "relative error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}".format(e/avg, reltol, pos, metric.kind(), a, m, n)
+
+
+def check_jacobian(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e-6):
+    '''Check the jacobian
+
+    '''
+    if isinstance(metric, str):
+        metric=core.Metric(metric)
+    elif isinstance(metric, type):
+        metric=metric()
+
+    if poslist is None:
+        if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+            poslist=[
+                (0., 6., numpy.pi/2, 0.),
+                (100., 50, numpy.pi/4, numpy.pi/6.)
+                ]
+        elif metric.coordKind()==core.GYOTO_COORDKIND_CARTESIAN:
+            poslist=[
+                #(0., 6., 0., 0.),
+                (0., 6., 1., 0.),
+                (100., 50., 30., 50),
+                #(1000., 0., 0., 40.)
+                (1000., 1., 40., 0.)
+                ]
+        else:
+            raise ValueError('Unknown coordinate kind')
+
+    for pos in poslist:
+        G=metric.jacobian(pos)
+        Gn=jacobian_numerical(metric, pos, epsilon)
+        for a in range(4):
+            for m in range(4):
+                for n in range(4):
+                    e=numpy.abs(G[a, m, n]-Gn[a, m, n])
+                    assert e <= abstol, "absolute error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}, val={}".format(e, abstol, pos, metric.kind(), a, m, n, G[a, m, n])
+                    avg=numpy.abs(0.5*(G[a, m, n]-Gn[a, m, n]))
+                    if avg > abstol:
+                        assert e/avg <= reltol, "relative error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}".format(e/avg, reltol, pos, metric.kind(), a, m, n)
+
+
+def check_gmunu_up(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e-6):
+    '''Check the inverse metric
+
+    '''
+
+    if isinstance(metric, str):
+        metric=core.Metric(metric)
+    elif isinstance(metric, type):
+        metric=metric()
+
+    if poslist is None:
+        if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+            poslist=[
+                (0., 6., numpy.pi/2, 0.),
+                (100., 50, numpy.pi/4, numpy.pi/6.)
+                ]
+        elif metric.coordKind()==core.GYOTO_COORDKIND_CARTESIAN:
+            poslist=[
+                (0., 6., 0., 0.),
+                (100., 50., 30., 50),
+                #(1000., 0., 0., 40.)
+                (1000., 0., 40., 0.)
+                ]
+        else:
+            raise ValueError('Unknown coordinate kind')
+
+    for pos in poslist:
+        gmunu = metric.gmunu(pos)
+        gmunuup_num = inv(gmunu)  # numerical gmunuup
+        gmunuup_gy = metric.gmunu_up(pos) # from gyoto metric
+
+        for a in range(4):
+            for m in range(4):
+                e=numpy.abs(gmunuup_num[a,m]-gmunuup_gy[a,m])
+                assert e <= abstol, "absolute error {} larger than {} at {} for kind={}, mu={}, nu={}, val={}, val={}".format(e, abstol, pos, metric.kind(), a, m, gmunuup_gy[a,m], gmunuup_num[a,m])
