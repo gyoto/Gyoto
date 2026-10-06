@@ -868,19 +868,20 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
     }else{
       if (cunninghamvel_ && gg_->kind()=="KerrBL"){
         // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
-	// initally from Cunnigham 1975
+	      // initally from Cunnigham 1975
         double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
         double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
         gamma_ms = sqrt(1.-2./(3.*risco)),
-	delta = rr*rr - 2.*rr + SPIN*SPIN,
-	hh = (2.*rr - SPIN*lambda_ms)/delta;
+	      delta = rr*rr - 2.*rr + SPIN*SPIN,
+	      hh = (2.*rr - SPIN*lambda_ms)/delta;
 	
-	vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
-	vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
-	vel[2] = 0.;
+	      vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
+	      vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
+	      vel[2] = 0.;
         vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
       }else{
-        cout << "WARNING: Radial motion below the radius of the ISCO for the keplerian rotation! Cunningham prescription only implemented for the Kerr metric." << endl;
+        if (cunninghamvel_)
+          GYOTO_WARNING << "Radial motion applied below the radius of the ISCO for the keplerian rotation! Cunningham prescription only implemented for the Kerr metric." << endl;
         double grr = gg_->gmunu(pos,1,1),
                guptt = gg_->gmunu_up(pos,0,0),
                guptp = gg_->gmunu_up(pos,0,3);
@@ -1085,7 +1086,7 @@ void SimBridge::setParameters(Gyoto::FactoryMessenger *fmp)  {
     }
   if (fileprefix_found && (file_found || dirname_found)) {
     GYOTO_WARNING
-      << "Directory and Filename are dreprecated and ignored when using "
+      << "Directory and Filename are deprecated and ignored when using "
       << "FilePrefix" << endl;
   } else if (file_found) {
     GYOTO_WARNING

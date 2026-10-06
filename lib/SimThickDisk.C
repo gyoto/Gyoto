@@ -39,7 +39,7 @@ GYOTO_PROPERTY_END(SimThickDisk, SimBridge::properties)
 
 SimThickDisk::SimThickDisk() : 
   Astrobj::SimBridge(),
-  HoverR_(0.)
+  HoverR_(0.1)
 {
   kind_="SimThickDisk";
 # ifdef GYOTO_DEBUG_ENABLED
@@ -74,7 +74,7 @@ double SimThickDisk::operator()(double const coord[4]) {
   // zpos: modulus of altitude above equatorial plane
   // rproj: radius projected in the equatorial plane
   double zpos=0., rproj=0.;
-  
+
   switch (gg_ -> coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rproj  = coord[1]*sin(coord[2]);
@@ -85,40 +85,8 @@ double SimThickDisk::operator()(double const coord[4]) {
     rproj  = sqrt(coord[1]*coord[1]+coord[2]*coord[2]);
     break;
   default:
-    GYOTO_ERROR("SimBridge::operator(): unknown COORDKIND");
+    GYOTO_ERROR("SimThickDisk::operator(): unknown COORDKIND");
   }
-  double zdisk = HoverR_*rproj; 
+  double zdisk = fabs(HoverR_*rproj); 
   return zpos - zdisk; // >0 outside, <0 inside flared disk 
-}
-
-void SimThickDisk::filePrefix(std::string const &f){
-  SimBridge::filePrefix(f);
-  if (gg_) cache_data();
-}
-
-void SimThickDisk::metric(SmartPointer<Metric::Generic> gg) {
-  SimBridge::metric(gg);
-  if (!fprefix_.empty()) cache_data();
-}
-
-void SimThickDisk::cache_data() {
-  if (!gg_ || fprefix_.empty())
-    GYOTO_ERROR("Set Metric and FilePrefix before calling cache_data().");
-  
-  double theta_lim, xmax, ymax, zmax, rproj_max;
-  switch (gg_ -> coordKind()) {
-  case GYOTO_COORDKIND_SPHERICAL:
-    theta_lim = abs(x2_array_[0]);
-    HoverR(theta_lim);
-    break;
-  case GYOTO_COORDKIND_CARTESIAN:
-    xmax = max(abs(x1_array_[0]), abs(x1_array_[nx1_-1]));
-    ymax = max(abs(x2_array_[0]), abs(x2_array_[nx2_-1]));
-    zmax = max(abs(x3_array_[0]), abs(x3_array_[nx3_-1]));
-    rproj_max = sqrt(xmax*xmax+ymax*ymax);
-    HoverR(zmax/rproj_max);
-    break;
-  default:
-    GYOTO_ERROR("SimBridge::operator(): unknown COORDKIND");
-  }
 }
