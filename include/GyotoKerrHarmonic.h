@@ -2,8 +2,13 @@
 /**
  *  \file GyotoKerrHarmonic.h
  *  \brief Kerr spacetime in Cartesian harmonic coordinates (t,x,y,z),
- *         defined from spherical Kerr-Schild coordinates as derived
- *         by Cook & Scheel (1997).
+ *         defined from spherical Boyer-Lindquist coordinates,
+ *         as derived by Cook & Scheel (1997) and Hergt & Schafer (2008).
+ *         This spacetime should agree at 2PN order with the PN metric
+ *         as derived by the PN community, and in particular the IAP group.
+ *
+ *         The details of the computations are provided in a pdf note by FV,
+ *         available upon request.
  */
 
 /*
@@ -53,13 +58,16 @@ public:
   void spin(const double charge); ///< Sets spin
   double spin() const ; ///< Returns spin
 
-  using Generic::gmunu;
+  //using Generic::gmunu;
   double gmunu(double const x[4], int mu, int nu) const ;
+  virtual void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
   
-  using Generic::gmunu_up;
+  //using Generic::gmunu_up;
   void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const;
 
   void jacobian(double ARGOUT_ARRAY3[4][4][4], const double x[4]) const ;
+
+  virtual void gmunu_up_and_jacobian(double ARGOUT_ARRAY2[4][4], double ARGOUT_ARRAY3[4][4][4], const double IN_ARRAY1[4]) const;
   
   int isStopCondition(double const coord[8]) const;
   void circularVelocity(double const * coor, double* vel, double dir) const;
