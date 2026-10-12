@@ -236,8 +236,8 @@ void KerrHarmonic::gmunu_up(double gup[4][4], const double * pos) const {
     sinthBL = pow(1 - costhBL2,0.5), sinthBL2 = sinthBL*sinthBL,
     rho2BL = rBL*rBL + a2 * costhBL2, // usual rho2 quantity in BL metric
     DeltaBL = rBL*rBL - 2.*rBL + a2, // usual Delta quantity in BL metric
-    cosphBL = (uu*xx + aa*yy)/(x2+y2) * sinthBL, // playing with the x ans y relations
-    sinphBL = (uu*yy - aa*xx)/(x2+y2) * sinthBL;
+    cosPhi = (uu*xx + aa*yy)/(x2+y2) * sinthBL, //  Phi is KS phi, see FV notes; formula obtained playing with the x and y relations
+    sinPhi = (uu*yy - aa*xx)/(x2+y2) * sinthBL;
   
   // BL inverse metric
   double gtt_BL = -1./DeltaBL * (rBL*rBL + a2 + 2.*a2*rBL*sinthBL2/rho2BL), // contravariant indices throughout
@@ -248,8 +248,8 @@ void KerrHarmonic::gmunu_up(double gup[4][4], const double * pos) const {
 
   // Derivative of H coord wrt BL ones
   double
-    dxdr = cosphBL * sinthBL - aa*yy/(u2-mcal2),
-    dydr = sinphBL * sinthBL + aa*xx/(u2-mcal2),
+    dxdr = cosPhi * sinthBL - aa*yy/(u2-mcal2),
+    dydr = sinPhi * sinthBL + aa*xx/(u2-mcal2),
     dzdr = costhBL,
     dxdth = xx*costhBL/sinthBL,
     dydth = yy*costhBL/sinthBL,
@@ -517,8 +517,8 @@ void KerrHarmonic::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4], 
     sinthBL = pow(1 - costhBL2,0.5), sinthBL2 = sinthBL*sinthBL,
     rho2BL = rBL2 + a2 * costhBL2, // usual rho2 quantity in BL metric
     DeltaBL = rBL2 - 2.*rBL + a2, // usual Delta quantity in BL metric
-    cosphBL = (uu*xx + aa*yy)/(x2+y2) * sinthBL, // playing with the x ans y relations
-    sinphBL = (uu*yy - aa*xx)/(x2+y2) * sinthBL;
+    cosPhi = (uu*xx + aa*yy)/(x2+y2) * sinthBL, // Phi is KS phi, see FV notes; formula obtained playing with the x and y relations
+    sinPhi = (uu*yy - aa*xx)/(x2+y2) * sinthBL;
 
   // Covariant BL metric coefficients expressed in
   // harmonic coordinates
@@ -550,8 +550,8 @@ void KerrHarmonic::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4], 
 
   // Derivative of harmonic coord wrt BL ones
   double
-    dxdr = cosphBL * sinthBL - aa*yy/(u2-mcal2),
-    dydr = sinphBL * sinthBL + aa*xx/(u2-mcal2),
+    dxdr = cosPhi * sinthBL - aa*yy/(u2-mcal2),
+    dydr = sinPhi * sinthBL + aa*xx/(u2-mcal2),
     dzdr = costhBL,
     dxdth = xx*costhBL/sinthBL,
     dydth = yy*costhBL/sinthBL,
