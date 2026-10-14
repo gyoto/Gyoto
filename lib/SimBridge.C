@@ -15,6 +15,7 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include "GyotoSimBridge.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
@@ -165,6 +166,8 @@ SimBridge::SimBridge(const SimBridge& orig) :
     if (ii!=3)
       rotInFile_[ii]=orig.rotInFile_[ii];
   }
+
+  // cache_ is deliberately left empty: each clone (one per thread) fills its own cache.
 }
 
 SimBridge* SimBridge::clone() const { return new SimBridge(*this); }
@@ -187,6 +190,19 @@ string SimBridge::className_l() const { return  string("simbridge"); }
 
 void SimBridge::filePrefix(std::string const &f){
   fprefix_ = f;
+
+  // (Re)initialisation: release what a previous call may have allocated and
+  // invalidate the cache of FITS data.
+  delete [] time_array_;  time_array_  = NULL;
+  delete [] x1_array_;    x1_array_    = NULL;
+  delete [] x2_array_;    x2_array_    = NULL;
+  delete [] x3_array_;    x3_array_    = NULL;
+  delete [] nu_array_;    nu_array_    = NULL;
+  delete [] pitch_array_; pitch_array_ = NULL;
+  nnu_ = 0;
+  npitch_ = 0;
+  cache_.reset();
+
   
   // Reading and save dimensions of arrays in header
   ostringstream stream_name ;
@@ -410,159 +426,60 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   //cout << "tcur: " << tcur << endl;
   int index=getIndex(tcur); //index of files to be loaded (index and index+1)
   //cout << "index: " << index << endl;
-  
-  // Creating arrays
-  long ncells = nx1_*nx2_*nx3_; // Number of cells for each time
+
+  // The data of (at most) two files are kept in a per-instance cache (cache_):
+  // only the fields which are not already there are read from disk.
+  typedef DataCache DC;
+  int fields[DC::F_NFIELDS];
+  int nfields=0;
   double* density_array=NULL;
   double* temperature_array=NULL;
-  double** magneticfield_array=NULL;
-  double** emission_array=NULL;
-  double** absorption_array=NULL;
-  double** rotation_array=NULL;
-  if (temperature_){
-    density_array = new double[nfile*ncells];
-    temperature_array = new double[nfile*ncells];
-    
-    if (BinFile_){
-      magneticfield_array = new double*[4];
-      for (int ii=0; ii<4; ii++){
-        magneticfield_array[ii] = new double[nfile*ncells];
-      }
-    }
-  } else {
-    emission_array = new double*[4];
-    absorption_array = new double*[4];
-    rotation_array = new double*[3];
-    for (int ii=0; ii<4; ii++){
-      if (emisInFile_[ii]){
-        emission_array[ii] = new double[nfile*ncells];
-      }else{
-        emission_array[ii] = nullptr;
-      }
+  double* magneticfield_array[4]={NULL, NULL, NULL, NULL};
+  double* emission_array[4]={NULL, NULL, NULL, NULL};
+  double* absorption_array[4]={NULL, NULL, NULL, NULL};
+  double* rotation_array[3]={NULL, NULL, NULL};
 
-      if (absInFile_[ii]) {absorption_array[ii] = new double[nfile*ncells];}
-      else {absorption_array[ii] = nullptr;}
-    }
-    for (int ii=0; ii<3; ii++){
-      if (rotInFile_[ii]){
-        rotation_array[ii] = new double[nfile*ncells];
-      }else{
-        rotation_array[ii] = nullptr;
-      }
-    }
+  if (temperature_){
+    // The arrays stored in the FITS files are density and temperature + eventually magnetic field
+    fields[nfields++]=DC::F_DENSITY;
+    fields[nfields++]=DC::F_TEMPERATURE;
+    if (BinFile_)
+      for (int ii=0; ii<4; ii++) fields[nfields++]=DC::F_B0+ii;
+  } else {
+    // The arrays stored in the FITS files are (at least) emission(s).
+    if (nu_array_==NULL)
+      GYOTO_ERROR("In SimBridge RadiativeQ : frequency array is not set");
+    if (pitch_array_==NULL)
+      GYOTO_ERROR("In SimBridge RadiativeQ : pitch angle array is not set");
+    for (int ii=0; ii<4; ii++) if (emisInFile_[ii]) fields[nfields++]=DC::F_J_I+ii;
+    for (int ii=0; ii<4; ii++) if (absInFile_[ii])  fields[nfields++]=DC::F_ALPHA_I+ii;
+    for (int ii=0; ii<3; ii++) if (rotInFile_[ii])  fields[nfields++]=DC::F_R_Q+ii;
+  }
+  // getVelocity() is called below and needs the velocity: load it in the same pass
+  // so that each file is opened only once.
+  if (!circularmotion_){
+    fields[nfields++]=DC::F_VEL1;
+    fields[nfields++]=DC::F_VEL2;
+    fields[nfields++]=DC::F_VEL3;
   }
 
-  // Opening and reading Files
-  //  double* tmp;
-  double time_interpo[nfile];
-  for (int ii=0; ii<nfile; ii++){
-    ostringstream stream_name ;
-    stream_name << fprefix_ << setw(4) << setfill('0') << index+ii << ".fits" ;
-        
-    string filename = stream_name.str();
-    GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
-    //cout << "Reading FITS file: " << filename << endl ;
-    fitsfile* fptr = NULL;
-    
-    fptr = FitsRW::fitsOpen(filename);
+  cacheLoad(index, nfile, fields, nfields);
+  // At this point, the relevent arrays are in the cache.
 
-    int ntime = FitsRW::fitsReadKey(fptr, "NB_X0");
-    int nx1   = FitsRW::fitsReadKey(fptr, "NB_X1");
-    int nx2   = FitsRW::fitsReadKey(fptr, "NB_X2");
-    int nx3   = FitsRW::fitsReadKey(fptr, "NB_X3");
-
-    if (ntime!=ntime_ || nx1!=nx1_ || nx2!=nx2_ || nx3!=nx3_)
-      GYOTO_ERROR("In SimBridge RadiativeQ : size of arrays in FITS file different from initial file");
-
-    time_interpo[ii] = FitsRW::fitsReadKey(fptr, "TIME");
-
-    double* emplacement;
-
-    if (temperature_){
-      // The arrays stored in the FITS files are density and temperature + eventually magnetic field
-      // Read NUMBERDENSITY
-      emplacement = density_array + ii * ncells;
-      FitsRW::fitsReadHDUData(fptr, "NUMBERDENSITY", emplacement, ncells);
-
-      // Read TEMPERATURE
-      emplacement = temperature_array + ii * ncells;
-      FitsRW::fitsReadHDUData(fptr, "TEMPERATURE", emplacement, ncells);
-      
-      if (BinFile_) {
-        for (int jj = 0; jj < 4; jj++) {
-          std::ostringstream hdu_name;
-          hdu_name << "B" << jj;
-          emplacement = magneticfield_array[jj] + ii * ncells;
-          FitsRW::fitsReadHDUData(fptr, hdu_name.str().c_str(), emplacement, ncells);
-        }
-      }
-    }else{
-      // The arrays stored in the FITS files are (at least) emission(s).
-      if (emission_array==NULL or absorption_array==NULL or rotation_array==NULL)
-        GYOTO_ERROR("In SimBridge RadiativeQ : emission, absorption and/or rotation arrays are not properly set.");
-      if (nu_array_==NULL)
-        GYOTO_ERROR("In SimBridge RadiativeQ : frequency array is not set");
-      
-      if (emisInFile_[0]){
-        emplacement = emission_array[0] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "J_I", emplacement, ncells);
-      }
-      if (emisInFile_[1]){
-        emplacement = emission_array[1] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "J_Q", emplacement, ncells);
-      }
-      if (emisInFile_[2]){
-        emplacement = emission_array[2] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "J_U", emplacement, ncells);
-      }
-      if (emisInFile_[3]){
-        emplacement = emission_array[3] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "J_V", emplacement, ncells);
-      }
-      if (absInFile_[0]){
-        emplacement = absorption_array[0] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "ALPHA_I", emplacement, ncells);
-      }
-      if (absInFile_[1]){
-        emplacement = absorption_array[1] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "ALPHA_Q", emplacement, ncells);
-      }
-      if (absInFile_[2]){
-        emplacement = absorption_array[2] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "ALPHA_U", emplacement, ncells);
-      }
-      if (absInFile_[3]){
-        emplacement = absorption_array[3] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "ALPHA_V", emplacement, ncells);
-      }
-      if (rotInFile_[0]){
-        emplacement = rotation_array[0] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "R_Q", emplacement, ncells);
-      }
-      if (rotInFile_[1]){
-        emplacement = rotation_array[1] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "R_U", emplacement, ncells);
-      }
-      if (rotInFile_[2]){
-        emplacement = rotation_array[2] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "R_V", emplacement, ncells);
-      }
+  double time_interpo[2] = {cache_.time[0], cache_.time[1]};
+  if (temperature_){
+    density_array     = cache_.ptr(DC::F_DENSITY);
+    temperature_array = cache_.ptr(DC::F_TEMPERATURE);
+    if (BinFile_)
+      for (int ii=0; ii<4; ii++) magneticfield_array[ii] = cache_.ptr(DC::F_B0+ii);
+  } else {
+    for (int ii=0; ii<4; ii++){
+      if (emisInFile_[ii]) emission_array[ii]   = cache_.ptr(DC::F_J_I+ii);
+      if (absInFile_[ii])  absorption_array[ii] = cache_.ptr(DC::F_ALPHA_I+ii);
     }
-    FitsRW::fitsClose(fptr);
-    
-    //cout << "Emission array" << endl;
-    //for (int ii=0; ii<ncells; ii++){
-    //  cout << emission_array[0][ii] << " ";
-    //}
-    //cout << endl;
-  } // End of reading FITS files. At this point, the relevent arrays should be filled.
-
-  double x1 = coord_ph[1], x2 = coord_ph[2], x3 = coord_ph[3];
-  double pos[4] = {tcur, x1, x2, x3};
-  double vel[4];
-  //cout << "pos: " << tcur << " " << x1 << " " << x2*180/3.141592 << " " << x3*180/3.141592 << endl;
-  const_cast<SimBridge*>(this)->getVelocity(pos, vel);
-  //cout << "vel: " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
+    for (int ii=0; ii<3; ii++)
+      if (rotInFile_[ii])  rotation_array[ii]   = cache_.ptr(DC::F_R_Q+ii);
+  }
 
   // Defining emission, absoprtion and rotation coefficients for the transmission matrix
   GYOTO_DEBUG << " Initializing radiative coefficients arrays." << endl;
@@ -590,9 +507,13 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   if (!BinFile_ && magneticConfig_=="None")
     avg = 1;
   
+  double x1 = coord_ph[1], x2 = coord_ph[2], x3 = coord_ph[3];
   double B4vect[4]={0.,0.,0.,0.};
   double theta_mag, BB;
   if (!avg){
+    double pos[4] = {tcur, x1, x2, x3};
+    double vel[4];
+    const_cast<SimBridge*>(this)->getVelocity(pos, vel);
     if (BinFile_){
       double XqB[4] = {tcur, x1, x2, x3};
       int X_paramsB[4] = {nfile, nx1_, nx2_, nx3_};
@@ -791,46 +712,6 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       GYOTO_ERROR("In Simbridge::radiativeQ(): Snu or Taunu is infinite");
   }
 
-  GYOTO_DEBUG << "Freeing interpolation arrays." << endl;
-  // Freeing arrays
-  if(density_array) delete[] density_array;
-  if(temperature_array) delete[] temperature_array;
-
-  if (magneticfield_array) {
-    for (int ii = 0; ii < 4; ++ii) {
-      if (magneticfield_array[ii]) {
-        delete[] magneticfield_array[ii];
-      }
-    }
-    delete[] magneticfield_array;
-  }
-
-  if (emission_array) {
-    for (int ii = 0; ii < 4; ++ii) {
-      if (emission_array[ii]) {
-        delete[] emission_array[ii];
-      }
-    }
-    delete[] emission_array;
-  }
-
-  if (absorption_array) {
-    for (int ii = 0; ii < 4; ++ii) {
-      if (absorption_array[ii]) {
-        delete[] absorption_array[ii];
-      }
-    }
-    delete[] absorption_array;
-  }
-
-  if (rotation_array) {
-    for (int ii = 0; ii < 3; ++ii) {
-      if (rotation_array[ii]) {
-        delete[] rotation_array[ii];
-      }
-    }
-    delete[] rotation_array;
-  }
   GYOTO_DEBUG << "Done." << endl;
 }
 
@@ -868,20 +749,19 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
     }else{
       if (cunninghamvel_ && gg_->kind()=="KerrBL"){
         // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
-	      // initally from Cunnigham 1975
+	// initally from Cunnigham 1975
         double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
         double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
         gamma_ms = sqrt(1.-2./(3.*risco)),
-	      delta = rr*rr - 2.*rr + SPIN*SPIN,
-	      hh = (2.*rr - SPIN*lambda_ms)/delta;
+	delta = rr*rr - 2.*rr + SPIN*SPIN,
+	hh = (2.*rr - SPIN*lambda_ms)/delta;
 	
-	      vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
-	      vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
-	      vel[2] = 0.;
+	vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
+	vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
+	vel[2] = 0.;
         vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
       }else{
-        if (cunninghamvel_)
-          GYOTO_WARNING << "Radial motion applied below the radius of the ISCO for the keplerian rotation! Cunningham prescription only implemented for the Kerr metric." << endl;
+        cout << "WARNING: Radial motion below the radius of the ISCO for the keplerian rotation! Cunningham prescription only implemented for the Kerr metric." << endl;
         double grr = gg_->gmunu(pos,1,1),
                guptt = gg_->gmunu_up(pos,0,0),
                guptp = gg_->gmunu_up(pos,0,3);
@@ -894,50 +774,18 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
   }else{
   
     double tcur=pos[0]; // in M units # TBC
-  
+
     int nfile=ntime_==1?1:2; // 1 if ntime=1, 2 otherwise
     int index=getIndex(tcur); //index of files to be loaded (index and index+1)
 
-    // Creating the velocity arrays
-    long ncells = nx1_*nx2_*nx3_; // Number of cells for each time
-    double** velocity_array = new double*[3];
-    for (int ii=0; ii<3; ii++){
-      velocity_array[ii] = new double[nfile*ncells];
-    }
-
-    // Reading FITS File
-    // double* tmp;
-    double time_interpo[nfile];
-    for (int ii=0; ii<nfile; ii++){
-      ostringstream stream_name ;
-      stream_name << fprefix_ << setw(4) << setfill('0') << index+ii << ".fits" ;
-        
-      string filename = stream_name.str();
-      GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
-    
-      fitsfile* fptr = NULL;
-    
-      fptr = FitsRW::fitsOpen(filename);
-
-      int ntime = FitsRW::fitsReadKey(fptr, "NB_X0");
-      int nx1   = FitsRW::fitsReadKey(fptr, "NB_X1");
-      int nx2   = FitsRW::fitsReadKey(fptr, "NB_X2");
-      int nx3   = FitsRW::fitsReadKey(fptr, "NB_X3");
-
-      if (ntime!=ntime_ || nx1!=nx1_ || nx2!=nx2_ || nx3!=nx3_)
-        GYOTO_ERROR("In SimBridge RadiativeQ : size of arrays in FITS file different from initial file");
-    
-      time_interpo[ii] = FitsRW::fitsReadKey(fptr, "TIME");
-    
-      double* emplacement = velocity_array[0] + ii * ncells;
-      FitsRW::fitsReadHDUData(fptr, "VELOCITY1", emplacement, ncells);
-      emplacement = velocity_array[1] + ii * ncells;
-      FitsRW::fitsReadHDUData(fptr, "VELOCITY2", emplacement, ncells);
-      emplacement = velocity_array[2] + ii * ncells;
-      FitsRW::fitsReadHDUData(fptr, "VELOCITY3", emplacement, ncells);
-
-      FitsRW::fitsClose(fptr);
-    }
+    // Velocity data come from the cache (read from disk only if missing)
+    typedef DataCache DC;
+    static const int vfields[3] = {DC::F_VEL1, DC::F_VEL2, DC::F_VEL3};
+    cacheLoad(index, nfile, vfields, 3);
+    double time_interpo[2] = {cache_.time[0], cache_.time[1]};
+    double* velocity_array[3] = {cache_.ptr(DC::F_VEL1),
+                                 cache_.ptr(DC::F_VEL2),
+                                 cache_.ptr(DC::F_VEL3)};
 
     double Xq[4] = {pos[0], pos[1], pos[2], pos[3]};
     int X_params[4] = {nfile, nx1_, nx2_, nx3_};
@@ -961,13 +809,6 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
     delete[] X;
 
     gg_->normalizeFourVel(pos, vel);
-
-    for (int ii=0; ii<3; ii++){
-      if (velocity_array[ii]){
-        delete [] velocity_array[ii];
-        velocity_array[ii] = NULL;
-      }
-    }
   }
   GYOTO_DEBUG << "SimBridge: Done." <<endl;
 }
@@ -997,20 +838,58 @@ double SimBridge::operator()(double const coord[4]) {
 }
 
 int SimBridge::getIndex(double const tcur) const {
-  if (ntime_==1){
-    return 0;
-  }else{
-    if (tcur<time_array_[0])
-      return 0; // Set index at 0, the output of the interpolation will be defined by the boundary conditions
-    else if (tcur>time_array_[ntime_-1])
-       return ntime_-2; // Set index at ntime_-1, the output of the interpolation will be defined by the boundary conditions
-    else{
-      int ii=0;
-      while (tcur > time_array_[ii] and ii<ntime_-1){
-        ii+=1;
-      }
-      return ii - 1;
+  if (ntime_==1) return 0;
+  if (tcur<time_array_[0])
+    return 0; // Set index at 0, the output of the interpolation will be defined by the boundary conditions
+  if (tcur>time_array_[ntime_-1])
+    return ntime_-2; // Set index at ntime_-2, the output of the interpolation will be defined by the boundary conditions
+  // time_array_ is sorted: binary search of the first time >= tcur
+  int ii = int(std::lower_bound(time_array_, time_array_+ntime_, tcur) - time_array_);
+  return ii>0 ? ii-1 : 0;
+}
+
+void SimBridge::cacheLoad(int index, int nfile, int const* fields, int nfields) const {
+  // Make sure that the cache contains the files [index, index+nfile-1] and
+  // that the requested fields are loaded for each of them. A file is opened
+  // only if something is missing, and only the missing fields are read.
+  long ncells  = long(nx1_)*long(nx2_)*long(nx3_);
+  // Radiative coefficients (J, ALPHA, R) are also defined on the frequency and
+  // pitch-angle grids: nx1*nx2*nx3*nnu*npitch values per file.
+  long radmult = long(std::max(nnu_,1))*long(std::max(npitch_,1));
+  cache_.prepare(index, nfile, ncells, radmult);
+
+  for (int ii=0; ii<nfile; ++ii){
+    bool need = !cache_.hastime[ii];
+    for (int jj=0; jj<nfields; ++jj)
+      if (!cache_.loaded[fields[jj]][ii]) need = true;
+    if (!need) continue; // cache hit: nothing to read
+
+    ostringstream stream_name ;
+    stream_name << fprefix_ << setw(4) << setfill('0') << index+ii << ".fits" ;
+    string filename = stream_name.str();
+    GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
+
+    fitsfile* fptr = FitsRW::fitsOpen(filename);
+
+    int ntime = FitsRW::fitsReadKey(fptr, "NB_X0");
+    int nx1   = FitsRW::fitsReadKey(fptr, "NB_X1");
+    int nx2   = FitsRW::fitsReadKey(fptr, "NB_X2");
+    int nx3   = FitsRW::fitsReadKey(fptr, "NB_X3");
+
+    if (ntime!=ntime_ || nx1!=nx1_ || nx2!=nx2_ || nx3!=nx3_)
+      GYOTO_ERROR("In SimBridge: size of arrays in FITS file different from initial file");
+
+    cache_.time[ii] = FitsRW::fitsReadKey(fptr, "TIME");
+    cache_.hastime[ii] = true;
+
+    for (int jj=0; jj<nfields; ++jj){
+      int ff = fields[jj];
+      if (cache_.loaded[ff][ii]) continue;
+      long fsize = cache_.fieldSize(ff); // values of this field in one file
+      FitsRW::fitsReadHDUData(fptr, DataCache::hduName(ff), cache_.ptr(ff) + ii*fsize, fsize);
+      cache_.loaded[ff][ii] = true;
     }
+    FitsRW::fitsClose(fptr);
   }
 }
 
