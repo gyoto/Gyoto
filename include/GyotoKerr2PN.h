@@ -42,7 +42,8 @@ protected:
   double spin_; ///< Geometrized units spin parameter
   double Q_; ///< Geometrized units mass quadrupole parameter
   bool quadrupole_is_kerr_; ///< Boolean: True iff the quadrupole is tied to its Kerr value -spin^2 in geometrized units
-  
+  unsigned int pnorder_; ///< Post-Newtonian truncation order (1 or 2)
+
 public:
   GYOTO_OBJECT;
   Kerr2PN();
@@ -56,6 +57,8 @@ public:
   double quadrupole() const ; ///< Returns quadrupole
   void kerrQuadrupole(bool t) ; ///< Sets boolean quadrupole_is_kerr_
   bool kerrQuadrupole() const ; ///< Returns boolean quadrupole_is_kerr_
+  void pnOrder(double n); ///< Sets PN truncation order (1 or 2)
+  double pnOrder() const; ///< Returns PN truncation order
 
   using Generic::gmunu;
   double gmunu(double const x[4], int mu, int nu) const ;
@@ -67,5 +70,5 @@ public:
   //void circularVelocity(double const * coor, double* vel, double dir) const;
   //double getPotential(double const pos[4], double l_cst) const;
   //double getSpecificAngularMomentum(double rr) const;
-#endif
 };
+#endif
