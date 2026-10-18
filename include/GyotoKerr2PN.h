@@ -62,6 +62,9 @@ public:
 
   using Generic::gmunu;
   double gmunu(double const x[4], int mu, int nu) const ;
+#ifndef SWIG
+  void   gmunu(double g[4][4], double const pos[4]) const;
+#endif
   using Generic::gmunu_up;
   //double gmunu_up(double const x[4], int mu, int nu) const ;
   using Generic::christoffel;
