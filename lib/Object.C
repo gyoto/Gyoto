@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016, 2019-2020, 2022, 2025 Thibaut Paumard
+    Copyright 2014-2016, 2019-2020, 2022, 2025, 2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -49,7 +49,7 @@ Gyoto::Object::~Object() {}
 // Output
 
 string Gyoto::Object::kind() const {return kind_;}
-void Gyoto::Object::kind(const string src) { kind_ = src;}
+void Gyoto::Object::kind(string const &src) { kind_ = src;}
 
 bool Object::isThreadSafe() const {
   /**

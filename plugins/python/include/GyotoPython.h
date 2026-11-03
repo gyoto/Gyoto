@@ -1,5 +1,5 @@
 /*
-    Copyright 2015-2016, 2022 Thibaut Paumard
+    Copyright 2015-2016, 2022, 2025-2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -759,7 +759,8 @@ class Gyoto::Spectrum::Python
   virtual double operator()(double nu) const;
   virtual double operator()(double nu, double opacity, double ds) const;
 
-  virtual double integrate(double nu1, double nu2) ;
+  using Generic::integrate;
+  virtual double integrate(double nu1, double nu2) override;
 
 };
 
@@ -864,8 +865,10 @@ class Gyoto::Metric::Python
   virtual void mass(double m);
 
   // The minimal Gyoto::Metric API:
-  void gmunu(double g[4][4], const double * x) const ;
-  int christoffel(double dst[4][4][4], const double * x) const ;
+  using Generic::gmunu;
+  void gmunu(double g[4][4], const double * x) const override;
+  using Generic::christoffel;
+  int christoffel(double dst[4][4][4], const double * x) const override;
 
   // Little more
   double getRmb() const;

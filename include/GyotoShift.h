@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2020 Thibaut Paumard & Frédéric Vincent
+    Copyright 2020, 2026 Thibaut Paumard & Frédéric Vincent
 
     This file is part of Gyoto.
 
@@ -63,7 +63,8 @@ class Gyoto::Metric::Shift
   virtual std::vector<double> offset() const; ///< Get vector copy of #pos_
   virtual void offset(std::vector<double> const&); ///< Set #pos_ from vector
 
-  virtual void mass(const double);        ///< Set mass used in unitLength()
+  using Generic::mass;
+  virtual void mass(double) override;        ///< Set mass used in unitLength()
   using Generic::gmunu;
   virtual void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
   using Generic::gmunu_up;

@@ -6,9 +6,22 @@
  */
 
 /*
- *   Copyright (c) 2013, 2018 Frederic Vincent & Thibaut Paumard
- *
- *
+    Copyright (c) 2013, 2018, 2026 Frederic Vincent & Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __DeformedTorus_h
@@ -72,6 +85,8 @@ class Gyoto::Astrobj::DeformedTorus
   virtual void getVelocity(double const pos[4], double vel[4]) ;
   /*virtual int Impact(Gyoto::Photon* ph, size_t index,
     Astrobj::Properties *data=NULL);*/
-  double emission(double nuem,double,state_t const &,double const *) const;
+  using Astrobj::Generic::emission;
+  double emission(double nuem, double dsem, state_t const &c_obj,
+		  double const *c_ph=0) const override;
 #endif
 };

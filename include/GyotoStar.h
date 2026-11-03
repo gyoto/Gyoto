@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright 2011, 2013 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2015, 2023, 2026 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -153,12 +153,13 @@ class Gyoto::Astrobj::Star :
   virtual void setInitialCondition(double const coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)
 
  public:
+  using Astrobj::Generic::setParameter;
   // Object / Property overloading for special needs:
   // Overload to interpret InitialCoordinate alias, and to interpret
   // Position/Velocity
   virtual int setParameter(std::string name,
 			   std::string content,
-			   std::string unit) ;
+			   std::string unit) override;
 #ifdef GYOTO_USE_XERCES
   // Overload to 1- get metric first and 2- interpret Position/Velocity
   virtual void setParameters(FactoryMessenger *fmp) ;
@@ -187,11 +188,12 @@ class Gyoto::Astrobj::Star :
 		double * const z, double * const xprime=NULL,
 		double * const yprime=NULL,  double * const zprime=NULL) ;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
-  
+
+  using Astrobj::Generic::radiativeQ;
   virtual void radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
        Eigen::Matrix4d *Onu,
        double const *nuem , size_t nbnu, double dsem,
-       state_t const &cph, double const *co) const;
+       state_t const &cph, double const *co) const override;
 
 };
 

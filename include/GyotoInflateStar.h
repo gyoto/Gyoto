@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright 2011, 2013, 2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2013, 2018, 2026 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -98,8 +98,9 @@ class Gyoto::Astrobj::InflateStar :
   
   virtual int Impact(Gyoto::Photon* ph, size_t index,
 		     Astrobj::Properties *data=NULL);
-  virtual double emission(double nu_em, double dsem,
-			  state_t const &cp, double const co[8]=NULL) const;
+  using Astrobj::Generic::emission;
+  virtual double emission(double nu_em, double dsem, state_t const &cp,
+			  double const co[8]=NULL) const override;
 };
 
 

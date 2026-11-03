@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2026 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -108,9 +108,10 @@ class Gyoto::Metric::KerrKS
 
   virtual int isStopCondition(double const coord[8]) const;
 
+  using Metric::Generic::setParameter;
   virtual int setParameter(std::string name,
 			   std::string content,
-			   std::string unit);
+			   std::string unit) override;
 };
 
 #endif

@@ -18,7 +18,7 @@
  *
  */
 /*
-    Copyright 2011-2013 Thibaut Paumard
+    Copyright 2011-2014, 2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -98,7 +98,7 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
    * \param name std::string, one of "wave", "wavelog", "freq" or
    * "freqlog"
    */
-  void kind(std::string const &name);
+  void kind(std::string const &name) override;
   std::string kind() const;
  
   using Generic::nSamples;

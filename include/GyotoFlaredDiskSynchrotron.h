@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2019-2021 Frederic Vincent, Thibaut Paumard, Nicolas Aimar
+    Copyright 2019-2021, 2026 Frederic Vincent, Thibaut Paumard, Nicolas Aimar
 
     This file is part of Gyoto.
 
@@ -138,12 +138,13 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
   using Generic::metric;
   std::vector<size_t> fitsRead(std::string filename) ;
   virtual double operator()(double const coord[4]) ;
+  using Astrobj::Generic::radiativeQ;
   virtual void radiativeQ(double Inu[], 
 			  double Taunu[],
 			  double const nu_ems[], size_t nbnu, 
 			  double dsem,
 			  state_t const &coord_ph,
-			  double const coord_obj[8]) const;
+			  double const coord_obj[8]=0) const override;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
 
 };

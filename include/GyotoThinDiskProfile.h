@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright 2020, 2024 Frederic Vincent, Thibaut Paumard, Irene Urso
+    Copyright 2020-2026 Frederic Vincent, Thibaut Paumard, Irene Urso
 
     This file is part of Gyoto.
 
@@ -74,6 +74,7 @@ class Gyoto::Astrobj::ThinDiskProfile : public Astrobj::ThinDisk {
   std::vector<double> model_param() const;
 
  public:
+  using Astrobj::Generic::emission;
   virtual double emission(double nu_em, double dsem,
 			  state_t const &c_ph,double const c_obj[8]=NULL) const;
 

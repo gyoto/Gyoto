@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2011-2015, 2018-2020, 2022, 2024 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2026 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -174,10 +174,11 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
  public:
   void setParticleProperties(Worldline* line, const double* coord) const;
   virtual int isStopCondition(double const coord[8]) const;
-  
+
+  using Metric::Generic::observerTetrad;
   virtual void observerTetrad(double const pos[4], double fourvel[4],
 			      double screen1[4], double screen2[4],
-			      double screen3[4]) const ;
+			      double screen3[4]) const override;
 
 };
 

@@ -10,14 +10,14 @@
  *  system.
  *
  *  This calls is not abstract and can be used as is (it keeps the
- *  very simplistic Generic::emission() and Generci::transmission()),
+ *  very simplistic Generic::emission() and Generic::transmission()),
  *  but it is also a base class to develop classes with more complex
  *  emission laws.
  *
  */
 
 /*
-    Copyright 2011-2015 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2015, 2019, 2025-2026 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 

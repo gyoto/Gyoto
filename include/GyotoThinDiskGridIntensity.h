@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2019-2021 Frederic Vincent, Thibaut Paumard
+    Copyright 2021, 2026 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -99,8 +99,10 @@ class Gyoto::Astrobj::ThinDiskGridIntensity
  public:
   using Generic::metric;
   std::vector<size_t> fitsRead(std::string filename) ;
+  using Astrobj::Generic::emission;
   virtual double emission(double nu_em, double dsem,
-			  state_t const &c_ph,double const c_obj[8]=NULL) const;
+			  state_t const &c_ph, double const c_obj[8]=NULL
+			  ) const override;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
 
 

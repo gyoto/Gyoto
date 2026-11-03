@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright 2014-2016 Thibaut Paumard
+    Copyright 2014-2016, 2022, 2025-2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -470,7 +470,7 @@ protected:
    * kind(const std::string) is protected because, for most Objects,
    * it should not be changed in runtime.
    */
-  virtual void kind(const std::string); ///< Set kind_
+  virtual void kind(std::string const &); ///< Set kind_
 
 public:
   virtual std::string kind() const; ///< Get kind_

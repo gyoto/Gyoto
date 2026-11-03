@@ -1,5 +1,5 @@
 /*
-    Copyright 2025 Irene Urso
+    Copyright 2025, 2026 Irene Urso & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -306,7 +306,8 @@ double StochasticThinDisk::envelope(double, state_t const &, double const coord_
   return env;
 }
 
-double StochasticThinDisk::emission(double nu, state_t const &coord_ph, double const coord_obj[8]) const{
+double StochasticThinDisk::emission(double nu, double /* dsem */,
+				    state_t const &coord_ph, double const coord_obj[8]) const{
 
   double emiss=0.; 
   emiss = envelope(nu, coord_ph, coord_obj)*solution(coord_obj);
@@ -388,7 +389,9 @@ void StochasticThinDisk::processHitQuantities(Photon* ph,
                                         //this is nu_em/nu_obs
    if (noredshift_) ggredm1=1.;
    double ggred = 1./ggredm1;           //this is nu_obs/nu_em
+   // WARNING: dsem set to 0 as it is currently ignored by emission()
    // double dsem = dlambda*ggredm1; // *1.
+   double dsem=0.;
    double inc =0.;
 
    if (data){ // this check is necessary as process can be called
@@ -406,7 +409,7 @@ void StochasticThinDisk::processHitQuantities(Photon* ph,
        double fudge_Gralla=1.;
        if (nb_cross_eqplane>0) fudge_Gralla=1.;
        inc = fudge_Gralla
- 	* (emission(ggredm1, coord_ph_hit, coord_obj_hit))
+	* (emission(ggredm1, dsem, coord_ph_hit, coord_obj_hit))
  	* (ph -> getTransmission(size_t(-1)))
  	* ggred*ggred*ggred*ggred; // I/nu^4 invariant
        *data->user4 += inc;
@@ -433,7 +436,7 @@ void StochasticThinDisk::processHitQuantities(Photon* ph,
        if (nb_cross_eqplane>0) fudge_Gralla=1.;
        for (size_t ii=0; ii<nbnuobs; ++ii) {
          inc = fudge_Gralla
- 	  * (emission(nuem[ii], coord_ph_hit, coord_obj_hit))
+	  * (emission(nuem[ii], dsem, coord_ph_hit, coord_obj_hit))
  	  * (ph -> getTransmission(size_t(-1)))
  	  * ggred*ggred*ggred; // I/nu^3 invariant
          *data->spectrum += inc; // data->spectrum[ii*data->offset] += inc  !Error

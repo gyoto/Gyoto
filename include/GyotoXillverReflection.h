@@ -9,7 +9,7 @@
  */
 
 /*
-  Copyright (c) 2017, 2018 Frederic Vincent, Thibaut Paumard
+  Copyright (c) 2017-2018, 2026 Frederic Vincent, Thibaut Paumard
   This file is part of Gyoto.
 
   Gyoto is free software: you can redistribute it and/or modify
@@ -178,8 +178,10 @@ class Gyoto::Astrobj::XillverReflection
 
  public:
   
+  using Astrobj::Generic::emission;
   virtual double emission(double nu_em, double dsem,
-			  state_t const &_ph, double const _obj[8]=NULL) const;
+			  state_t const &_ph,
+			  double const _obj[8]=NULL) const override;
 
   virtual void updateSpin() ;
   virtual void tell(Gyoto::Hook::Teller *msg);

@@ -10,7 +10,7 @@
  */
 
 /*
-    Copyright 2011-2016, 2018-2020, 2022, 2024 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2026 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -589,8 +589,6 @@ class Gyoto::Metric::Generic
    * \brief RK4 integrator
    */
   virtual int myrk4(Worldline * line, state_t const &coord, double h, state_t &res) const;
-  /// Obsolete, update your code
-  virtual int myrk4(Worldline * line, const double coord[8], double h, double res[8]) const = delete;
   
   /**
    * \brief RK4 integrator with adaptive step
@@ -599,11 +597,6 @@ class Gyoto::Metric::Generic
 			     double lastnorm, double normref,
 			     state_t &coordnew, double h0, double& h1,
 			     double deltamax=GYOTO_DEFAULT_DELTA_MAX) const;
-  /// Obsolete, update your code
-  virtual int myrk4_adaptive(Gyoto::Worldline* line, const double coord[8],
-                             double lastnorm, double normref,
-			     double coordnew[8], double h0, double& h1,
-                             double deltamax=GYOTO_DEFAULT_DELTA_MAX) const = delete;
 
 
   /**
@@ -622,9 +615,6 @@ class Gyoto::Metric::Generic
    * \brief F function such as dx/dt=F(x,cst)
    */
   virtual int diff(state_t const &x, state_t &dxdt, double mass) const ;
-  /// Obsolete, update your code
-  virtual int diff(state_t const &x, state_t &dxdt)  const = delete;
-  virtual int diff(const double y[8], double res[8]) const = delete ;
 
   /**
    * \brief F function such as dx/dt=F(x,cst) for 3+1 case

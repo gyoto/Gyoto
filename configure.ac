@@ -41,6 +41,21 @@ CXXFLAGS="$CXXFLAGS -std=c++17 -Wall -Wextra"
 #
 AX_APPEND_COMPILE_FLAGS([-P], [CPPFLAGS])
 
+## Try to make it fatal to hide a virtual method
+#
+AX_CHECK_COMPILE_FLAG(
+  [-Woverloaded-virtual],
+  [
+    CXXFLAGS="$CXXFLAGS -Woverloaded-virtual"
+    AX_CHECK_COMPILE_FLAG(
+      [-Werror=overloaded-virtual],
+      [CXXFLAGS="$CXXFLAGS -Werror=overloaded-virtual"],
+      [AC_MSG_WARN([cannot make -Woverloaded-virtual fatal])]
+    )
+  ],
+  [AC_MSG_WARN([C++ compiler does not support -Woverloaded-virtual])]
+)
+
 ## Optional addition to the SONAME
 #
 FEATURES=""

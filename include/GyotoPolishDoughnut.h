@@ -30,8 +30,7 @@
  */
 
 /*
-    Copyright (c) 2012-2016, 2018-2019, 2024 Frederic Vincent, Odele Straub,
-                                             Thibaut Paumard
+    Copyright (c) 2012-2026 Frederic Vincent, Odele Straub, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -183,10 +182,12 @@ public:
  std::vector<double> adafparams() const;
  void adaf(bool t);
  bool adaf() const;
+
+ using Astrobj::Generic::setParameter;
  void setParameter(Gyoto::Property const &p,
 		   std::string const & name,
 		   std::string const & content,
-		   std::string const & unit);
+		   std::string const & unit) override;
 
  // Read only members, depend on lambda
  double getWsurface() const; ///< Get PolishDoughnut::W_surface_
@@ -229,10 +230,11 @@ protected:
 				 size_t const * chaninds, size_t nbnu,
 				 double dsem, state_t const &cph, double const *co) const;
 
+  using Astrobj::Generic::radiativeQ;
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,
-			  double const coord_obj[8]=NULL) const ;
+			  double const coord_obj[8]=NULL) const override;
 
  // PURELY INTERNAL TO ASTROBJ
  // --------------------------

@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2011, 2018 Thibaut Paumard
+    Copyright 2011-2014, 2018-2019, 2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -163,10 +163,11 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
 
   virtual double transmission(double nuem, double dsem, state_t const &, double const *) const ;
 
+  using Astrobj::Generic::radiativeQ;
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,
-			  double const coord_obj[8]=NULL) const ;
+			  double const coord_obj[8]=NULL) const override;
   
 };
 

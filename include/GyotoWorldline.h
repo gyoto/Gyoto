@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright 2011-2025 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2026 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -741,12 +741,9 @@ class Gyoto::Worldline
 
   void getCartesianPos(size_t index, double dest[4]) const; ///< Get Cartesian expression of 4-position at index.
 
-
   virtual void xStore(size_t ind, state_t const &coord, double tau) ; ///< Store coord at index ind
-  virtual void xStore(size_t ind, state_t const &coord) =delete; ///< Obsolete, update your code
-  virtual void xStore(size_t ind, double const coord[8]) = delete; ///< Obsolete, update your code
-  virtual void xFill(double tlim, bool proper=false) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
 
+  virtual void xFill(double tlim, bool proper=false) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
 
 
   // Accessors
@@ -949,8 +946,6 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
    * \param delta Integration step. Sign determines direction.
    */
   virtual void init(Worldline * line, const state_t &coord, const double delta);
-  /// Obsolete, update your code
-  virtual void init(Worldline * line, const double *coord, const double delta) = delete;
 
   /**
    * \brief Cache whatever needs to be cached
@@ -988,8 +983,6 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
    * \param[in] h1max maximum step in case of adaptive integration
    */
   virtual int nextStep(state_t &coord, double &tau, double h1max=GYOTO_DEFAULT_DELTA_MAX)=0;
-  /// Obsolete, update your code
-  virtual int nextStep(double *coord, double h1max=GYOTO_DEFAULT_DELTA_MAX) = delete;
 
   /// Make one step of exactly this size.
   /**
@@ -1004,10 +997,6 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
   virtual void doStep(state_t const &coordin, 
 		      double step,
 		      state_t &coordout)=0;
-  /// Obsolete, update your code
-  virtual void doStep(double const coordin[8], 
-                      double step,
-		      double coordout[8]) = delete;
 
 };
 

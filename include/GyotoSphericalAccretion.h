@@ -10,7 +10,7 @@
  */
 
 /*
-    Copyright 2021 Frederic Vincent, Thibaut Paumard
+    Copyright 2021-2022, 2026 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -108,10 +108,11 @@ class Gyoto::Astrobj::SphericalAccretion
     
   virtual double operator()(double const coord[4]) ;
 
+  using Astrobj::Generic::radiativeQ;
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,
-			  double const coord_obj[8]=NULL) const ;
+			  double const coord_obj[8]=NULL) const override;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
 
 };
