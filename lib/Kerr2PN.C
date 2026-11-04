@@ -28,45 +28,6 @@ using namespace Gyoto;
 using namespace Gyoto::Metric;
 using namespace std;
 
-/*
-  ---------------------------------------------------------------------
-  Kerr metric in harmonic Cartesian coordinates, truncated at 1PN / 2PN.
-
-  Conventions (see the document "Christoffel Symbols in the Kerr Metric,
-  Harmonic Coordinates, Second-Order Post-Newtonian Approximation", 
-  K. Abd El Dayem):
-
-   - Geometrized units G = c = M = 1.
-   - Cartesian harmonic coordinates x^mu = (t, x, y, z), pos[0..3].
-   - Spin axis along z: e = (0,0,1), J = (0,0,spin_).
-   - n = x/r, n.e = z/r.
-
-  PERFORMANCE NOTES
-  -----------------
-  christoffel() is the hot path of the integrator (called several times
-  per step), gmunu(g,pos) is called by every norm / scalar-product check.
-  Both are therefore written as straight-line code:
-
-   * one sqrt and one division per call (everything else is multiplication
-     by powers of ir = 1/r),
-   * no Levi-Civita symbol, no function calls, no branches inside loops:
-     with J = spin*z_hat the frame-dragging terms have a closed form
-     (derived below) and only the non-zero components are written,
-   * the PN order and spin tests are hoisted out of all loops.
-
-  Closed form of the gravitomagnetic part, h_i := g_{0i} = 2 (x X J)_i / r^3
-  with J = (0,0,chi):
-      h = ( 2 chi y / r^3 , -2 chi x / r^3 , 0 )
-      d_x h_x = -6 chi x y / r^5          d_y h_x =  2chi/r^3 - 6 chi y^2/r^5
-      d_z h_x = -6 chi y z / r^5          d_x h_y = -2chi/r^3 + 6 chi x^2/r^5
-      d_y h_y =  6 chi x y / r^5          d_z h_y =  6 chi x z / r^5
-      d_m h_z = 0
-  and
-      Gamma^0_ij = -1/2 (d_i h_j + d_j h_i)
-      Gamma^i_0j =  1/2 (d_j h_i - d_i h_j)      (antisymmetric in i,j)
-  ---------------------------------------------------------------------
-*/
-
 /// Properties
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(Kerr2PN, "Kerr spacetime at second post-Newtonian order, "

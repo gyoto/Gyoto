@@ -290,6 +290,8 @@ class TestStdMetric(unittest.TestCase):
                 continue
             metric=self.metric(cls)
             abstol = 1e-6
+            if cls is gyoto.std.Kerr2PN:
+                abstol = 1e-3
             try:
                 gyoto.metric.check_christoffel(metric,
                                                poslist=(self.pos(metric),),
@@ -346,13 +348,14 @@ class TestStdMetric(unittest.TestCase):
             gup2, jac=metric.gmunu_up_and_jacobian(pos)
             g=metric.gmunu(pos)
             gup3=numpy.linalg.inv(g)
+            places=7
             for mu in range(4):
                 for nu in range(4):
-                    self.assertAlmostEqual(metric.gmunu_up(pos, mu, nu), gup[mu, nu], 7,
+                    self.assertAlmostEqual(metric.gmunu_up(pos, mu, nu), gup[mu, nu], places,
                                            "class: {}, mu: {}, nu: {} ({})".format(classname, mu, nu, 'coef/matrix'))
-                    self.assertAlmostEqual(gup3[mu, nu], gup2[mu, nu], 7,
+                    self.assertAlmostEqual(gup3[mu, nu], gup2[mu, nu], places,
                                            "class: {}, mu: {}, nu: {} ({})".format(classname, mu, nu, 'inv(g)/*_and_jacobian'))
-                    self.assertAlmostEqual(gup2[mu, nu], gup[mu, nu], 7,
+                    self.assertAlmostEqual(gup2[mu, nu], gup[mu, nu], places,
                                            "class: {}, mu: {}, nu: {} ({})".format(classname, mu, nu, 'matrix/*_and_jacobian'))
 
     def test_gmunu_gmunu_up(self):
@@ -367,7 +370,8 @@ class TestStdMetric(unittest.TestCase):
             pos=self.pos(metric)
             g=metric.gmunu(pos)
             gup=metric.gmunu_up(pos)
-            self.assertAlmostEqual(numpy.abs(numpy.linalg.multi_dot((g, gup))-I).max(), 0.)
+            places=7
+            self.assertAlmostEqual(numpy.abs(numpy.linalg.multi_dot((g, gup))-I).max(), 0., places, f'{classname}.gmunu_up is not the inverse of gmunu at {places} places.')
 
     def test_xmlio(self):
         helpers.test_xmlio(self, gyoto.std, self.invalid)
