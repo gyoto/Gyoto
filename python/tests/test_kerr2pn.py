@@ -62,23 +62,24 @@ class TestKerr2PN(unittest.TestCase):
         fresh = make(gyoto.std.Kerr2PN)
         g = fresh.gmunu(TEST_POINT)
         # Kerr2PN has no gmunu_up of its own, so Gyoto's generic one is used:
-        # it inverts gmunu numerically, which for this metric is only exact to
-        # ~1e-5 (hence the 1e-4 tolerance below; KerrHarmonic, which has its
-        # own gmunu_up, reaches ~1e-16).
-        for label in ("1st call", "2nd call"):   # generic gmunu_up did not behave the same on the 1st and later calls
+        # it inverts gmunu using a pivot algorithm.
+        for label in ("1st call", "2nd call"):   # generic gmunu_up
+                                                 # used to not behave
+                                                 # the same on the 1st
+                                                 # and later calls
             with self.subTest(call=label):
                 gup = fresh.gmunu_up(TEST_POINT)
-                self.assertLess(np.abs(g @ gup - np.eye(4)).max(), 1e-4,
+                self.assertLess(np.abs(g @ gup - np.eye(4)).max(), 1e-15,
                                 "|g.g_up - 1|")
-                self.assertLess(np.abs(gup - np.linalg.inv(g)).max(), 1e-4,
+                self.assertLess(np.abs(gup - np.linalg.inv(g)).max(), 1e-15,
                                 "|g_up - numpy inv(g)|")
-                self.assertLess(np.abs(gup - gup.T).max(), 1e-4,
+                self.assertLess(np.abs(gup - gup.T).max(), 1e-16,
                                 "|g_up - g_up transposed|")
-        # For comparison, KerrHarmonic has its own gmunu_up: machine precision.
+        # For comparison, KerrHarmonic has its own gmunu_up.
         g2 = self.kerrharm.gmunu(TEST_POINT)
         gup2 = self.kerrharm.gmunu_up(TEST_POINT)
-        self.assertLess(np.abs(g2 @ gup2 - np.eye(4)).max(), 1e-12)
-        self.assertLess(np.abs(gup2 - gup2.T).max(), 1e-12)
+        self.assertLess(np.abs(g2 @ gup2 - np.eye(4)).max(), 1e-15)
+        self.assertLess(np.abs(gup2 - gup2.T).max(), 1e-16)
 
     # ------------------------------------------------------------------
     # CHECK 2.  Christoffels written in the code versus Christoffels
@@ -98,7 +99,7 @@ class TestKerr2PN(unittest.TestCase):
                 for r in radii]
         for k, name in enumerate(NAMES):
             with self.subTest(family=name):
-                self.assertLess(rows[-1][k], max(rows[0][k], 1e-8),
+                self.assertLess(rows[-1][k], rows[0][k],
                                 name + ": difference should decrease with r")
 
     # ------------------------------------------------------------------
