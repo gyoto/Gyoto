@@ -101,7 +101,9 @@ public:
   void pnOrder(double n); ///< Sets PN truncation order (1 or 2)
   double pnOrder() const; ///< Returns PN truncation order
 
-  using Generic::gmunu;
+  // Don't add the 'using' directive since we override the two
+  // overloads of gmunu: this confuses swig
+  // using Generic::gmunu;
   double gmunu(double const x[4], int mu, int nu) const override;
   void gmunu(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) const override;
   using Generic::christoffel;

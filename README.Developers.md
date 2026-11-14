@@ -165,26 +165,34 @@ The recipe, to be applied in your class declaration:
 class KerrBL: public Generic {
   ...
 public:
-  // Rule 1: un-hide the overloads we don't redefine
+  // Rule 1: un-hide the overloads we don't redefine — but only if we
+  // don't redefine all of them;
   using Generic::gmunu;
   // Rule 2: mark the one we do redefine with 'override'
   double gmunu(double const x[4], int mu, int nu) const override;
 };
 ```
 
-Rule 1: always add the `using BaseClass::method;` line for every
-overloaded base-class method you redefine.
+Rule 1: add using `BaseClass::method;` if you redefine some but not
+all of the overloads of a base-class method. If you redefine all of
+them, do not add the using line at all.
+
 Rule 2: always end your redefined method with the `override` keyword.
 
-Gyoto builds with `-Woverloaded-virtual -Werror=overloaded-virtual` in
-`CXXFLAGS`, so breaking Rule 1 is a hard compile-time error: the
-compiler tells you exactly which method is hidden and where to add the
-"using" line.
+Explanation for rule 1: Gyoto builds with `-Woverloaded-virtual
+-Werror=overloaded-virtual` in `CXXFLAGS`, so breaking Rule 1 is a
+hard compile-time error: the compiler tells you exactly which method
+is hidden and where to add the "using" line. At the same time, adding
+the `using` directive is unnecessary when all of the overloads are
+redefined, and confuses Swig < 4.0 (`Error: '...' is multiply defined
+in the generated target language module`), which we still aim at
+supporting.
 
-Following Rule 2 ensures that a typo in the parameter list of a method
-meant to override a base-class method — or a change in the base class
-not yet reflected in the derived class — produces an explicit
-compile-time error instead of a hard-to-find bug.
+Explanation for rule 2: marking override definitions as such ensures
+that a typo in the parameter list of a method meant to override a
+base-class method — or a change in the base class not yet reflected in
+the derived class — produces an explicit compile-time error instead of
+a hard-to-find bug.
 
 Documenting your class:
 -----------------------
