@@ -866,9 +866,13 @@ Matrix4d Generic::Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
     P = dsem*gg_->unitLength() * (I - 0.5 * Kmat * dsem*gg_->unitLength());
   } else {
     // General case, exact formula
-    // Use of Eigen calculus of the exponetial of the matrice
+    // P = int_0^ds exp(-K s) ds is the upper-right block of exp([[-K, 1], [0, 0]] ds),
+    // which stays exact where K is singular (no absorption, or alpha_P = alpha_I)
     GYOTO_DEBUG << "Intermediate regime: computing exact exponential" << endl;;
-    P = Kmat.fullPivLu().solve(I - (-Kmat * dsem*gg_->unitLength()).exp());
+    Matrix<double, 8, 8> aug = Matrix<double, 8, 8>::Zero();
+    aug.topLeftCorner<4, 4>() = -Kmat * dsem*gg_->unitLength();
+    aug.topRightCorner<4, 4>() = I * dsem*gg_->unitLength();
+    P = aug.exp().topRightCorner<4, 4>();
   }
 
   if (P(0,0) < 0.) {
