@@ -408,8 +408,8 @@ void Plasmoid::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
     for (size_t ii=0; ii<nbnu; ++ii) {
       Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi);
-      Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
-      Eigen::Matrix4d Pmat = Pmatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], sin(2.*Chi), cos(2.*Chi), dsem);
+      Eigen::Matrix4d Omat, Pmat;
+      transferMatrices(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem, Omat, Pmat);
 
       // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
       Eigen::Vector4d Stokes=Pmat*Jstokes;
