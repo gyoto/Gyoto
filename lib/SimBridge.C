@@ -761,7 +761,8 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
 	vel[2] = 0.;
         vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
       }else{
-        cout << "WARNING: Radial motion below the radius of the ISCO for the keplerian rotation! Cunningham prescription only implemented for the Kerr metric." << endl;
+        if (cunninghamvel_)
+          GYOTO_WARNING << "Radial motion below the radius of the ISCO for the keplerian rotation! Cunningham prescription only implemented for the Kerr metric." << endl;
         double grr = gg_->gmunu(pos,1,1),
                guptt = gg_->gmunu_up(pos,0,0),
                guptp = gg_->gmunu_up(pos,0,3);
