@@ -97,7 +97,7 @@ scr.Resolution = res
 scr.AngleKind = "Rectilinear"
 scr.Distance = 2, "m" # camera is at 2m from the BH
 # ~40°, 36mm film behind a 50mm lense
-scr.FieldOfView = 2.*numpy.atan(36./100.) 
+scr.FieldOfView = 2.*numpy.arctan(36./100.) 
 
 # Use an empty Astrobj, just set rmax to 10 meters:
 ao = gyoto.std.ComplexAstrobj()

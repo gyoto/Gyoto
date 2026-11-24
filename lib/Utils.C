@@ -389,65 +389,77 @@ void Gyoto::sphericalToCartesian(double const spos[3], double cpos[3]) {
 
 // Matrix inversion
 void Gyoto::matrix4Invert(double Am1[4][4], double const A[4][4]) {
-  // Invert 4×4 matrix using Gauss pivot
-  double tmp[4][4];
-  int i, j, jj, jl;
-  double fact;
+  // Gauss-Jordan implementation provided by Mistral AI
+  // Note: working with long doubles would be beneficial for some matrices
+  const int n = 4;
+  double M[n][n];   // working copy of A
+  double B[n][n];   // right-hand side, starts as identity
+  int colperm[n];        // colperm[j] = original index of the column now in position j
+  int i, j, k;
 
-  // Initialize Am1 as identity matrix
-  // copy A into tmp
-  for (j=0; j<4; ++j) {
-    for (i=0; i<4; ++i) {
-      Am1[i][j] = (i==j);
-      tmp[i][j] = A[i][j];
+  // Copy A into M, set B = I, find the scale of A
+  double amax = 0.;
+  for (j = 0; j < n; ++j)
+    for (i = 0; i < n; ++i) {
+      M[i][j] = A[i][j];
+      B[i][j] = (i == j) ? 1. : 0.;
+      colperm[j] = j;
+      double a = std::fabs(M[i][j]);
+      if (a > amax) amax = a;
+    }
+
+  const double NaN = std::numeric_limits<double>::quiet_NaN();
+  const double eps = std::numeric_limits<double>::epsilon();
+  if (amax == 0.) {                       // zero matrix: singular
+    for (j = 0; j < n; ++j)
+      for (i = 0; i < n; ++i) Am1[i][j] = NaN;
+    return;
+  }
+
+  for (k = 0; k < n; ++k) {
+    // Complete pivoting: largest |M[i][j]| in the trailing submatrix
+    double piv = 0.;
+    int pr = k, pq = k;
+    for (j = k; j < n; ++j)
+      for (i = k; i < n; ++i) {
+        double a = std::fabs(M[i][j]);
+        if (a > piv) { piv = a; pr = i; pq = j; }
+      }
+    if (piv <= eps * amax) {              // numerically singular
+      for (j = 0; j < n; ++j)
+        for (i = 0; i < n; ++i) Am1[i][j] = NaN;
+      return;
+    }
+    // Swap rows k and pr (in both M and B)
+    if (pr != k)
+      for (j = 0; j < n; ++j) {
+        double t = M[k][j]; M[k][j] = M[pr][j]; M[pr][j] = t;
+        t = B[k][j]; B[k][j] = B[pr][j]; B[pr][j] = t;
+      }
+    // Swap columns k and pq in M only, and record the permutation
+    if (pq != k) {
+      int t = colperm[k]; colperm[k] = colperm[pq]; colperm[pq] = t;
+      for (i = 0; i < n; ++i) {
+        double u = M[i][k]; M[i][k] = M[i][pq]; M[i][pq] = u;
+      }
+    }
+    // Normalize the pivot row so that M[k][k] = 1
+    double d = 1. / M[k][k];
+    for (j = 0; j < n; ++j) { M[k][j] *= d; B[k][j] *= d; }
+    // Gauss-Jordan: eliminate column k from every other row
+    for (i = 0; i < n; ++i) {
+      if (i == k) continue;
+      double f = M[i][k];
+      if (f != 0.)
+        for (j = 0; j < n; ++j) { M[i][j] -= f * M[k][j]; B[i][j] -= f * B[k][j]; }
     }
   }
 
-  // Turn tmp in upper diagonal matrix with ones on the diagonal
-  for (j=0; j<4; ++j) {
-    // exchange row j with later row with largest coeff in column j
-    // (to deal with case of zero or small value on the diagonal
-    fact=tmp[j][j];
-    jl=j;
-    for (jj=j+1; jj<4; ++jj) {
-      if (fabs(tmp[j][jj])>fabs(fact)) {
-	jl=jj;
-	fact=tmp[j][jj];
-      }
-    }
-    fact=1./fact;
-    if (jl!=j) {
-      double c;
-      for (i=j; i<4; ++i) {
-	c=tmp[i][jl];
-	tmp[i][jl]=tmp[i][j];
-	tmp[i][j]=c*fact;
-      }
-      for (i=0; i<4; ++i) {
-	c=Am1[i][jl];
-	Am1[i][jl]=Am1[i][j];
-	Am1[i][j]=c*fact;
-      }
-    } else {
-      for (i=j; i<4; ++i) tmp[i][j] *= fact;
-      for (i=0; i<4; ++i) Am1[i][j] *= fact;
-    }
-    // subtract this row times of factor to each later row
-    for (jj = j+1; jj < 4; ++jj) {
-      fact = tmp[j][jj];
-      for (i=j+1; i<4; ++i) tmp[i][jj] -= fact*tmp[i][j];
-      for (i=0; i<4; ++i) Am1[i][jj] -= fact*Am1[i][j];
-    }
-  }
-
-  // Cancel upper triangle to get finally the identity matrix
-  for (j=3; j>=0; --j) {
-    for (jj = j-1; jj >= 0; --jj) {
-      fact = tmp[j][jj];
-      for (i=0; i<4; ++i) tmp[i][jj] -= fact*tmp[i][j];
-      for (i=0; i<4; ++i) Am1[i][jj] -= fact*Am1[i][j];
-    }
-  }
+  // M is now the identity and B = L with L*A*C = I, so A^{-1} = C*B:
+  // row j of B becomes row colperm[j] of the inverse.
+  for (k = 0; k < n; ++k)
+    for (i = 0; i < n; ++i)
+      Am1[colperm[k]][i] = (double) B[k][i];
 }
 
 

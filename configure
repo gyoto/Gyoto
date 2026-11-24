@@ -20446,6 +20446,97 @@ fi
 done
 
 
+## Try to make it fatal to hide a virtual method
+#
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -Woverloaded-virtual" >&5
+printf %s "checking whether C++ compiler accepts -Woverloaded-virtual... " >&6; }
+if test ${ax_cv_check_cxxflags___Woverloaded_virtual+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$CXXFLAGS
+  CXXFLAGS="$CXXFLAGS  -Woverloaded-virtual"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"
+then :
+  ax_cv_check_cxxflags___Woverloaded_virtual=yes
+else case e in #(
+  e) ax_cv_check_cxxflags___Woverloaded_virtual=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CXXFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___Woverloaded_virtual" >&5
+printf "%s\n" "$ax_cv_check_cxxflags___Woverloaded_virtual" >&6; }
+if test x"$ax_cv_check_cxxflags___Woverloaded_virtual" = xyes
+then :
+
+    CXXFLAGS="$CXXFLAGS -Woverloaded-virtual"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -Werror=overloaded-virtual" >&5
+printf %s "checking whether C++ compiler accepts -Werror=overloaded-virtual... " >&6; }
+if test ${ax_cv_check_cxxflags___Werror_overloaded_virtual+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$CXXFLAGS
+  CXXFLAGS="$CXXFLAGS  -Werror=overloaded-virtual"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"
+then :
+  ax_cv_check_cxxflags___Werror_overloaded_virtual=yes
+else case e in #(
+  e) ax_cv_check_cxxflags___Werror_overloaded_virtual=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CXXFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___Werror_overloaded_virtual" >&5
+printf "%s\n" "$ax_cv_check_cxxflags___Werror_overloaded_virtual" >&6; }
+if test x"$ax_cv_check_cxxflags___Werror_overloaded_virtual" = xyes
+then :
+  CXXFLAGS="$CXXFLAGS -Werror=overloaded-virtual"
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cannot make -Woverloaded-virtual fatal" >&5
+printf "%s\n" "$as_me: WARNING: cannot make -Woverloaded-virtual fatal" >&2;}
+     ;;
+esac
+fi
+
+
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: C++ compiler does not support -Woverloaded-virtual" >&5
+printf "%s\n" "$as_me: WARNING: C++ compiler does not support -Woverloaded-virtual" >&2;}
+ ;;
+esac
+fi
+
+
 ## Optional addition to the SONAME
 #
 FEATURES=""

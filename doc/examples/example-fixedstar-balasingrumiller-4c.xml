@@ -20,10 +20,10 @@
     <Inclination unit="degree"> 90 </Inclination>
     "degree" can be written "°" in UTF-8 locales.
     <PALN> 0 </PALN>
-		<Dangle1 unit="as"> 0.3e2 </Dangle1>
-    <Dangle2 unit="as"> -1.4e2 </Dangle2>
+		<Dangle1 unit="as"> 0.2e2 </Dangle1>
+    <Dangle2 unit="as"> -1.2e2 </Dangle2>
      <Argument> 0 </Argument>
-    <Resolution> 400 </Resolution>
+    <Resolution> 402 </Resolution>
   </Screen>
 
   <Astrobj kind = "FixedStar">

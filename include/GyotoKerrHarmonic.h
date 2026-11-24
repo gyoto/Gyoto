@@ -58,11 +58,11 @@ public:
   void spin(const double charge); ///< Sets spin
   double spin() const ; ///< Returns spin
 
-  //using Generic::gmunu;
+  // using Generic::gmunu;
   double gmunu(double const x[4], int mu, int nu) const ;
   virtual void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
   
-  //using Generic::gmunu_up;
+  using Generic::gmunu_up;
   void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const;
 
   void jacobian(double ARGOUT_ARRAY3[4][4][4], const double x[4]) const ;

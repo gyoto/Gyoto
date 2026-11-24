@@ -81,7 +81,6 @@ The first step is to install the dependencies. Please refer to
 dependencies.
 
 Gyoto requires:
-
    - a C++ compiler. GCC 8 and above work very well. Several
      features require the C++17 standard. Clang/LLVM is discouraged,
      see [BUGS.md](BUGS.md).
@@ -113,13 +112,14 @@ Gyoto requires:
      interpreted language, allowing to write Gyoto scripts). Python
      3.9 to 3.14 have been tested. For building the Python bindings,
      the Python development files are naturally required (sometimes
-     found in the python-dev or python3-dev package), as well as the
-     Python packages Numpy, Build and PIP, and Swig:
+     found in the python-dev or python3-dev package), as well as Swig
+     (4.0 or above is recommended, although we make effort to support
+     Swig 3.x) and the Python packages Numpy, Build and PIP:
        https://www.python.org/
+       http://www.swig.org/
        http://www.numpy.org/
        https://build.pypa.io/
        https://pip.pypa.io/
-       http://www.swig.org/
      Note that although fairly complete, the Python interface is
      likely to change in future releases. Be ready to adapt your
      scripts, or contact us is stability of the API is important for
@@ -150,7 +150,7 @@ those dependencies with:
     sudo apt-get install build-essential yorick-dev yorick-yutils \
     libxerces-c-dev libcfitsio-dev libudunits2-dev libboost-dev \
     libboost-mpi-dev libflint-arb-dev libflint-dev mpi-default-dev \
-    python3-dev python3-setuptools swig3.0 python3-numpy python3-build \
+    python3-dev python3-setuptools swig python3-numpy python3-build \
     python3-pip python3-matplotlib \
     doxygen pkg-config liblorene-dev lorene-codes-src gfortran g++ libeigen3-dev
 

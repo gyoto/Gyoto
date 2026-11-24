@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2014, 2016, 2018, 2020 Frederic Vincent & Thibaut Paumard
+    Copyright 2011-2026 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -131,7 +131,8 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   double ScalarProd(const double pos[4],
 		    const double u1[4], const double u2[4]) const ;
 
-  virtual int setParameter(std::string, std::string, std::string);
+  using Generic::setParameter;
+  virtual int setParameter(std::string, std::string, std::string) override;
 
 };
 

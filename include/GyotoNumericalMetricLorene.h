@@ -6,7 +6,7 @@
  */
 
 /*
- *   Copyright (c) 2014-2018, 2020 Frederic Vincent, Thibaut Paumard
+ *   Copyright (c) 2014-2018, 2020, 2026 Frederic Vincent, Thibaut Paumard
  *
  *
  */
@@ -148,7 +148,9 @@ class Gyoto::Metric::NumericalMetricLorene
 
   double gmunu(const double x[3], int indice_time, int mu, int nu) const ;
 
-  virtual void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
+  using Generic::gmunu_up;
+  virtual void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4])
+    const override;
 
   void gmunu_up(double gup[4][4], const double x[4], int indice_time) const ;
 

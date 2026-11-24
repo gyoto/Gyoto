@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright 2014, 2015, 2019-2020 Thibaut Paumard & Frédéric Vincent
+    Copyright 2014, 2015, 2019-2020, 2026 Thibaut Paumard & Frédéric Vincent
 
     This file is part of Gyoto.
 
@@ -67,10 +67,11 @@ class Gyoto::Metric::Minkowski
   double gmunu(const double x[4], int mu, int nu) const ;
   double christoffel(const double coord[4],
 		     const int alpha, const int mu, const int nu) const ;
+  using Metric::Generic::observerTetrad;
   void observerTetrad(obskind_t obskind,
 		      double const pos[4], double fourvel[4],
 		      double screen1[4], double screen2[4], 
-		      double screen3[4]) const;
+		      double screen3[4]) const override;
 
   // We reimplement diff to be able to integrate Newton's law of motion
   virtual int diff(state_t const &x, state_t &dxdt, double mass) const ;
