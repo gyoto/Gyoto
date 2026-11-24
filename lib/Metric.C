@@ -420,7 +420,7 @@ void Metric::Generic::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4
 
 void Metric::Generic::computeNBeta(const double *, double &,double *) const
 {
-  throwError("In Metric::computeNBeta not implemented");
+  GYOTO_ERROR("In Metric::computeNBeta not implemented");
 }
 
 double Metric::Generic::christoffel(const double * x, int alpha, int mu, int nu) const {
@@ -496,7 +496,7 @@ int Metric::Generic::diff(const state_t &x,
 }
 
 int Metric::Generic::diff31(const state_t &, state_t &, double ) const {
-  throwError("In Metric::diff31 not implemented");
+  GYOTO_ERROR("In Metric::diff31 not implemented");
   return 1; // Should never be reached but silence compile-time warning 
 }
 
@@ -923,3 +923,4 @@ void Gyoto::Metric::Register(std::string name, Metric::Subcontractor_t* scp) {
 }
 
 GYOTO_GETSUBCONTRACTOR(Metric)
+GYOTO_REGISTEREDPLUGINSSLASHKINDS(Metric)

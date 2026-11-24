@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2014, 2017-2019 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2026 Thibaut Paumard, Frederic Vincent, Julien Brulé
 
     This file is part of Gyoto.
 
@@ -51,10 +51,12 @@ GYOTO_PROPERTY_END(PatternDisk, ThinDisk::properties)
 
 void PatternDisk::fillProperty(Gyoto::FactoryMessenger *fmp,
 			       Property const &p) const {
-  if (p.name == "File")
-    fmp->setParameter("File", (filename_.compare(0,1,"!") ?
-			       filename_ :
-			       filename_.substr(1)) );
+  if (p.name == "File") {
+    if (!file().empty())
+      fmp->setParameter("File", (filename_.compare(0,1,"!") ?
+				 filename_ :
+				 filename_.substr(1)) );
+  }
   else ThinDisk::fillProperty(fmp, p);
 }
 
@@ -231,8 +233,6 @@ void PatternDisk::repeatPhi(size_t n) {
   repeat_phi_ = n;
   if ((nphi_-1)*repeat_phi_>0) 
     dphi_=(phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
-  GYOTO_WARNING << "PatternDisk: not tested for repeat_phi_>1; "
-    "check your results" << endl;
 }
 size_t PatternDisk::repeatPhi() const { return repeat_phi_; }
 
@@ -256,7 +256,7 @@ double PatternDisk::phimax() const {return phimax_;}
 
 #ifdef GYOTO_USE_CFITSIO
 void PatternDisk::fitsRead(string filename) {
-  GYOTO_MSG << "PatternDisk reading FITS file: " << filename << endl;
+  GYOTO_INFO << "PatternDisk reading FITS file: " << filename << endl;
 
   filename_ = filename;
   int rin_set=0, rout_set=0;
@@ -472,10 +472,11 @@ void PatternDisk::fitsRead(string filename) {
   fptr = NULL;
 }
 
-void PatternDisk::fitsWrite(string filename) {
+void PatternDisk::fitsWrite(std::string filename, const std::string & prefix) {
   if (!emission_) GYOTO_ERROR("PatternDisk::fitsWrite(filename): nothing to save!");
-  filename_ = filename;
-  char*     pixfile   = const_cast<char*>(filename_.c_str());
+
+  std::string fullname;
+  char*     pixfile;
   fitsfile* fptr      = NULL;
   int       status    = 0;
   long      naxes []  = {long(nnu_), long(nphi_), long(nr_)};
@@ -484,9 +485,22 @@ void PatternDisk::fitsWrite(string filename) {
 
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
 
+  if (!filename.compare(0,1,"!")) {
+    filename_ = filename.substr(1);
+    fullname = "!" + prefix + filename_;
+  } else {
+    filename_ = filename;
+    fullname = prefix + filename_;
+  }
+
+  pixfile = const_cast<char *>(fullname.c_str());
+  GYOTO_DEBUG_EXPR(filename_);
+  GYOTO_DEBUG_EXPR(pixfile);
+
   ////// CREATE FILE
   GYOTO_DEBUG << "creating file \"" << pixfile << "\"... ";
   fits_create_file(&fptr, pixfile, &status);
+  if (status) throwCfitsioError(status) ;
   if (debug()) cerr << "done." << endl;
   fits_create_img(fptr, DOUBLE_IMG, 3, naxes, &status);
   if (status) throwCfitsioError(status) ;

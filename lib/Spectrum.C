@@ -149,6 +149,7 @@ void Gyoto::Spectrum::Register(std::string name,
 }
 
 GYOTO_GETSUBCONTRACTOR(Spectrum)
+GYOTO_REGISTEREDPLUGINSSLASHKINDS(Spectrum)
 
 void Gyoto::Spectrum::initRegister() {
   if (Gyoto::Spectrum::Register_) delete Gyoto::Spectrum::Register_;

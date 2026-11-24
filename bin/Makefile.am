@@ -35,6 +35,21 @@ gyoto_mpi_worker_@sovers@_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIO_LIBS) -export-dynam
 gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
 	cp $^ $@
 
+# create gyotoy symlink upon installation
+install-exec-hook:
+	cd $(DESTDIR)$(bindir) && \
+	  $(LN_S) -f gyoto$(EXEEXT) gyotoy$(EXEEXT)
+
+# create gyotoy.1 symlink upon installation
+install-data-hook:
+	cd $(DESTDIR)$(man1dir) && \
+	  $(LN_S) -f gyoto.1 gyotoy.1
+
+# remove symlinks on uninstallation
+uninstall-hook:
+	-rm -f $(DESTDIR)$(bindir)/gyotoy$(EXEEXT)
+	-rm -f $(DESTDIR)$(man1dir)/gyotoy.1
+
 export PATH := .:$(PATH)
 
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
@@ -121,10 +136,10 @@ check-wip: check-wip-nompi
 if HAVE_PYTHON
 
 $(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(GYOTO_PYTHON_LA) ../python/testbed/stamp ../lib/libgyoto-stdplug.la
-	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+	PYTHONPYCACHEPREFIX=../python/pycache PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 $(CHECK_PYTHON_MPI_RESULTS): gyoto gyoto-mpi-worker.@sovers@ $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN) ../python/testbed/stamp ../lib/libgyoto-stdplug.la
-	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+	PYTHONPYCACHEPREFIX=../python/pycache PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 check-python-nompi-compute: $(CHECK_PYTHON_RESULTS)
 check-python-nompi: check-python-nompi-clean check-python-nompi-compute

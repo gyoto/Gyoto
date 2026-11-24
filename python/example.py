@@ -57,9 +57,12 @@ if len(examples_dir) > 0 and examples_dir[-1] != "/":
 
 # Simple stuff
 
-scr=gyoto.core.Screen()
+scr = gyoto.core.Screen()
 scr.Metric = gyoto.metric.KerrBL()
-pos=scr.getObserverPos()
+pos = scr.getObserverPos()
+
+# Same in one call:
+pos = gyoto.core.Screen(Metric=gyoto.metric.KerrBL()).getObserverPos()
 
 # Load Scenery
 
@@ -235,27 +238,26 @@ else:
 
 # Another Scenery, with impact coords, created from within Python
 
-met=gyoto.metric.KerrBL()
-met.Mass = 4e6, "sunmass"
-ao=gyoto.astrobj.PageThorneDisk()
-ao.Metric        = met
-ao.OpticallyThin = False
-ao.RMax          = 100
-screen=gyoto.core.Screen()
-screen.Distance    = 8, "kpc"
-screen.Time        = 8, "kpc"
-screen.Resolution  = 64
-screen.Inclination = numpy.pi/4
-screen.PALN        = numpy.pi
-screen.Time        = 8, "kpc"
-screen.FieldOfView = 100, "µas"
-sc=gyoto.core.Scenery()
-sc.Metric   = met
-sc.Astrobj  = ao
-sc.Screen   = screen
-sc.Delta    = 1, "kpc"
-sc.Adaptive = True
-sc.NThreads = 8
+sc=gyoto.core.Scenery(
+    Metric   = gyoto.metric.KerrBL(
+        Mass = (4e6, "sunmass"),
+    ),
+    Astrobj  = gyoto.astrobj.PageThorneDisk(
+        OpticallyThin = False,
+        RMax          = 100,
+    ),
+    Screen   = gyoto.core.Screen(
+        Distance    = (8, "kpc"),
+        Time        = (8, "kpc"),
+        Resolution  = 64,
+        Inclination = numpy.pi/4,
+        PALN        = numpy.pi,
+        FieldOfView = (100, "µas"),
+    ),
+    Delta    = (1, "kpc"),
+    Adaptive = True,
+    NThreads = 8,
+)
 
 res=sc.Screen.Resolution
 
@@ -283,9 +285,9 @@ else:
 
 N=10
 
-buf=numpy.linspace(screen.fieldOfView()*-0.5, screen.fieldOfView()*0.5, N)
+buf=numpy.linspace(sc.Screen.fieldOfView()*-0.5, sc.Screen.fieldOfView()*0.5, N)
 a=gyoto.core.Angles(buf)
-d=gyoto.core.RepeatAngle(screen.fieldOfView()*-0.5, N)
+d=gyoto.core.RepeatAngle(sc.Screen.fieldOfView()*-0.5, N)
 bucket=gyoto.core.Bucket(a, d)
 
 ipct=numpy.zeros((N, 16), dtype=float)

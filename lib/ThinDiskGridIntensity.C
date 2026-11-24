@@ -92,7 +92,8 @@ ThinDiskGridIntensity::~ThinDiskGridIntensity() {
 
 void ThinDiskGridIntensity::file(std::string const &f) {
 # ifdef GYOTO_USE_CFITSIO
-  fitsRead(f);
+  if (!f.empty() && !(f.back() == '/'))
+    fitsRead(f);
 # else
   GYOTO_ERROR("This Gyoto has no FITS i/o");
 # endif
@@ -102,21 +103,21 @@ std::string ThinDiskGridIntensity::file() const {
   return filename_;
 }
 
-void ThinDiskGridIntensity::timeTranslation_inMunit(double const dt) {
+void ThinDiskGridIntensity::translateTimeArray(double const delta_t) {
   double tmin=GridData2D::tmin(), tmax=GridData2D::tmax();
-  GridData2D::tmin(tmin-deltat_+dt);
-  GridData2D::tmax(tmax-deltat_+dt);
-  deltat_=dt;
-  if (GridData2D::nt()==0)
-    GYOTO_ERROR("In ThinDiskGridIntensity::timeTranslation nt not yet defined");
   int nt = GridData2D::nt();
-  if (!time_array_)
-    GYOTO_ERROR("In ThinDiskGridIntensity::timeTranslation time_array_ not defined. Please use ThinDiskGridIntensity::file(string) before this function");
+  GridData2D::tmin(tmin+delta_t);
+  GridData2D::tmax(tmax+delta_t);
   for (int ii=0;ii<nt;ii++){
-    time_array_[ii]+=dt;
+    time_array_[ii] += delta_t;
   }
   if (GridData2D::tmin()>0)
-    cout << "\nWARNING : tmin is positive, in most cases the stationnary boundary condition will be applied. You should decrease more timeTranslation_inMunit until at least " << -tmin << "\n" << endl;
+    GYOTO_WARNING << "tmin is positive, in most cases the stationnary boundary condition will be applied. You should decrease more timeTranslation_inMunit until at least " << -tmin << "\n" << endl;
+}
+
+void ThinDiskGridIntensity::timeTranslation_inMunit(double const dt) {
+  if (time_array_) translateTimeArray(dt-deltat_);
+  deltat_ = dt;
 }
 
 double ThinDiskGridIntensity::timeTranslation_inMunit() const {
@@ -279,6 +280,9 @@ vector<size_t> ThinDiskGridIntensity::fitsRead(string filename) {
   GridData2D::nr(naxes_intens[0]);
   GridData2D::nphi(naxes_intens[1]);
   GridData2D::nt(naxes_intens[2]);
+
+  translateTimeArray(deltat_);
+
   //cout << "axes intens: " << naxes_intens[0] << " " << naxes_intens[1] << " " << naxes_intens[2] << endl;
   //cout << "axes velo: " << naxes_velo[0] << " " << naxes_velo[1] << " " << naxes_velo[2] << " " << naxes_velo[3] << endl;
 
@@ -311,7 +315,7 @@ double ThinDiskGridIntensity::emission(double /*nu*/, double,
   if (rcyl<GridData2D::rmin() || rcyl>GridData2D::rmax())
     return 0.;
   if (phi<0. or phi>2.*M_PI)
-    throwError("In ThinDiskGridIntensity::radiativeQ: phi is not in 0,2pi!");
+    GYOTO_ERROR("In ThinDiskGridIntensity::radiativeQ: phi is not in 0,2pi!");
   // NB: phi is always in grid, and t might be outside, assuming stationnary
   // disk at t<tmin_ and t>tmax_
 

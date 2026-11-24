@@ -4,6 +4,7 @@ import gyoto.core
 import gyoto.std
 import gyoto.metric
 import inspect
+from . import helpers
 
 class TestChernSimons(unittest.TestCase):
 
@@ -288,8 +289,12 @@ class TestStdMetric(unittest.TestCase):
             if (self.invalid(classname, cls)):
                 continue
             metric=self.metric(cls)
+            abstol = 1e-6
             try:
-                gyoto.metric.check_christoffel(metric, poslist=(self.pos(metric),), epsilon=1e-7)
+                gyoto.metric.check_christoffel(metric,
+                                               poslist=(self.pos(metric),),
+                                               epsilon=1e-7,
+                                               abstol=abstol)
             except AssertionError as e:
                 self.fail(e.__str__())
             pos=self.pos(metric)
@@ -364,41 +369,63 @@ class TestStdMetric(unittest.TestCase):
             gup=metric.gmunu_up(pos)
             self.assertAlmostEqual(numpy.abs(numpy.linalg.multi_dot((g, gup))-I).max(), 0.)
 
-class TestBalasinGrumiller(unittest.TestCase):
-   def setUp(self):
-       """Set up a BalasinGrumiller metric instance before each test"""
-       self.metric = gyoto.core.Metric("BalasinGrumiller")
-       # Set standard parameter values
-       self.metric.set("V0", 0.000733333)
-       self.metric.set("R", 100.0)
-       self.metric.set("r0", 1.0)
+    def test_xmlio(self):
+        helpers.test_xmlio(self, gyoto.std, self.invalid)
 
-   def test_parameters(self):
-       """Test parameter getting/setting"""
-       self.assertAlmostEqual(self.metric.get("V0"), 0.000733333, places=6)
-       self.assertAlmostEqual(self.metric.get("R"), 100.0, places=6)
-       self.assertAlmostEqual(self.metric.get("r0"), 1.0, places=6)
+    def test_exposed_classes(self):
+        helpers.test_exposed_classes(self,
+                                     plg = "stdplug",
+                                     module=gyoto.std,
+                                     nspace=gyoto.metric,
+                                     special={"Complex": "ComplexMetric"})
 
-   def test_metric_components(self):
-       """Test metric tensor components at a specific point, against independently computed values"""
-       pos = [0., 50., numpy.pi/2, 0.]
+class TestStdAstrobj(unittest.TestCase):
 
-       # Test individual components - keeping 6 significant figures
-       self.assertAlmostEqual(self.metric.gmunu(pos, 0, 0), -1.00000, places=5)    # exact
-       self.assertAlmostEqual(self.metric.gmunu(pos, 0, 3), 0.0272848, places=7)   # 6 sig figs
-       self.assertAlmostEqual(self.metric.gmunu(pos, 1, 1), 1.00000, places=5)     # exact
-       self.assertAlmostEqual(self.metric.gmunu(pos, 2, 2), 2500.00, places=2)     # exact
-       self.assertAlmostEqual(self.metric.gmunu(pos, 3, 0), 0.0272848, places=7)   # 6 sig figs
-       self.assertAlmostEqual(self.metric.gmunu(pos, 3, 3), 2500.00, places=2)     # 6 sig figs
+    default_verbosity=gyoto.core.verbose()
 
-   def test_christoffel(self):
-       """Test Christoffel symbols at a specific point, against independently computed values"""
-       pos = [0., 50., numpy.pi/2, 0.]
+    def setUp(self):
+        gyoto.core.verbose(0)
 
-       # Test individual Christoffel components with 6 significant figures
-       self.assertAlmostEqual(self.metric.christoffel(pos, 0, 0, 1), 2.21133e-9, places=14)   # Γ⁰₀₁
-       self.assertAlmostEqual(self.metric.christoffel(pos, 0, 1, 3), 0.000343082, places=9)   # Γ⁰₁₃
-       self.assertAlmostEqual(self.metric.christoffel(pos, 1, 0, 3), -0.000202615, places=9)  # Γ¹₀₃
-       self.assertAlmostEqual(self.metric.christoffel(pos, 1, 2, 2), -50.0000, places=4)      # Γ¹₂₂
-       self.assertAlmostEqual(self.metric.christoffel(pos, 2, 1, 2), 0.0200000, places=7)     # Γ²₁₂ = 1/50
-       self.assertAlmostEqual(self.metric.christoffel(pos, 3, 1, 3), 0.0200000, places=7)     # Γ³₁₃
+    def tearDown(self):
+        gyoto.core.verbose(self.default_verbosity)
+
+    def invalid(self, classname, cls):
+        return (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Astrobj)
+                or cls == gyoto.astrobj.UniformSphere)
+
+    def test_xmlio(self):
+        helpers.test_xmlio(self, gyoto.std, self.invalid)
+
+    def test_exposed_classes(self):
+        helpers.test_exposed_classes(self,
+                                     plg = "stdplug",
+                                     module=gyoto.std,
+                                     nspace=gyoto.astrobj,
+                                     special={"Complex": "ComplexAstrobj"})
+        self.assertEqual(gyoto.core.ThinDisk, gyoto.std.ThinDisk,
+                         "gyoto.core.ThinDisk ≠ gyoto.std.ThinDisk")
+
+class TestStdSpectrum(unittest.TestCase):
+
+    default_verbosity=gyoto.core.verbose()
+
+    def setUp(self):
+        gyoto.core.verbose(0)
+
+    def tearDown(self):
+        gyoto.core.verbose(self.default_verbosity)
+
+    def invalid(self, classname, cls):
+        return (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Spectrum))
+
+    def test_xmlio(self):
+        helpers.test_xmlio(self, gyoto.std, self.invalid)
+
+    def test_exposed_classes(self):
+        helpers.test_exposed_classes(self,
+                                     plg = "stdplug",
+                                     module=gyoto.std,
+                                     nspace=gyoto.spectrum,
+                                     special={})

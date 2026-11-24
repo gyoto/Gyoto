@@ -1,4 +1,4 @@
-# Known bugs affecting
+# Known bugs affecting Gyoto
 
 This file is to list known bugs in Gyoto or its dependencies that
 significantly affect Gyoto but are not easy to fix or workaround in
@@ -14,18 +14,6 @@ causes subsequent installation of Python packages from source to fail
 such empty directories.
 
                         -- Thibaut Paumard, Mon Dec 09 2024.
-
-## Boost.multiprecision 1.62.0 (other nearby versions presumably affected):
-
-A bug makes multiprecision acos() never return in some
-circumstances. This has caused gyoto hanging. As of writing, this is
-fixed in the Boost development tree and worked around in the Debian
-package for Gyoto. For further details and workarounds, see:
-  - https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=844490
-  - https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=844495
-  - https://svn.boost.org/trac/boost/ticket/12625
-
-                        -- Thibaut Paumard, Thu Dec 08 2016.
 
 ## Clang/LLVM compiler (all versions), possibly other compilers:
 

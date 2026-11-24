@@ -8,13 +8,13 @@ in here.
 
 import sys
 
-import gyoto._namespaces as _namespaces
-from gyoto.core import Astrobj as Generic
+from . import _namespaces
+from .core import Astrobj as Generic
 __all__ = _namespaces.make_namespace(Generic, globals())
 del _namespaces
 Complex=ComplexAstrobj
 
-import gyoto.core, gyoto.util
+from . import core, utils
 
 def __getattr__(name):
     '''Allows instanciating any astrobj kind
@@ -37,11 +37,11 @@ def __getattr__(name):
     # Check that a class by that name is registered
     try:
         obj = Generic(name)
-    except gyoto.core.Error:
+    except core.Error:
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
     # Make a class and cache it in the namespace
-    klass = gyoto.util.make_class(sys.modules[__name__], name, None, None, __name__)
+    klass = utils.make_class(sys.modules[__name__], name, None, None, __name__)
     setattr(sys.modules[__name__], name, klass)
     sys.modules[__name__].__all__.append(name)
 

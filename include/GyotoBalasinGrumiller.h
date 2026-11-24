@@ -91,8 +91,11 @@ virtual BalasinGrumiller* clone() const ;
   double Rvalue() const ; ///< Returns R
   double r0value() const ; ///< Returns r0
 
-  void gmunu(double g[4][4], const double x[4]) const ;
-  int christoffel(double dst[4][4][4], const double x[4]) const ;
+  using Gyoto::Metric::Generic::gmunu;
+  void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
+
+  using Gyoto::Metric::Generic::christoffel;
+  int christoffel(double dst[4][4][4], const double coord[4]) const ;
 
   // Those two are implemented as examples.
  // double gmunu(const double x[4], int mu, int nu) const ;

@@ -16,14 +16,23 @@ using namespace std;
 
 /// Properties
 #include "GyotoProperty.h"
-GYOTO_PROPERTY_START(DeformedTorus, "Slender torus subject to simple time-periodic deformations")
+GYOTO_PROPERTY_START
+(DeformedTorus,
+ "Slender torus subject to simple time-periodic deformations, "
+ "supports only KerrBL metric"
+ )
 GYOTO_PROPERTY_SPECTRUM(DeformedTorus, Spectrum, spectrum)
 GYOTO_PROPERTY_DOUBLE(DeformedTorus, LargeRadius, largeRadius)
 GYOTO_PROPERTY_DOUBLE(DeformedTorus, Beta, beta)
 GYOTO_PROPERTY_DOUBLE(DeformedTorus, BetaSt, betaSt)
 GYOTO_PROPERTY_DOUBLE(DeformedTorus, Eta, eta)
 GYOTO_PROPERTY_UNSIGNED_LONG(DeformedTorus, Mode, mode)
-GYOTO_PROPERTY_STRING(DeformedTorus, PerturbKind, perturbKind)
+GYOTO_PROPERTY_STRING
+(
+ DeformedTorus, PerturbKind, perturbKind,
+ "RadialTranslation | VerticalTranslation | Rotation | Expansion | "
+ "RadialShear | VerticalShear | PureShear"
+ )
 GYOTO_PROPERTY_END(DeformedTorus, Standard::properties)
 
 // Accessors
@@ -282,12 +291,11 @@ void DeformedTorus::getVelocity(double const pos[4], double vel[4])
 
 void DeformedTorus::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
 {
-  if (met->kind() != "KerrBL")
+  if (met && !dynamic_cast<const Metric::KerrBL*>(met()))
     GYOTO_ERROR("DeformedTorus::metric(): only KerrBL, please");
-  //if (gg_) gg_ -> unhook(this);
+
   gg_ = SmartPointer<Metric::KerrBL>(met);
   Generic::gg_ = gg_;
-  //if (gg_) gg_ -> hook(this);
 }
 
 

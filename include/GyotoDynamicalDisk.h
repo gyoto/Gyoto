@@ -49,8 +49,8 @@ namespace Gyoto{
  */
 class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::DynamicalDisk>;
- private:
-  char* dirname_; ///< FITS files directory
+private:
+  std::string dirname_; ///< FITS files directory
   double tinit_; ///< date of the first FITS file
   double dt_; ///< Time increment between two FITS (assumed constant)
   size_t nb_times_; ///< Number of dates

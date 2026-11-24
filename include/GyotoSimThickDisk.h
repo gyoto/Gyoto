@@ -62,8 +62,5 @@ class Gyoto::Astrobj::SimThickDisk :
 
   virtual double operator()(double const coord[4]);
 
-  void filename(std::string const &d); ///< Overload of the SimBridge function to set the default HoverR from FITS files
-
-
 };
 #endif

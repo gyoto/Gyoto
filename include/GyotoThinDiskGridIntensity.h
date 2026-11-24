@@ -95,6 +95,7 @@ class Gyoto::Astrobj::ThinDiskGridIntensity
   double const * getIntensity() const;
   void copyTimeArray(double const *const time_array, size_t const ntimes);
   double const * getTimeArray() const;
+  void translateTimeArray(double dt);
  public:
   using Generic::metric;
   std::vector<size_t> fitsRead(std::string filename) ;

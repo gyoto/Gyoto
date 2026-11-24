@@ -63,7 +63,7 @@ void ThinDiskProfile::motionKind(string const &kind) {
   else if (kind == "Mixed")
     motionkind_ = MIXED;
   else
-    throwError("unknown velocity kind");
+    GYOTO_ERROR("unknown velocity kind");
 }
 string ThinDiskProfile::motionKind() const {
   switch (motionkind_) {
@@ -74,14 +74,14 @@ string ThinDiskProfile::motionKind() const {
   case MIXED:
     return "Mixed";
   default:
-    throwError("unknown velocity kind tag");
+    GYOTO_ERROR("unknown velocity kind tag");
   }
   return "will not reach here, this line to avoid compiler warning"; 
 }
 
 void ThinDiskProfile::model_param(std::vector<double> const &v) {
   size_t n = v.size();
-  if (n>NPAR_MAX) throwError("Too many parameters in model_param");
+  if (n>NPAR_MAX) GYOTO_ERROR("Too many parameters in model_param");
   for (size_t i=0; i<n; ++i) model_param_[i]=v[i];
 }
 std::vector<double> ThinDiskProfile::model_param() const {
@@ -378,13 +378,13 @@ void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
     double u2 = gg_->ScalarProd(pos,vel,vel);
     if (fabs(u2_rad+1.)>tol or u2_rad!=u2_rad) { 
       cerr << " *** Radial 4-velocity squared norm = " << u2_rad << endl;
-      throwError("In ThinDiskProfile: Radial 4vel is not properly normalized!");
+      GYOTO_ERROR("In ThinDiskProfile: Radial 4vel is not properly normalized!");
     } else if (fabs(u2_circ+1.)>tol or u2_circ!=u2_circ) { 
       cerr << " *** Circular 4-velocity squared norm = " << u2_circ << endl;
-      throwError("In ThinDiskProfile: Circular 4vel is not properly normalized!");
+      GYOTO_ERROR("In ThinDiskProfile: Circular 4vel is not properly normalized!");
     } else if (fabs(u2+1.)>tol or u2!=u2) { 
       cerr << " *** 4-velocity squared norm = " << u2 << endl;
-      throwError("In ThinDiskProfile: 4vel is not properly normalized!");
+      GYOTO_ERROR("In ThinDiskProfile: 4vel is not properly normalized!");
     }
   
   //cout << "4vel = " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3]<< endl;

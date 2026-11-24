@@ -248,6 +248,9 @@ void NeutronStarModelAtmosphere::fitsRead(string filename) {
     filename << endl;
 
   filename_ = filename;
+
+  if (filename.empty()) return;
+
   char*     pixfile   = const_cast<char*>(filename_.c_str());
   fitsfile* fptr      = NULL;
   int       status    = 0;

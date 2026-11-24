@@ -7,23 +7,24 @@ all Metrics from std, lorene, and any other loaded plugin.
 
 import numpy
 import sys
+from numpy.linalg import inv
 
-import gyoto._namespaces as _namespaces
-from gyoto.core import Metric as Generic
+from . import _namespaces
+from .core import Metric as Generic
 __all__ = _namespaces.make_namespace(Generic, globals())
 del _namespaces
 Complex=ComplexMetric
 
-import gyoto.core, gyoto.util
+from . import core, utils
 
 def __getattr__(name):
-    '''Allows instanciating any metric kind
+    '''Allows instantiating any metric kind
 
     Calling
       gyoto.metric.Kind()
     is equivalent to
       gyoto.metric.Generic("Kind")
-    
+
     '''
     # __getattr__ shouldn't be called in that case, but still the
     # right answer:
@@ -31,17 +32,17 @@ def __getattr__(name):
         return sys.modules[__name__].__dict__[name]
 
     # Take care of standard attributes
-    if name.startswith('__') and name.endsswith('__'):
+    if name.startswith('__') and name.endswith('__'):
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
     # Check that a class by that name is registered
     try:
         obj = Generic(name)
-    except gyoto.core.Error:
+    except core.Error:
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
     # Make a class and cache it in the namespace
-    klass = gyoto.util.make_class(sys.modules[__name__], name, None, None, __name__)
+    klass = utils.make_class(sys.modules[__name__], name, None, None, __name__)
     setattr(sys.modules[__name__], name, klass)
     sys.modules[__name__].__all__.append(name)
 
@@ -51,17 +52,17 @@ def __getattr__(name):
 def jacobian_numerical(metric, pos, epsilon=1e-6):
     '''Estimate the Jacobian matrix of a metric numerically
 
-    This function is intended for debugging using. For production,
-    using the method gyoto.core.Metric.jacobian is preferred.
+    This function is intended for debugging. For production, using the
+    method gyoto.core.Metric.jacobian is preferred.
 
-    If `metric' is an instance of a subclass of gyoto.core.Metric,
+    If `metric` is an instance of a subclass of gyoto.core.Metric,
     jacobian_numerical(metric, pos) should yield the same as
     metric.jacobian(pos) within numerical errors.
 
     Keyword arguments:
     metric -- the gyoto.core.Metric instance to work on
-    pos -- the coordinates at which to estimate the Christoffel symbols
-    epsilon -- the step for estimating of the derivatives (default 1e-6)
+    pos -- the coordinates at which to estimate the Jacobian matrix
+    epsilon -- the step for estimating the derivatives (default 1e-6)
 
     '''
     delta=numpy.empty((4, 4, 4))
@@ -78,23 +79,23 @@ def jacobian_numerical(metric, pos, epsilon=1e-6):
 def christoffel_numerical(metric, pos, epsilon=1e-6):
     '''Estimate the Christoffel symbols of a metric numerically
 
-    This function is intended for debugging using. It is called by
+    This function is intended for debugging. It is called by
     gyoto.metric.check_christoffel for this purpose. For production,
     using the method gyoto.core.Metric.christoffel is preferred.
 
-    If `metric' is an instance of a subclass of gyoto.core.Metric,
+    If `metric` is an instance of a subclass of gyoto.core.Metric,
     christoffel_numerical(metric, pos) should yield the same as
     metric.christoffel(pos) within numerical errors.
 
     This function estimates the Christoffel symbols by estimating
     numerically the partial derivatives of the metric coefficients
     (given by metric.gmunu(pos)) and inverting (also numerically) the
-    covariant metric coefficients matrix as pos.
+    covariant metric coefficients matrix at pos.
 
     Keyword arguments:
     metric -- the gyoto.core.Metric instance to work on
     pos -- the coordinates at which to estimate the Christoffel symbols
-    epsilon -- the step for estimating of the derivatives (default 1e-6)
+    epsilon -- the step for estimating the derivatives (default 1e-6)
 
     '''
     Gamma=numpy.empty((4, 4, 4))
@@ -112,11 +113,10 @@ def christoffel_numerical(metric, pos, epsilon=1e-6):
                     ]).sum()
     return Gamma
 
-
 def check_christoffel(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e-6):
-    '''Check the christoffel method of a gyoto.core.Metric subclass
+    '''Check the Christoffel method for a metric
 
-    This method compares the Christoffel symbols of metric as given by
+    This function compares the Christoffel symbols of metric as given by
     metric.christoffel(pos) to those numerically estimated by
     christoffel_numerical(metric, pos). It raises an error if the
     difference is too large.
@@ -140,27 +140,27 @@ def check_christoffel(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e
               Christoffel symbols. By default, a small number of
               arbitrary positions that depend on whether the
               coordinate system is spherical or Cartesian and work
-              well fr the Kerr metric are used.
+              well for the Kerr metric are used.
 
-    epsilon -- the step for estimating of the derivatives (default 1e-6)
+    epsilon -- the step for estimating the derivatives (default 1e-6)
 
     abstol -- the absolute tolerance
 
-    retol -- the relative tolerance
+    reltol -- the relative tolerance
 
     '''
     if isinstance(metric, str):
-        metric=gyoto.core.Metric(metric)
+        metric=core.Metric(metric)
     elif isinstance(metric, type):
         metric=metric()
 
     if poslist is None:
-        if metric.coordKind()==gyoto.core.GYOTO_COORDKIND_SPHERICAL:
+        if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
             poslist=[
                 (0., 6., numpy.pi/2, 0.),
                 (100., 50, numpy.pi/4, numpy.pi/6.)
                 ]
-        elif metric.coordKind()==gyoto.core.GYOTO_COORDKIND_CARTESIAN:
+        elif metric.coordKind()==core.GYOTO_COORDKIND_CARTESIAN:
             poslist=[
                 (0., 6., 0., 0.),
                 (100., 50., 30., 50),
@@ -180,3 +180,79 @@ def check_christoffel(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e
                     avg=numpy.abs(0.5*(G[a, m, n]-Gn[a, m, n]))
                     if avg > abstol:
                         assert e/avg <= reltol, "relative error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}".format(e/avg, reltol, pos, metric.kind(), a, m, n)
+
+
+def check_jacobian(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e-6):
+    '''Check the jacobian
+
+    '''
+    if isinstance(metric, str):
+        metric=core.Metric(metric)
+    elif isinstance(metric, type):
+        metric=metric()
+
+    if poslist is None:
+        if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+            poslist=[
+                (0., 6., numpy.pi/2, 0.),
+                (100., 50, numpy.pi/4, numpy.pi/6.)
+                ]
+        elif metric.coordKind()==core.GYOTO_COORDKIND_CARTESIAN:
+            poslist=[
+                #(0., 6., 0., 0.),
+                (0., 6., 1., 0.),
+                (100., 50., 30., 50),
+                #(1000., 0., 0., 40.)
+                (1000., 1., 40., 0.)
+                ]
+        else:
+            raise ValueError('Unknown coordinate kind')
+
+    for pos in poslist:
+        G=metric.jacobian(pos)
+        Gn=jacobian_numerical(metric, pos, epsilon)
+        for a in range(4):
+            for m in range(4):
+                for n in range(4):
+                    e=numpy.abs(G[a, m, n]-Gn[a, m, n])
+                    assert e <= abstol, "absolute error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}, val={}".format(e, abstol, pos, metric.kind(), a, m, n, G[a, m, n])
+                    avg=numpy.abs(0.5*(G[a, m, n]-Gn[a, m, n]))
+                    if avg > abstol:
+                        assert e/avg <= reltol, "relative error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}".format(e/avg, reltol, pos, metric.kind(), a, m, n)
+
+
+def check_gmunu_up(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e-6):
+    '''Check the inverse metric
+
+    '''
+
+    if isinstance(metric, str):
+        metric=core.Metric(metric)
+    elif isinstance(metric, type):
+        metric=metric()
+
+    if poslist is None:
+        if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+            poslist=[
+                (0., 6., numpy.pi/2, 0.),
+                (100., 50, numpy.pi/4, numpy.pi/6.)
+                ]
+        elif metric.coordKind()==core.GYOTO_COORDKIND_CARTESIAN:
+            poslist=[
+                (0., 6., 0., 0.),
+                (100., 50., 30., 50),
+                #(1000., 0., 0., 40.)
+                (1000., 0., 40., 0.)
+                ]
+        else:
+            raise ValueError('Unknown coordinate kind')
+
+    for pos in poslist:
+        gmunu = metric.gmunu(pos)
+        gmunuup_num = inv(gmunu)  # numerical gmunuup
+        gmunuup_gy = metric.gmunu_up(pos) # from gyoto metric
+
+        for a in range(4):
+            for m in range(4):
+                e=numpy.abs(gmunuup_num[a,m]-gmunuup_gy[a,m])
+                assert e <= abstol, "absolute error {} larger than {} at {} for kind={}, mu={}, nu={}, val={}, val={}".format(e, abstol, pos, metric.kind(), a, m, gmunuup_gy[a,m], gmunuup_num[a,m])

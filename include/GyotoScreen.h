@@ -29,23 +29,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#if defined HAVE_BOOST_ARRAY_HPP
-# include <boost/array.hpp>
-# define GYOTO_ARRAY boost::array
-# if defined HAVE_MPI
-#  include <boost/version.hpp>
-#  if BOOST_VERSION >= 106400 
-#   include <boost/serialization/boost_array.hpp>
-#   include <boost/serialization/array_wrapper.hpp>
-#  endif
-# endif
-#else
-template <typename T, size_t sz> class GYOTO_ARRAY {
- private:
-  T buf[sz];
- public:
-  T& operator[](size_t c) { return buf[c] ; }
-};
+#include <boost/array.hpp>
+#define GYOTO_ARRAY boost::array
+#if defined HAVE_MPI
+# include <boost/serialization/boost_array.hpp>
+# include <boost/serialization/array_wrapper.hpp>
 #endif
 
 namespace Gyoto {

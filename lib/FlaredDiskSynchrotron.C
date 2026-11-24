@@ -126,7 +126,8 @@ FlaredDiskSynchrotron::~FlaredDiskSynchrotron() {
 
 void FlaredDiskSynchrotron::file(std::string const &f) {
 # ifdef GYOTO_USE_CFITSIO
-  fitsRead(f);
+  if (!f.empty() && !(f.back() == '/'))
+    fitsRead(f);
 # else
   GYOTO_ERROR("This Gyoto has no FITS i/o");
 # endif
@@ -138,12 +139,10 @@ std::string FlaredDiskSynchrotron::file() const {
 
 void FlaredDiskSynchrotron::hoverR(double const hor) {
   double hmin=1e-4;
-  if (hor < hmin){
-    cerr << " " << endl;
-    cerr << "***!!WARNING!!*** In FlaredDiskSynchrotron::hoverR: "
+  if (hor < hmin) {
+    GYOTO_WARNING << "In FlaredDiskSynchrotron::hoverR: "
       "H/R very small, you might not resolve your disk; "
       "increase H/R or decrease GYOTO_T_TOL." << endl;
-    cerr << " " << endl;
   }
   hoverR_ = hor;
 }
@@ -152,21 +151,21 @@ double FlaredDiskSynchrotron::hoverR() const {
   return hoverR_;
 }
 
-void FlaredDiskSynchrotron::timeTranslation_inMunit(double const dt) {
+void FlaredDiskSynchrotron::translateTimeArray(double delta_t) {
   double tmin=GridData2D::tmin(), tmax=GridData2D::tmax();
-  GridData2D::tmin(tmin-deltat_+dt);
-  GridData2D::tmax(tmax-deltat_+dt);
-  deltat_=dt;
-  if (GridData2D::nt()==0)
-    GYOTO_ERROR("In FlaredDiskSynchrotron::timeTranslation nt not yet defined");
   int nt = GridData2D::nt();
-  if (!time_array_)
-    GYOTO_ERROR("In FlaredDiskSynchrotron::timeTranslation time_array_ not defined. Please use FlaredDiskSynchrotron::file(string) before this function");
+  GridData2D::tmin(tmin+delta_t);
+  GridData2D::tmax(tmax+delta_t);
   for (int ii=0;ii<nt;ii++){
-    time_array_[ii]+=dt;
+    time_array_[ii] += delta_t;
   }
   if (GridData2D::tmin()>0)
-    cout << "\nWARNING : tmin is positive, in most cases the stationnary boundary condition will be applied. You should decrease more timeTranslation_inMunit until at least " << -tmin << "\n" << endl;
+    GYOTO_WARNING << "tmin is positive, in most cases the stationnary boundary condition will be applied. You should decrease more timeTranslation_inMunit until at least " << -tmin << "\n" << endl;
+}
+
+void FlaredDiskSynchrotron::timeTranslation_inMunit(double const dt) {
+  if (time_array_) translateTimeArray(dt-deltat_);
+  deltat_ = dt;
 }
 
 double FlaredDiskSynchrotron::timeTranslation_inMunit() const {
@@ -454,7 +453,7 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
   if (naxes_dens[0]!=naxes_velo[0] ||
       naxes_dens[1]!=naxes_velo[1] ||
       naxes_dens[2]!=naxes_velo[2])
-    throwError("In FlaredDiskSynchro: density and velocity, dimensions "
+    GYOTO_ERROR("In FlaredDiskSynchro: density and velocity, dimensions "
          "do not agree");
 
   // 4-vector B
@@ -470,7 +469,7 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
     if (naxes_dens[0]!=naxes_velo[0] || naxes_dens[0]!=naxes_Bvec[0] ||
         naxes_dens[1]!=naxes_velo[1] || naxes_dens[1]!=naxes_Bvec[1] ||
         naxes_dens[2]!=naxes_velo[2] || naxes_dens[2]!=naxes_Bvec[2])
-      throwError("In FlaredDiskSynchro: density and B4vector dimensions "
+      GYOTO_ERROR("In FlaredDiskSynchro: density and B4vector dimensions "
   	       "do not agree");
 
   /*cout << "B4vector read= " << endl;
@@ -491,6 +490,9 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
   GridData2D::nr(naxes_dens[0]);
   GridData2D::nphi(naxes_dens[1]);
   GridData2D::nt(naxes_dens[2]);
+
+  translateTimeArray(deltat_);
+
   //cout << "axes dens: " << naxes_dens[0] << " " << naxes_dens[1] << " " << naxes_dens[2] << endl;
   //cout << "axes velo: " << naxes_velo[0] << " " << naxes_velo[1] << " " << naxes_velo[2] << " " << naxes_velo[3] << endl;
 
@@ -551,9 +553,9 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
   double tt = coord_ph[0], phi = coord_ph[3];
   
   if (rcyl<GridData2D::rmin() || rcyl>GridData2D::rmax())
-    throwError("In FlaredDiskSynchrotron::radiativeQ: r is not in grid!");
+    GYOTO_ERROR("In FlaredDiskSynchrotron::radiativeQ: r is not in grid!");
   if (phi<0. or phi>2.*M_PI)
-    throwError("In FlaredDiskSynchrotron::radiativeQ: phi is not in 0,2pi!");
+    GYOTO_ERROR("In FlaredDiskSynchrotron::radiativeQ: phi is not in 0,2pi!");
   // NB: phi is always in grid, and t might be outside, assuming stationnary
   // disk at t<tmin_ and t>tmax_
 
@@ -705,9 +707,9 @@ void FlaredDiskSynchrotron::getVelocity(double const pos[4], double vel[4]){
   double tt = pos[0], phi = pos[3];
   
   if (rcyl<GridData2D::rmin() || rcyl>GridData2D::rmax())
-    throwError("In FlaredDiskSynchrotron::getVelocity: r is not in grid!");
+    GYOTO_ERROR("In FlaredDiskSynchrotron::getVelocity: r is not in grid!");
   if (phi<0. or phi>2*M_PI)
-    throwError("In FlaredDiskSynchrotron::getVelocity phi is not in 0;2pi!");
+    GYOTO_ERROR("In FlaredDiskSynchrotron::getVelocity phi is not in 0;2pi!");
   // NB: phi is always in grid, and t might be outside, assuming stationnary
   // disk at t<tmin_ and t>tmax_
 
@@ -748,4 +750,3 @@ void FlaredDiskSynchrotron::getVelocity(double const pos[4], double vel[4]){
 bool FlaredDiskSynchrotron::isThreadSafe() const {
   return Standard::isThreadSafe();
 }
-

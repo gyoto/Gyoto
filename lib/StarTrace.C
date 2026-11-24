@@ -171,7 +171,7 @@ void StarTrace::setInitCoord(const double coord[8], int dir)
 void StarTrace::metric(SmartPointer<Metric::Generic> gg)
 {
   Star::metric(gg);
-  computeXYZ();
+  if (gg) computeXYZ();
 }
 
 string StarTrace::className() const { return  string("StarTrace"); }

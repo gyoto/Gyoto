@@ -87,6 +87,7 @@ class Gyoto::Spectrometer::Complex
 
 
  public:
+  GYOTO_OBJECT;
   GYOTO_OBJECT_THREAD_SAFETY;
   Complex(); ///< Default constructor.
   Complex(const Complex& ) ; ///< Copy constructor.

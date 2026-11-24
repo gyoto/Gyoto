@@ -24,20 +24,30 @@ Before each commit:
 To add a new class:
 ===================
 
-* Create your lib/NewClass.C and include/GyotoNewClass.h
-(eg by copy-pasting some old file that has a similar architecture)
+* Create your lib/NewClass.C and include/GyotoNewClass.h (eg by
+  copy-pasting some old file that has a similar architecture)
 
 * Update lib/Makefile.am by adding your NewClass where it fits
-(typically in the list libgyoto_stdplug_la_SOURCES)
+  (typically in the list libgyoto_stdplug_la_SOURCES)
+
+* Update lib/StdPlug.C (or the file corresponding to the plug-in in
+  which you want this class to appear) by adding the two lines needed
+  for your class.
 
 * Update python/include/gyoto_std.i by adding your class where it fits
-(check how other similar classes are cited to have examples),
-and python/include/gyoto_std_swig.h to include your class
+  (check how other similar classes are cited to have examples), and
+  python/include/gyoto_std_swig.h to include your class
 
 * Run autoreconf
 
-* Push lib/Makefile.am and lib/Makefile.in together with your
-.C and .h class files
+* Push:
+  - lib/Makefile.am
+  - lib/Makefile.in
+  - your NewClass.C
+  - your GyotoNewClass.h
+  - lib/StdPlug.C
+  - python/include/gyoto_std.i
+  - python/include/gyoto_std_swig.h
 
 To make a new release:
 ======================
@@ -91,9 +101,10 @@ http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 Coding rules:
 =============
 
-Don't use std::atof from cstdlib. Use Gyoto::atof instead. Gyoto::atof
-is a wrapper that ensures demical_point is "." and handles special
-values like DBL_MAX.
+For conversion between strings and doubles, don't use std::atof or
+other generic interfaces. Use Gyoto::stringToDouble and
+Gyoto::doubleToString instead. They ensure demical_point is "." and
+handle special values like DBL_MAX.
 
 On output (especially to XML), you should also make sure to use the
 'C' locale. If using C-style sprintf(), this can be done with:

@@ -90,7 +90,7 @@ double GridData2D::dr() const {return dr_;}
 
 void GridData2D::phimin(double phimn) {
   if (phimn<0. or phimn>2.*M_PI)
-    throwError("In GridData2D::phimin: bad phimin");
+    GYOTO_ERROR("In GridData2D::phimin: bad phimin");
   phimin_ = phimn;
   if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1);
 }
@@ -98,7 +98,7 @@ double GridData2D::phimin() const {return phimin_;}
 
 void GridData2D::phimax(double phimx) {
   if (phimx<0. or phimx>2.*M_PI)
-    throwError("In GridData2D::phimax: bad phimax");
+    GYOTO_ERROR("In GridData2D::phimax: bad phimax");
   phimax_ = phimx;
   if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1);
 }
@@ -401,7 +401,7 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
   double array_interpo=0.;
 
   if (nphi_==1) // axisym
-    throwError("TBD axisym");
+    GYOTO_ERROR("TBD axisym");
 
   // From here on, >1 phi values
 

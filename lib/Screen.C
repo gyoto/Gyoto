@@ -35,9 +35,7 @@
     { fits_get_errstatus(status, ermsg); GYOTO_ERROR(ermsg); }
 #endif
 
-#ifdef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
 #include <boost/multiprecision/cpp_dec_float.hpp>
-#endif
 
 using namespace std ; 
 using namespace Gyoto;
@@ -342,7 +340,7 @@ void Screen::observerKind(const string &kind) {
   else if(kind == "FullySpecified")
     observerkind_ = GYOTO_OBSKIND_FULLYSPECIFIED;
   else
-    throwError("unknown observer kind");
+    GYOTO_ERROR("unknown observer kind");
 }
 string Screen::observerKind() const {
   switch (observerkind_) {
@@ -357,7 +355,7 @@ string Screen::observerKind() const {
   case GYOTO_OBSKIND_FULLYSPECIFIED:
     return "FullySpecified";
   default:
-    throwError("unknown observer kind tag");
+    GYOTO_ERROR("unknown observer kind tag");
   }
   return "will not reach here, this line to avoid compiler warning";
 }
@@ -567,7 +565,7 @@ void Screen::getRayTriad(double angle1, double angle2,
       coord[3] /= scale;
       break;
     default:
-      throwError("Unimplemented coordkind");
+      GYOTO_ERROR("Unimplemented coordkind");
     }
     angle1 *= scale;
     angle2 *= scale;
@@ -613,7 +611,6 @@ void Screen::getRayTriad(double angle1, double angle2,
       --> Following transformations are OK even for non-small alpha, delta
     */
 
-#ifdef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
     // using boost multiprecision to avoid information loss in trigonometry
     {
       boost::multiprecision::cpp_dec_float_100
@@ -623,15 +620,6 @@ void Screen::getRayTriad(double angle1, double angle2,
       spherical_angle_a=a.convert_to<double>();
       spherical_angle_b=b.convert_to<double>();
     }
-#else
-    if (abs(angle1)<1e-6 || abs(angle2) < 1e-6) {
-      spherical_angle_a = sqrt(angle1*angle1+angle2*angle2);
-    } else {
-      spherical_angle_a = acos(cos(angle1)*cos(angle2));
-    }
-    spherical_angle_b =
-		   (angle1==0. && angle2==0.) ? 0. : atan2(tan(angle2),sin(angle1));
-#endif
     break;
   default:
     spherical_angle_a=spherical_angle_b=0.;
@@ -830,7 +818,7 @@ void Screen::getRayTriad(double angle1, double angle2,
               +so*Etheta_screenBasis[1])/sqrt(gphph);
         //cout << "In Screen init Ephi= " << Ephi[0] << " " << Ephi[1] << " " << coord[1]*Ephi[2] << " " << coord[1]*abs(sin(coord[2]))*Ephi[3] << endl;
         //cout << "In Screen init Etheta= " << Etheta[0] << " " << Etheta[1] << " " << coord[1]*Etheta[2] << " " << coord[1]*abs(sin(coord[2]))*Etheta[3] << endl;
-        //throwError("test Eth");
+        //GYOTO_ERROR("test Eth");
           
         // double k_phi = gg_->gmunu(coord,3,3)*coord[7]
         // 	+ gg_->gmunu(coord,0,3)*coord[4]; // phi covariant compo
@@ -879,7 +867,7 @@ void Screen::getRayTriad(double angle1, double angle2,
         GYOTO_ERROR("Non implemented coord kind for polarization");
       }
     }else{
-      throwError("Observer should be at infinity");
+      GYOTO_ERROR("Observer should be at infinity");
     }
   }
 }
@@ -1410,7 +1398,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     GYOTO_ENDIF_DEBUG
 #   endif
     if      (name=="Time")
-      {tobs_tmp = Gyoto::atof(tc); tunit=unit; tobs_found=1;}
+      {tobs_tmp = Gyoto::stringToDouble(tc); tunit=unit; tobs_found=1;}
     else if (name=="Position") {
       if (FactoryMessenger::parseArray(content, pos, 4) != 4)
 	GYOTO_ERROR("Screen \"Position\" requires exactly 4 tokens");
@@ -1418,12 +1406,12 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     }
     else if (name=="Distance")    
       {
-	scr -> distance    ( Gyoto::atof(tc), unit );
+	scr -> distance    ( Gyoto::stringToDouble(tc), unit );
 	string dmax = fmp -> getAttribute("dmax");
-	if (dmax != "") scr -> dMax(Gyoto::atof(dmax.c_str()));
+	if (dmax != "") scr -> dMax(Gyoto::stringToDouble(dmax.c_str()));
       }
     else if (name=="FieldOfView") {
-      fov = Gyoto::atof(tc); fov_unit=unit; fov_found=1;
+      fov = Gyoto::stringToDouble(tc); fov_unit=unit; fov_found=1;
     }
     else if (name=="Spectrometer") {
       scr ->
@@ -1432,10 +1420,10 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 		     (fmp->getChild(), plugin));
     }
     else if (name=="Dangle1"){
-      dangle1 = Gyoto::atof(tc); dangle1_found=1; aunit=unit;
+      dangle1 = Gyoto::stringToDouble(tc); dangle1_found=1; aunit=unit;
     }
     else if (name=="Dangle2"){
-      dangle2 = Gyoto::atof(tc); dangle2_found=1; dunit=unit;
+      dangle2 = Gyoto::stringToDouble(tc); dangle2_found=1; dunit=unit;
     }
     else if (name=="SphericalAngles" ||
 	     name=="EquatorialAngles" ||
@@ -1507,13 +1495,7 @@ Screen::Grid::~Grid(){
 }
 
 GYOTO_ARRAY<size_t, 2> Screen::Grid::operator* () const {
-#if defined HAVE_BOOST_ARRAY_HPP
   GYOTO_ARRAY<size_t, 2> ij = {*iset_, *jset_};
-#else
-  GYOTO_ARRAY<size_t, 2> ij;
-  ij[0]=*iset_;
-  ij[1]=*jset_;
-#endif
   return ij;
 }
 void Screen::Grid::begin() {iset_.begin(); jset_.begin();}
@@ -1636,23 +1618,11 @@ size_t Screen::Bucket::size(){return alpha_.size();}
 Screen::Coord2dSet& Screen::Bucket::operator++(){
   ++alpha_; ++delta_; return *this;}
 GYOTO_ARRAY<double, 2> Screen::Bucket::angles() const {
-#if defined HAVE_BOOST_ARRAY_HPP
   GYOTO_ARRAY<double, 2> out {alpha_.angle(), delta_.angle()};
-#else
-  GYOTO_ARRAY<double, 2> out;
-  out[0]=alpha_.angle();
-  out[1]=delta_.angle();
-#endif
   return out;
 }
 GYOTO_ARRAY<size_t, 2> Screen::Bucket::operator* () const {
-#if defined HAVE_BOOST_ARRAY_HPP
   GYOTO_ARRAY<size_t, 2> ij = {*alpha_, *delta_};
-#else
-  GYOTO_ARRAY<size_t, 2> ij;
-  ij[0]=*alpha_;
-  ij[1]=*delta_;
-#endif
   return ij;
 }
 

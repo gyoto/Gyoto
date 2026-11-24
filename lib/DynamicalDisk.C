@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2018, 2026 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -51,7 +51,7 @@ GYOTO_PROPERTY_END(DynamicalDisk, PatternDiskBB::properties)
 
 DynamicalDisk::DynamicalDisk() :
   PatternDiskBB(),
-  dirname_(NULL),
+  dirname_(""),
   tinit_(0.),
   dt_(1.),
   nb_times_(0),
@@ -62,14 +62,11 @@ DynamicalDisk::DynamicalDisk() :
 {
   kind_="DynamicalDisk";
   GYOTO_DEBUG << "DynamicalDisk Construction" << endl;
-  std::string str = "";
-  dirname_ = new char[str.length() + 1];
-  strcpy(dirname_, str.c_str());
 }
 
 DynamicalDisk::DynamicalDisk(const DynamicalDisk& o) :
   PatternDiskBB(o),
-  dirname_(NULL),
+  dirname_(o.dirname_),
   tinit_(o.tinit_),
   dt_(o.dt_),
   nb_times_(0),
@@ -79,11 +76,6 @@ DynamicalDisk::DynamicalDisk(const DynamicalDisk& o) :
   radius_array_(NULL)
 {
   GYOTO_DEBUG << "DynamicalDisk Copy" << endl;
-#ifdef GYOTO_USE_CFITSIO
-  if (o.dirname_) {
-    dirname_ = new char[strlen(o.dirname_)+1];
-    strcpy(dirname_,o.dirname_);
-  }
   if (!nb_times_) return;
   emission_array_ = new double*[nb_times_] ;
   velocity_array_ = new double*[nb_times_] ;
@@ -97,7 +89,6 @@ DynamicalDisk::DynamicalDisk(const DynamicalDisk& o) :
     memcpy(velocity_array_[i-1], o.velocity_array_[i-1], nel2*sizeof(double));
     memcpy(radius_array_  [i-1], o.radius_array_  [i-1], nr_ *sizeof(double));
   }
-#endif
 }
 DynamicalDisk* DynamicalDisk::clone() const
 { return new DynamicalDisk(*this); }
@@ -116,7 +107,6 @@ DynamicalDisk::~DynamicalDisk() {
   velocity_array_ = NULL;
   radius_array_   = NULL;
   nb_times_ = 0;
-  if (dirname_) delete dirname_;
 }
 
 double const * DynamicalDisk::getVelocity() const { return PatternDiskBB::getVelocity(); }
@@ -202,15 +192,18 @@ double DynamicalDisk::emission(double nu, double dsem,
   return 0.;
 }
 
-std::string DynamicalDisk::file() const {return dirname_?dirname_:"";}
+std::string DynamicalDisk::file() const {return dirname_;}
 void DynamicalDisk::file(std::string const &fname) {
 #ifdef GYOTO_USE_CFITSIO
     if (nb_times_) {
       // first free current arrays, if any
       for (size_t i=1; i<=nb_times_; i++) {
-	if (emission_array_) delete [] emission_array_[i-1];
-	if (velocity_array_) delete [] velocity_array_[i-1];
-	if (radius_array_)   delete [] radius_array_  [i-1];
+	if (emission_array_ && emission_array_[i-1])
+	  delete [] emission_array_[i-1];
+	if (velocity_array_ && velocity_array_[i-1])
+	  delete [] velocity_array_[i-1];
+	if (radius_array_   && radius_array_  [i-1])
+	  delete [] radius_array_  [i-1];
       }
       if (emission_array_) delete [] emission_array_;
       if (velocity_array_) delete [] velocity_array_;
@@ -221,12 +214,11 @@ void DynamicalDisk::file(std::string const &fname) {
       nb_times_ = 0;
     }
 
-    if (dirname_) delete dirname_;
-    dirname_ = new char[strlen(fname.c_str())+1];
-    strcpy(dirname_,fname.c_str());
+    dirname_ = fname;
+
     DIR *dp;
     struct dirent *dirp;
-    if((dp  = opendir(dirname_)) == NULL) {
+    if((dp  = opendir(dirname_.c_str())) == NULL) {
       GYOTO_ERROR("In DynamicalDisk.C constructor : bad dirname_");
     }
     
@@ -308,7 +300,10 @@ double DynamicalDisk::dt()const{return dt_;}
 
 void DynamicalDisk::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const{
   if (p.name == "File"){
-    fmp->setParameter("File", dirname_ );
+    if (dirname_ != "") {
+      GYOTO_DEBUG_EXPR(dirname_);
+      fmp->setParameter("File", dirname_ );
+    }
   }
-  else ThinDisk::fillProperty(fmp, p);
+  else PatternDiskBB::fillProperty(fmp, p);
 }

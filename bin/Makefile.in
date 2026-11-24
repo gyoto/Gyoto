@@ -243,6 +243,7 @@ am__DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.in \
 	$(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
+ADDR2LINE = @ADDR2LINE@
 AEAE_CFLAGS = @AEAE_CFLAGS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -263,6 +264,15 @@ BOOST_ROOT = @BOOST_ROOT@
 BOOST_SERIALIZATION_LDFLAGS = @BOOST_SERIALIZATION_LDFLAGS@
 BOOST_SERIALIZATION_LDPATH = @BOOST_SERIALIZATION_LDPATH@
 BOOST_SERIALIZATION_LIBS = @BOOST_SERIALIZATION_LIBS@
+BOOST_STACKTRACE_ADDR2LINE_LDFLAGS = @BOOST_STACKTRACE_ADDR2LINE_LDFLAGS@
+BOOST_STACKTRACE_ADDR2LINE_LDPATH = @BOOST_STACKTRACE_ADDR2LINE_LDPATH@
+BOOST_STACKTRACE_ADDR2LINE_LIBS = @BOOST_STACKTRACE_ADDR2LINE_LIBS@
+BOOST_STACKTRACE_BACKTRACE_LDFLAGS = @BOOST_STACKTRACE_BACKTRACE_LDFLAGS@
+BOOST_STACKTRACE_BACKTRACE_LDPATH = @BOOST_STACKTRACE_BACKTRACE_LDPATH@
+BOOST_STACKTRACE_BACKTRACE_LIBS = @BOOST_STACKTRACE_BACKTRACE_LIBS@
+BOOST_STACKTRACE_BASIC_LDFLAGS = @BOOST_STACKTRACE_BASIC_LDFLAGS@
+BOOST_STACKTRACE_BASIC_LDPATH = @BOOST_STACKTRACE_BASIC_LDPATH@
+BOOST_STACKTRACE_BASIC_LIBS = @BOOST_STACKTRACE_BASIC_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFITSIO_CFLAGS = @CFITSIO_CFLAGS@
@@ -300,6 +310,7 @@ FLINT_CFLAGS = @FLINT_CFLAGS@
 FLINT_LIBS = @FLINT_LIBS@
 GREP = @GREP@
 GYOTO_PLUGIN_SFX = @GYOTO_PLUGIN_SFX@
+GYOTO_STACKTRACE_LIBS = @GYOTO_STACKTRACE_LIBS@
 HAVE_CXX17 = @HAVE_CXX17@
 HOME_LORENE = @HOME_LORENE@
 INSTALL = @INSTALL@
@@ -845,13 +856,15 @@ info: info-am
 info-am:
 
 install-data-am: install-man
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
 install-exec-am: install-binPROGRAMS
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 install-html: install-html-am
 
 install-html-am:
@@ -892,25 +905,28 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-man
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 uninstall-man: uninstall-man1
 
-.MAKE: install-am install-strip
+.MAKE: install-am install-data-am install-exec-am install-strip \
+	uninstall-am
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
 	clean-binPROGRAMS clean-generic clean-libtool clean-local \
 	cscopelist-am ctags ctags-am distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-man1 install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-man \
+	install-binPROGRAMS install-data install-data-am \
+	install-data-hook install-dvi install-dvi-am install-exec \
+	install-exec-am install-exec-hook install-html install-html-am \
+	install-info install-info-am install-man install-man1 \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-binPROGRAMS uninstall-hook uninstall-man \
 	uninstall-man1
 
 .PRECIOUS: Makefile
@@ -918,6 +934,21 @@ uninstall-man: uninstall-man1
 
 gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
 	cp $^ $@
+
+# create gyotoy symlink upon installation
+install-exec-hook:
+	cd $(DESTDIR)$(bindir) && \
+	  $(LN_S) -f gyoto$(EXEEXT) gyotoy$(EXEEXT)
+
+# create gyotoy.1 symlink upon installation
+install-data-hook:
+	cd $(DESTDIR)$(man1dir) && \
+	  $(LN_S) -f gyoto.1 gyotoy.1
+
+# remove symlinks on uninstallation
+uninstall-hook:
+	-rm -f $(DESTDIR)$(bindir)/gyotoy$(EXEEXT)
+	-rm -f $(DESTDIR)$(man1dir)/gyotoy.1
 
 export PATH := .:$(PATH)
 
@@ -967,10 +998,10 @@ check-python-mpi-clean:
 @BUILD_GYOTO_TRUE@check-wip: check-wip-nompi
 
 @BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@$(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(GYOTO_PYTHON_LA) ../python/testbed/stamp ../lib/libgyoto-stdplug.la
-@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	PYTHONPYCACHEPREFIX=../python/pycache PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@$(CHECK_PYTHON_MPI_RESULTS): gyoto gyoto-mpi-worker.@sovers@ $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN) ../python/testbed/stamp ../lib/libgyoto-stdplug.la
-@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	PYTHONPYCACHEPREFIX=../python/pycache PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@check-python-nompi-compute: $(CHECK_PYTHON_RESULTS)
 @BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@check-python-nompi: check-python-nompi-clean check-python-nompi-compute

@@ -160,7 +160,10 @@ class Gyoto::Astrobj::Blob :
   void getCartesian(double const * const dates, size_t const n_dates,
 		    double * const x, double * const y, double * const z, 
 		    double * const xprime=NULL, double * const yprime=NULL, double * const zprime=NULL);
-  
+
+#ifdef GYOTO_USE_XERCES
+  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;
+#endif
 
 };
 

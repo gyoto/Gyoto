@@ -85,6 +85,21 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   std::vector<double> position() const; ///< Get vector copy of #pos_
   void position(std::vector<double> const&); ///< Set #pos_ from vector
 
+  // make all the other version of rMax work
+  using Generic::rMax;
+
+  /// Get maximal distance from center of coordinate system
+  /**
+   *  Get maximal distance from center of coordinate system at which a
+   *  Photon may hit the FixedStar in geometrical units.
+   *
+   *  \return #rmax_ if it is strictly smaller than DBL_MAX, else 3 ×
+   *  (#radius + r) where r is the distance between the center of the
+   *  star and the origin of the coordinate system (#pos_[0] in
+   *  spherical coordinate systems).
+   *
+   *  \return rmax_ in geometrical units
+   */
   double rMax();
 
   bool rotating() const ;

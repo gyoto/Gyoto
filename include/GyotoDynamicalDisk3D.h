@@ -62,10 +62,10 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
   ///< emission law
  private:
   bool temperature_; ///< 1 if temperature is given in fits data file, 0 if emission coef is directly given
-  char* dirname_; ///< FITS files directory
+  std::string dirname_; ///< FITS files directory
   double tinit_; ///< Time of the first FITS file
   double dt_; ///< Time increment between two FITS (assumed constant)
-  int nb_times_; ///< Number of times
+  size_t nb_times_; ///< Number of times
   double PLindex_; ///< power law index such that density_elec(E) &prop; E<SUP>-p</SUP>
   bool novel_; ///< put to true if velocity of emitting particle is not provided
   double floortemperature_; ///< if non-zero, emission and absorption are 0 for temperatures below this floor, emission=blackbody and absorption is infty for temperatures above (this is a kind of fake optically thick case, when the emitting surface is inside the grid, not at the boundary of the grid)
@@ -153,7 +153,7 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
   /**
    * \param iq Index of the date slice.
    */
-  void copyQuantities(int iq) ;
+  void copyQuantities(size_t iq) ;
 
 };
 

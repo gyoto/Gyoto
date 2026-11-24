@@ -79,17 +79,6 @@ double theta = pos[2]; // Extract theta coordinate
          - sqrt(Rvalue_*Rvalue_ + r*r + 2.0*Rvalue_*r*cos(theta)) 
          + sqrt(r0value_*r0value_ + r*r - 2.0*r0value_*r*cos(theta)) 
          + sqrt(r0value_*r0value_ + r*r + 2.0*r0value_*r*cos(theta)))) / 2.0;
-
-  // double DWDr = (V0value_ * (-(r - Rvalue_*cos(theta)) / sqrt(Rvalue_*Rvalue_ + r*r - 2.0*Rvalue_*r*cos(theta))
-  //        - (r + Rvalue_*cos(theta)) / sqrt(Rvalue_*Rvalue_ + r*r + 2.0*Rvalue_*r*cos(theta))
-  //        + (r - r0value_*cos(theta)) / sqrt(r0value_*r0value_ + r*r - 2.0*r0value_*r*cos(theta))
-  //        + (r + r0value_*cos(theta)) / sqrt(r0value_*r0value_ + r*r + 2.0*r0value_*r*cos(theta)))) / 2.0;
-
-  // double DWDth = (V0value_ * Rvalue_ * r * sin(theta) * (
-  //        1.0 / sqrt(Rvalue_*Rvalue_ + r*r - 2.0*Rvalue_*r*cos(theta))
-  //        - 1.0 / sqrt(Rvalue_*Rvalue_ + r*r + 2.0*Rvalue_*r*cos(theta))
-  //        - 1.0 / sqrt(r0value_*r0value_ + r*r - 2.0*r0value_*r*cos(theta))
-  //        + 1.0 / sqrt(r0value_*r0value_ + r*r + 2.0*r0value_*r*cos(theta)))) / 2.0;
   size_t mu, nu;
   for (mu=0; mu<4; ++mu)
     for (nu=mu+1; nu<4; ++nu)
@@ -122,12 +111,11 @@ double W = (Rvalue_ - r0value_) * V0value_ + (V0value_ * (-sqrt(Rvalue_*Rvalue_ 
          + (r - r0value_*cos(theta)) / sqrt(r0value_*r0value_ + r*r - 2.0*r0value_*r*cos(theta))
          + (r + r0value_*cos(theta)) / sqrt(r0value_*r0value_ + r*r + 2.0*r0value_*r*cos(theta)))) / 2.0;
 
-  double DWDth = (V0value_ * Rvalue_ * r * sin(theta) * (
-         1.0 / sqrt(Rvalue_*Rvalue_ + r*r - 2.0*Rvalue_*r*cos(theta))
-         - 1.0 / sqrt(Rvalue_*Rvalue_ + r*r + 2.0*Rvalue_*r*cos(theta))
-         - 1.0 / sqrt(r0value_*r0value_ + r*r - 2.0*r0value_*r*cos(theta))
-         + 1.0 / sqrt(r0value_*r0value_ + r*r + 2.0*r0value_*r*cos(theta)))) / 2.0;
-
+  double DWDth = (V0value_ * r * sin(theta) / 2.0) * (
+        Rvalue_  * ( -1.0/sqrt(Rvalue_*Rvalue_   + r*r - 2.0*Rvalue_*r*cos(theta))
+                   + 1.0/sqrt(Rvalue_*Rvalue_   + r*r + 2.0*Rvalue_*r*cos(theta)) )
+      + r0value_ * (  1.0/sqrt(r0value_*r0value_ + r*r - 2.0*r0value_*r*cos(theta))
+                   - 1.0/sqrt(r0value_*r0value_ + r*r + 2.0*r0value_*r*cos(theta)) ) );
 
 dst[0][0][1] = dst[0][1][0] = (DWDr*W)/(2.0*r*r*sin(theta)*sin(theta));
 dst[0][0][2] = dst[0][2][0] = (DWDth*W)/(2.0*r*r*sin(theta)*sin(theta));

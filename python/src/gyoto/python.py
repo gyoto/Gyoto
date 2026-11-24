@@ -111,6 +111,7 @@ for namespace, clsname, identifier, base in (
     __all__.append(identifier)
     setattr(namespace, identifier, klass)
     namespace.__all__.append(identifier)
+del klass
 
 class PythonBase():
     '''Base class for Gyoto object implemented in Python

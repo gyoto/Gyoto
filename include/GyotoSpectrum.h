@@ -123,6 +123,7 @@ namespace Gyoto{
      *  Gyoto::Register::init().
      */
     void initRegister();
+
   }
 }
 
@@ -140,7 +141,10 @@ class Gyoto::Spectrum::Generic
   public Gyoto::Object
 {
   friend class Gyoto::SmartPointer<Gyoto::Spectrum::Generic>;
- protected:
+
+ public:
+  /// Get list of "plugins/names" of all registered Spectra
+  static std::vector<std::string> registeredPluginsSlashKinds() ;
 
  public:
   GYOTO_OBJECT;

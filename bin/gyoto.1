@@ -1,7 +1,7 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH GYOTO 1 "January 2024" Science "User Manuals"
+.TH GYOTO 1 "August 2026" Science "User Manuals"
 .SH NAME
 Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
 .SH SYNOPSIS
@@ -23,6 +23,9 @@ gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug
       [\fB\-\-\fR] \fIinput.xml \fIoutput.fits\fR
 
 gyoto mk-video [\fIoptions\fR]
+
+gyoto [ gyotoy | edit | view-scenery ] [\fB\-\-help\fR] [\fIinput.xml\fR]
+
 .SH DESCRIPTION
 Gyoto is a framework for computing geodesics in curved
 space-times. The \fBgyoto\fR utility program uses this framework to
@@ -32,26 +35,42 @@ gravitational lensing.
 
 In the first form, \fBgyoto\fR takes a scenery description in XML
 format (\fIinput.xml\fR), computes this scenery using relativistic
-ray-tracing, and saves the result in FITS format.
-
-In the second form, \fBgyoto\fR produces a movie. See \fBgyoto
-mk-video \-\-help\fR for details. In particular, it can read a Scenery
-in XML format and a trajectory also in XML format (for instance
-produced with \fBgyotoy\fR(1), see below) and produce a movie as would
-be seen by an observer following this trajectory. The Gyoto plug-in
-\fIpython\fR and the Python module \fIOpenCV-Python\fR must be
-installed. The Python flavor to use can be controlled through the
-GYOTO_PYTHON environment variable.
-
-A companion program, \fBgyotoy\fR(1), can be used to interactively
-visualize a single geodesic in any Gyoto metric (the trajectory of a
-single photon or massive particle).
+ray-tracing, and saves the result in FITS format. Most of the rest of
+this manpage describes this form in details.
 
 Ray-tracing can be very time consuming. It is possible to interrupt
 the process at any time by hitting ^C, which will save the
 already-computed part of the image before exiting the program. You can
 then compute the rest of the image later using the \fB\-\-jmin\fR
 option.
+
+In the second form, \fBgyoto\fR produces a movie. See \fBgyoto
+mk-video \-\-help\fR for details. In particular, it can read a Scenery
+in XML format and a trajectory also in XML format, for instance
+produced with \fBgyotoy\fR (see below), and produce a movie as would
+be seen by an observer following this trajectory. The Gyoto plug-in
+\fIpython\fR and the Python module \fIOpenCV-Python\fR must be
+installed. The Python flavor to use can be controlled through the
+GYOTO_PYTHON environment variable.
+
+In the third form, launch one of the three graphical applications:
+.IP \(bu 4n
+\fBgyotoy\fR can be used to interactively visualize a single
+geodesic in any Gyoto metric (the trajectory of a single photon or
+massive particle);
+.IP \(bu 4n
+\fBedit\fR provides a window to discover and edit the various
+properties of any Gyoto object (Astrobj, Scnery...) and save them in
+XML format;
+.IP \(bu 4n
+\fBview-scenery\fR allows interactively exploring a Gyoto Scenery,
+zooming on regions to ray-trace only part of the image at high
+resolution, and tracing individual Photons.
+.LP
+Each of these applications accept an optional parameter to load an XML
+file, provide more help using \-\-help\fR and display a help window
+when F1 is pressed. If \fBgyotoy\fR is a symlink to \fBgyoto\fR,
+invoking it by this name launches the gyotoy application.
 
 .SH OPTIONS
 The \fBgyoto\fR program accepts many options. Most have a long name
@@ -223,8 +242,7 @@ number of processes is \fInprocs\fR=\fInworkers\fR+1.  \fB-P\fR0
 disables MPI multi-processing, while \fB\-P\fR1 uses two processes:
 the manager and one worker. If \fInworkers\fR is >0, \-\-nthreads is
 ignored. Note that the MPI environment usually needs to be set-up
-using some variant of
-.BR mpirun (1).
+using some variant of mpirun (1).
 If \fBmpirun\fR starts several instances of \fBgyoto\fR,
 \fInworkers\fR must be >0, but its exact value is ignored as the set
 of processes used is exactly that launched by \fBmpirun\fR. In other

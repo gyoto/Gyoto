@@ -52,7 +52,10 @@ class VideoWriter:
     norm=None
     vmin=0.
     vmax=0.
-    cmap=plt.cm.get_cmap('hot')
+    if matplotlib.__version__ < "3.11":
+        cmap=plt.cm.get_cmap('hot')
+    else:
+        cmap=plt.colormaps.get_cmap('hot')
     
     def __init__(self, filename, fps, width, height):
         '''Initialize video

@@ -3,6 +3,7 @@ import unittest
 import gyoto.core
 import gyoto.std
 import inspect
+from . import helpers
 
 try:
     import gyoto.lorene
@@ -62,6 +63,23 @@ try:
                 gyoto.metric.check_christoffel(metric)
             except AssertionError as e:
                 self.fail(e.__str__())
+
+    class TestLoreneXMLio(unittest.TestCase):
+
+        default_verbosity=gyoto.core.verbose()
+
+        def setUp(self):
+            gyoto.core.verbose(0)
+
+        def tearDown(self):
+            gyoto.core.verbose(self.default_verbosity)
+
+        def invalid(self, classname, cls):
+            return (not inspect.isclass(cls)
+                    or not issubclass(cls, gyoto.core.Object))
+
+        def test_xmlio(self):
+            helpers.test_xmlio(self, gyoto.lorene, self.invalid)
 
 except ImportError:            
     import warnings

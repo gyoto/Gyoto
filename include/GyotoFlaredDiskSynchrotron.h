@@ -133,6 +133,7 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
   double const * getBvector() const;
   void copyTimeArray(double const *const time_array, size_t const ntimes);
   double const * getTimeArray() const;
+  void translateTimeArray(double dt);
  public:
   using Generic::metric;
   std::vector<size_t> fitsRead(std::string filename) ;
@@ -144,8 +145,6 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
 			  state_t const &coord_ph,
 			  double const coord_obj[8]) const;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
-
-
 
 };
 

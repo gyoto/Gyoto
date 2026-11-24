@@ -1,7 +1,8 @@
 ACLOCAL_AMFLAGS = -I m4
 AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS) $(CFITSIO_CFLAGS) $(FLINT_CFLAGS) $(ARBLIB_CFLAGS) $(AEAE_CFLAGS) $(EIGEN_CFLAGS)
 AM_LDFLAGS  = $(XERCES_LIBS) -export-dynamic $(PTHREAD_LIBS) \
-	      $(UDUNITS_LIBS) $(CFITSIO_LIBS) $(FLINT_LIBS) $(ARBLIB_LIBS)
+	      $(UDUNITS_LIBS) $(CFITSIO_LIBS) $(FLINT_LIBS) $(ARBLIB_LIBS) \
+	      $(GYOTO_STACKTRACE_LIBS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) -DGYOTO_PKGLIBDIR=\"${pkglibdir}\"
 if HAVE_LOCALPKGLIBDIR
 AM_CXXFLAGS += -DGYOTO_LOCALPKGLIBDIR=\"${localpkglibdir}\"
@@ -21,12 +22,13 @@ lib_LTLIBRARIES = libgyoto@FEATURES@.la
 libgyoto@FEATURES@_la_SOURCES =  \
 	Value.C Property.C Object.C \
 	Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
-	WIP.C Worldline.C Photon.C Scenery.C			\
+	WIP.C Worldline.C Photon.C Scenery.C AnsiScope.C		\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	StandardAstrobj.C ThinDisk.C Converters.C Functors.C Hooks.C \
 	GridData2D.C FitsRW.C
 libgyoto@FEATURES@_la_LIBS = $(XERCES_LIBS)
+libgyoto@FEATURES@_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=built-in
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 
 # STANDARD PLUGIN
@@ -34,6 +36,7 @@ soverdir=$(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
+	Kerr2PN.C KerrHarmonic.C \
 	ChernSimons.C Hayward.C SchwarzschildHarmonic.C \
 	ReissnerNordstrom.C \
 	RezzollaZhidenko.C KonoplyaRezzollaZhidenko.C \

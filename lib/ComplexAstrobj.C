@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2014, 2016 Thibaut Paumard
+    Copyright 2011-2014, 2016, 2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -21,10 +21,16 @@
 #include "GyotoFactoryMessenger.h"
 #include "GyotoMetric.h"
 #include "GyotoPhoton.h"
+#include "GyotoProperty.h"
 
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+/// Properties
+GYOTO_PROPERTY_START(Gyoto::Astrobj::Complex,
+		     "A container for several objects.")
+GYOTO_PROPERTY_END(Complex, Generic::properties)
 
 Complex::Complex() :
   Generic("Complex"),
@@ -54,12 +60,16 @@ Complex *Complex::clone() const {return new Complex(*this); }
 
 Complex::~Complex()
 {
-  if (cardinal_) for (size_t i=0; i< cardinal_; ++i) elements_[i] = NULL;
+  if (cardinal_)
+    for (size_t i=0; i< cardinal_; ++i)
+      elements_[i] = NULL;
 }
 
 bool Complex::isThreadSafe() const {
   bool safe = Generic::isThreadSafe();
-  for (size_t i=0; i < cardinal_; ++i) safe &= elements_[i] -> isThreadSafe();
+  for (size_t i=0; i < cardinal_; ++i)
+    if (elements_[i])
+      safe &= elements_[i] -> isThreadSafe();
   return safe;
 }
 
@@ -73,14 +83,13 @@ void Complex::metric(SmartPointer<Metric::Generic> gg)
       cerr << elements_[i]->kind();
       cerr << ". Setting metric." << endl;
     }
-    elements_[i]->metric(gg_);
+    if (elements_[i]) elements_[i]->metric(gg_);
   }
 }
 
 void Complex::append(SmartPointer<Generic> e)
 {
-  if (debug())
-    cerr << "DEBUG: in Complex::append(SmartPointer<Generic> e)" << endl;
+  GYOTO_DEBUG << endl;
   if (cardinal_+1 == 0) GYOTO_ERROR("Complex::append(): OVERFLOW");
   SmartPointer<Generic> * orig = elements_;
   elements_ = new SmartPointer<Generic> [cardinal_+1];
@@ -91,10 +100,14 @@ void Complex::append(SmartPointer<Generic> e)
   delete [] orig; orig = NULL;
   elements_[cardinal_] = e;
   ++cardinal_;
-  if (gg_) e->metric(gg_);
-  else gg_ = e->metric();
-  if (debug())
-    cerr << "DEBUG: out Complex::append(SmartPointer<Generic> e)" << endl;
+  if (e) {
+    GYOTO_DEBUG << "e is not NULL, setting metric\n";
+    if (gg_) e->metric(gg_);
+    else gg_ = e->metric();
+  } else {
+    GYOTO_DEBUG << "e is NULL, not setting metric\n";
+  }
+  GYOTO_DEBUG << "done" << endl;
 }
 
 SmartPointer<Generic>& Complex::operator[](size_t i)
@@ -130,14 +143,16 @@ size_t Complex::getCardinal() const {return cardinal_; }
 double Complex::deltaMax(double coord[8]) {
   double h1max=DBL_MAX, tmp;
   for (size_t i=0; i<cardinal_; ++i)
-    if (h1max> (tmp=elements_[i]->deltaMax(coord))) h1max=tmp;
+    if (elements_[i])
+      if (h1max> (tmp=elements_[i]->deltaMax(coord))) h1max=tmp;
   return h1max;
 }
 
 double Complex::rMax() {
   double rmax = Generic::rMax(), rmaxnew=0.;
   for (size_t i=0; i<cardinal_; ++i)
-    if (rmax < (rmaxnew=elements_[i] -> rMax())) rmax=rmaxnew;
+    if (elements_[i])
+      if (rmax < (rmaxnew=elements_[i] -> rMax())) rmax=rmaxnew;
   return rmax;
 }
 
@@ -145,11 +160,15 @@ int Complex::Impact(Photon* ph, size_t index, Properties *data)
 {
   int res=0, *impact = new int[cardinal_];
   size_t n_impact = 0;
-  for (size_t i=0; i<cardinal_; ++i)
-    n_impact += impact[i] = elements_[i] -> Impact(ph, index, NULL);
+  for (size_t i=0; i<cardinal_; ++i) {
+    if (elements_[i]) {
+      n_impact += impact[i] = elements_[i] -> Impact(ph, index, NULL);
+    } else {
+      impact[i] = 0;
+    }
+  }
 
-  if (debug())
-    cerr << "DEBUG: Complex::Impact(...): " <<n_impact <<" sub-impacts" << endl;
+  GYOTO_DEBUG_EXPR(n_impact);
 
   if (n_impact==1) {
     res = 1;
@@ -158,18 +177,15 @@ int Complex::Impact(Photon* ph, size_t index, Properties *data)
 	elements_[i] -> Impact(ph, index, data);
   } else if (n_impact >= 2) {
     res = 1;
-    if (debug())
-      cerr << "DEBUG: Complex::Impact(...): refining Photon" << endl;
+    GYOTO_DEBUG << "refining Photon" << endl;
     Photon::Refined refine (ph, index, 1, step_max_);
     size_t n_refine = refine . get_nelements();
-    if (debug())
-      cerr << "DEBUG: Complex::Impact(...): n_refine=="<<n_refine << endl;
+    GYOTO_DEBUG_EXPR(n_refine);
     for (size_t n=n_refine-2; n!=size_t(-1); --n) {
       for (size_t i=0; i<cardinal_; ++i)
 	if (impact[i]) {
-	  if (debug())
-	    cerr << "DEBUG: Complex::Impact(...): calling Impact for elements_["
-		 << i << "] (" << elements_[i]->kind() << ")" << endl;
+	  GYOTO_DEBUG << "calling Impact for elements_["
+		      << i << "] (" << elements_[i]->kind() << ")" << endl;
 	  elements_[i]->Impact(&refine, n, data);
 	}
     }
@@ -185,10 +201,18 @@ void Complex::fillElement(FactoryMessenger *fmp) const {
 
   fmp -> metric (metric()) ;
 
+  GYOTO_DEBUG_EXPR(cardinal_);
+
   for (size_t i=0; i<cardinal_; ++i) {
-    childfmp = fmp -> makeChild ( "SubAstrobj" );
-    elements_[i] -> fillElement(childfmp);
-    delete childfmp;
+    GYOTO_DEBUG_EXPR(i);
+    GYOTO_DEBUG_EXPR(elements_[i]);
+    if (elements_[i]) {
+      childfmp = fmp -> makeChild ( "SubAstrobj" );
+      elements_[i] -> fillElement(childfmp);
+      delete childfmp;
+    } else {
+      fmp -> setParameter( "SubAstrobj" );
+    }
   }
 
   Astrobj::Generic::fillElement(fmp);
@@ -205,18 +229,27 @@ void Complex::setParameters(FactoryMessenger *fmp) {
   metric( fmp->metric() );
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
-    if (debug())
-      cerr << "DEBUG: Astrobj::Complex::Subcontractor(): name=" << name << endl;
+    GYOTO_DEBUG_EXPR(name);
+
     if (name=="SubAstrobj") {
       content = fmp -> getAttribute("kind");
       plugin  = split(fmp -> getAttribute("plugin"), ",");
       child   = fmp -> getChild();
-      append ((*Astrobj::getSubcontractor(content, plugin))(child, plugin));
+      GYOTO_DEBUG_EXPR(content);
+      GYOTO_DEBUG_EXPR(plugin.size());
+      if (content == "") {
+	append(nullptr);
+      } else {
+	append ((*Astrobj::getSubcontractor(content, plugin))(child, plugin));
+      }
       delete child;
-    } else setParameter(name, content, unit);
+    } else if (name=="Metric") {
+      // ignore: already done
+    } else {
+      setParameter(name, content, unit);
+    }
   }
 
-  if (debug())
-    cerr << "DEBUG: out Complex::setParameters()" << endl;
+  GYOTO_DEBUG << "done" << endl;
 }
 #endif

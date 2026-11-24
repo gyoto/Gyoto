@@ -77,7 +77,7 @@ class Gyoto::Astrobj::XillverReflection
   double aa_; ///< Spin of Kerr BH
   double lampradius_; ///< Coordinate radius at which the lamp is in Keplerian rotation
   double timelampphizero_; ///< Time at which lamp is at phi=0
-
+  double timelamphizero_as_set_;
   bool average_over_angle_; ///< true to average over emission angle
 
  protected:

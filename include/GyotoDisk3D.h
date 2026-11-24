@@ -125,14 +125,26 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
 
 #ifdef GYOTO_USE_CFITSIO
   /// Read parameters and arrays from FITS file.
-  virtual void fitsRead(std::string filename_);
+  virtual void fitsRead(std::string filename);
 
   /// Write parameters and arrays to FITS file.
-  virtual void fitsWrite(std::string filename_);
+  /**
+   * Save the various tabular data in \p prefix/filename and set
+   * #filename_ to \p filename (removing "!" if needed).
+   *
+   * \p prefix is meant to be the directory in which the XML file will
+   * be saved so that the Factory relative path mechanism works.
+   *
+   * \param[in] filename: name of the file to save
+   * \param[in] prefix: directory in which to save the file
+   */
+  virtual void fitsWrite(std::string filename,
+			 const std::string & prefix = "");
 #endif
 
-  void file(std::string const &f);
-  std::string file() const;
+  // Derived classes override file()
+  virtual void file(std::string const &f);
+  virtual std::string file() const;
   void zsym(bool t);
   bool zsym() const;
   void tPattern(double t);

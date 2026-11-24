@@ -29,11 +29,7 @@
 using namespace std ; 
 using namespace Gyoto;
 
-#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
-# include <boost/version.hpp>
-# if BOOST_VERSION >= 106400 
-#  include <boost/serialization/array_wrapper.hpp>
-# endif // BOOST_VERSION >= 106400 
+#include <boost/serialization/array_wrapper.hpp>
 #include <boost/numeric/odeint/stepper/generation.hpp>
 using namespace boost::numeric::odeint;
 
@@ -50,9 +46,6 @@ using namespace boost::numeric::odeint;
 # define DISABLE_SIGFPE
 # define REENABLE_SIGFPE
 #endif
-
-#endif // GYOTO_HAVE_BOOST_INTEGRATORS
-
 
 /// Generic
 Worldline::IntegState::Generic::~Generic() {};
@@ -180,7 +173,6 @@ std::string Worldline::IntegState::Legacy::kind() { return "Legacy"; }
 Worldline::IntegState::Legacy::~Legacy() {}
 
 /// Boost
-#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
 Worldline::IntegState::Boost::~Boost() {};
 Worldline::IntegState::Boost::Boost(Worldline*line, std::string type) :
   Generic(line)
@@ -632,7 +624,3 @@ void Gyoto::Worldline::IntegState::Boost::setup_stepper(){
       GYOTO_ERROR("unknown stepper type");
   }
 }
-
-
-
-#endif // GYOTO_HAVE_BOOST_INTEGRATORS

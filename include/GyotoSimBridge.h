@@ -30,6 +30,7 @@
 #include <iomanip>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #include <GyotoBlackBodySpectrum.h>
 #include <GyotoKappaDistributionSynchrotronSpectrum.h>
@@ -102,10 +103,13 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_; // kappa-distribution synchrotron spectrum
   SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // PL-distribution synchrotron spectrum
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
+  ///< FITS files prefix
+  /**
+   * Including directory, without the number or extension, i.e. '.fits'.
+   */
+  std::string fprefix_;
 
  private:
-  std::string dirname_; ///< FITS files directory
-  std::string fname_; ///< FITS files prefix (without the number neither the extension, i.e. '.fits')
   bool temperature_; ///< 1 if temperature is given in fits data file, 0 if emission coef is directly given
   bool circularmotion_; ///< 1 if velocity is given in fits data file, 0 if circularmotion is directly given
   bool cunninghamvel_; ///< 1 if Cunningham prescription below risco, 0 if radial velocity below risco
@@ -159,10 +163,8 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   // Accessors
   // ---------
  public:
-  void directory(std::string const &d); ///< Set the directory where the FITS files are stored
-  std::string directory() const; ///< Get the directory where the FITS files will be searched
-  void filename(std::string const &d); ///< Set the prefix of the FITS filenames, it should be followed by a 4-digit number (filled by zeros)
-  std::string filename() const; ///< Get the FITS filename prefix
+  void filePrefix(std::string const &d); ///< Set the prefix of the FITS filenames, it should be followed by a 4-digit number (filled by zeros)
+  std::string filePrefix() const; ///< Get the FITS filename prefix
   void PLindex(double pl); ///< Set the power law index when the emission is set to "Power-Law" or "Kappa"
   double PLindex()const; ///< Get the power law index of the electron distribution function
   void gammaMin(double gmin); ///< Set the minimum gamma factor when the emission is set to "Power-Law" or "Kappa"
@@ -193,8 +195,115 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
 
   virtual double operator()(double const coord[4]);
 
-  private:
+  virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
+  virtual void fillProperty(Gyoto::FactoryMessenger *fmp,
+			    Property const &p) const ;
+
+ private:
   int getIndex(double const tcur) const;
+
+  /// Cache of the FITS data of (at most) two consecutive files.
+  /**
+   * Each field (density, temperature, B, emission, velocity...) is stored in one
+   * contiguous buffer of nfile*ncells values (slot 0 = file 'index', slot 1 =
+   * file 'index+1'), which is the layout expected by interpolate(). Fields are
+   * loaded lazily and independently. When the time index moves by one file, the
+   * slot which is still valid is moved instead of being read again.
+   * There is one cache per SimBridge instance (one instance per thread), so no
+   * locking is needed. It is never copied by the copy constructor.
+   */
+  struct DataCache {
+    enum Field {
+      F_DENSITY=0, F_TEMPERATURE,
+      F_B0, F_B1, F_B2, F_B3,
+      F_J_I, F_J_Q, F_J_U, F_J_V,
+      F_ALPHA_I, F_ALPHA_Q, F_ALPHA_U, F_ALPHA_V,
+      F_R_Q, F_R_U, F_R_V,
+      F_VEL1, F_VEL2, F_VEL3,
+      F_NFIELDS
+    };
+
+    long ncells;                      ///< number of spatial cells (nx1*nx2*nx3) of one file
+    long radmult;                     ///< nnu*npitch: extra factor for the radiative coefficients (J, ALPHA, R)
+    int  nfile;                       ///< number of slots in use (1 or 2)
+    int  fileno[2];                   ///< number of the file held by each slot (-1: none)
+    double time[2];                   ///< TIME keyword of the file held by each slot
+    bool hastime[2];                  ///< whether time[] is valid
+    bool loaded[F_NFIELDS][2];        ///< whether a field is loaded in a slot
+    std::vector<double> data[F_NFIELDS]; ///< buffers, nfile*ncells values each
+
+    DataCache() { reset(); }
+
+    /// Number of values of one file for a field: ncells, times nnu*npitch for J_*, ALPHA_*, R_*
+    long fieldSize(int f) const {
+      return (f >= F_J_I && f <= F_R_V) ? ncells*radmult : ncells;
+    }
+
+    /// Name of the FITS HDU of a field
+    static const char* hduName(int f) {
+      static const char* const names[F_NFIELDS] = {
+        "NUMBERDENSITY", "TEMPERATURE",
+        "B0", "B1", "B2", "B3",
+        "J_I", "J_Q", "J_U", "J_V",
+        "ALPHA_I", "ALPHA_Q", "ALPHA_U", "ALPHA_V",
+        "R_Q", "R_U", "R_V",
+        "VELOCITY1", "VELOCITY2", "VELOCITY3"
+      };
+      return names[f];
+    }
+
+    /// Forget everything and release the memory
+    void reset() {
+      ncells = 0; radmult = 1; nfile = 0;
+      for (int k=0; k<2; ++k) { fileno[k] = -1; time[k] = 0.; hastime[k] = false; }
+      for (int f=0; f<F_NFIELDS; ++f) {
+        loaded[f][0] = loaded[f][1] = false;
+        std::vector<double>().swap(data[f]);
+      }
+    }
+
+    /// Move the content of slot src into slot dst; src becomes empty.
+    void moveSlot(int src, int dst) {
+      for (int f=0; f<F_NFIELDS; ++f) {
+        if (loaded[f][src])
+          std::memcpy(&data[f][dst*fieldSize(f)], &data[f][src*fieldSize(f)],
+                      fieldSize(f)*sizeof(double));
+        loaded[f][dst] = loaded[f][src];
+        loaded[f][src] = false;
+      }
+      fileno[dst] = fileno[src];  time[dst] = time[src];  hastime[dst] = hastime[src];
+      fileno[src] = -1;           hastime[src] = false;
+    }
+
+    /// Declare that slot k now stands for file number newfile, with no data.
+    void clearSlot(int k, int newfile) {
+      for (int f=0; f<F_NFIELDS; ++f) loaded[f][k] = false;
+      fileno[k] = newfile;  hastime[k] = false;
+    }
+
+    /// Arrange the slots so that slot k stands for file index+k (k<nf),
+    /// re-using the data which are already there.
+    void prepare(int index, int nf, long nc, long rm) {
+      if (nf != nfile || nc != ncells || rm != radmult) { reset(); nfile = nf; ncells = nc; radmult = rm; }
+      if (nfile == 2) {
+        if (fileno[1] == index)          moveSlot(1, 0); // time goes forward by one file
+        else if (fileno[0] == index+1)   moveSlot(0, 1); // time goes backward by one file
+      }
+      for (int k=0; k<nfile; ++k)
+        if (fileno[k] != index+k) clearSlot(k, index+k);
+    }
+
+    /// Buffer of a field (allocated on first use)
+    double* ptr(int f) {
+      if (data[f].empty()) data[f].resize(size_t(nfile)*size_t(fieldSize(f)));
+      return &data[f][0];
+    }
+  };
+
+  mutable DataCache cache_; ///< cache of the FITS data (see DataCache)
+
+  /// Ensure that files index..index+nfile-1 are in the cache for the given fields
+  void cacheLoad(int index, int nfile, int const* fields, int nfields) const;
 
 };
 

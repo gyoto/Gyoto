@@ -315,6 +315,20 @@ Property const * Object::property(std::string const pname) const {
   return NULL;
 }
 
+std::vector<std::string> Object::getPropertyNames(bool list_false) const {
+  std::vector<std::string> names;
+  Property const * prop = getProperties();
+  while (prop) {
+    if (*prop) {
+      GYOTO_DEBUG_EXPR(prop->name);
+      if (prop->type != Property::empty_t) names.push_back(prop->name);
+      if (list_false && prop->type==Property::bool_t) names.push_back(prop->name_false);
+      ++prop;
+    } else prop=prop->parent;
+  }
+  return names;
+}
+
 #ifdef GYOTO_USE_XERCES
 void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
   GYOTO_DEBUG_EXPR(fmp);
@@ -405,6 +419,7 @@ void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
 }
 
 void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
+  GYOTO_DEBUG << "fmp=" << fmp << " START processing parameters" << endl;
   string name="", content="", unit="";
   FactoryMessenger * child = NULL;
   if (fmp)
@@ -451,14 +466,15 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	  delete child;
 	  break;
 	case Property::filename_t:
-	  content = fmp->fullPath(content);
+	  if (!content.empty())
+	    content = fmp->fullPath(content);
 	  [[fallthrough]]; // no 'break;' here, we need to proceed
 	default:
 	  setParameter(*prop, name, content, unit);
 	}
       }
     }
-  GYOTO_DEBUG << "Done processing parameters" << endl;
+  GYOTO_DEBUG << "fmp=" << fmp << " DONE processing parameters" << endl;
 }
 
 #endif
@@ -483,7 +499,7 @@ void Object::setParameter(Property const &p, string const &name,
     val = size_t(strtoul(content.c_str(), NULL, 0));
     break;
   case Property::double_t:
-    val = Gyoto::atof(content.c_str());
+    val = Gyoto::stringToDouble(content.c_str());
     GYOTO_DEBUG << "calling set(p, val, unit)" << std::endl;
     set(p, val, unit);
     return;

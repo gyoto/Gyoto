@@ -131,7 +131,7 @@ std::vector<double> KonoplyaRezzollaZhidenko::deltasasymptotics() const {
 
 Gyoto::Metric::KonoplyaRezzollaZhidenko::KonoplyaRezzollaZhidenko()
   : Generic(GYOTO_COORDKIND_SPHERICAL, "KonoplyaRezzollaZhidenko"),
-    spin_(0.), spin2_(0.), spin3_(0.), spin4_(0.),
+    spin_(1.), spin2_(1.), spin3_(1.), spin4_(1.),
     rms_(6.), deltashorizon_(NULL), deltasasymptotics_(NULL)
 {
   GYOTO_DEBUG << endl;

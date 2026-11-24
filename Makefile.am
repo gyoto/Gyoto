@@ -63,3 +63,6 @@ SUBDIR_ARTIFACTS=lib/libgyoto@FEATURES@.la \
 	bin/gyoto-mpi-worker.@sovers@@EXEEXT@
 $(SUBDIR_ARTIFACTS):
 	$(MAKE) -C $(dir $@) $(notdir $@)
+
+check-all: check check-mpi check-lorene check-lorene-mpi \
+	check-python check-python-mpi

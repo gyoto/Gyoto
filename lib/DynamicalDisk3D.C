@@ -21,6 +21,7 @@
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
+#include "GyotoMinkowski.h"
 #include "GyotoKerrKS.h"
 
 #include <iostream>
@@ -40,7 +41,6 @@ using namespace Gyoto::Astrobj;
 
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(DynamicalDisk3D)
-GYOTO_PROPERTY_FILENAME(DynamicalDisk3D, File, file)
 GYOTO_PROPERTY_DOUBLE(DynamicalDisk3D, tinit, tinit)
 GYOTO_PROPERTY_DOUBLE(DynamicalDisk3D, dt, dt)
 GYOTO_PROPERTY_BOOL(DynamicalDisk3D,
@@ -55,10 +55,10 @@ DynamicalDisk3D::DynamicalDisk3D() :
   Disk3D(),
   spectrumBB_(NULL),
   temperature_(1),
-  dirname_(NULL),
+  dirname_(""),
   tinit_(0.),
   dt_(1.),
-  nb_times_(1),
+  nb_times_(0),
   PLindex_(3),
   novel_(0),
   floortemperature_(0),
@@ -66,6 +66,7 @@ DynamicalDisk3D::DynamicalDisk3D() :
   absorption_array_(NULL),
   velocity_array_(NULL)
 {
+  kind_ = "DynamicalDisk3D";
   GYOTO_DEBUG << "DynamicalDisk3D Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
 }
@@ -74,7 +75,7 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   Disk3D(o),
   spectrumBB_(NULL),
   temperature_(o.temperature_),
-  dirname_(NULL),
+  dirname_(o.dirname_),
   tinit_(o.tinit_),
   dt_(o.dt_),
   nb_times_(o.nb_times_),
@@ -88,12 +89,6 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   GYOTO_DEBUG << "DynamicalDisk3D Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
 
-  if (o.dirname_){
-    //dirname_ copy
-    size_t length = strlen(o.dirname_)+1;
-    dirname_ = new char[length];
-    memcpy(dirname_, o.dirname_, length);
-  }
   if (o.emission_array_ && o.velocity_array_){
     // emission_array_ and velocity_array_ copy
     size_t naxes[4];
@@ -108,7 +103,7 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
       nel2=3*nphi*nz*nr,
       szt=nel1*sizeof(double),
       szv=nel2*sizeof(double);
-    for (int i=1; i<=nb_times_; i++) {
+    for (size_t i=1; i<=nb_times_; i++) {
       emission_array_[i-1] = new double[nel1];
       velocity_array_[i-1] = new double[nel2];
       memcpy(emission_array_[i-1], o.emission_array_[i-1], szt);
@@ -118,7 +113,7 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
     // If absorption is given, copy
     if (o.absorption_array_){
       absorption_array_   = new double*[nb_times_];
-      for (int i=1; i<=nb_times_; i++) {
+      for (size_t i=1; i<=nb_times_; i++) {
 	absorption_array_[i-1] = new double[nel1];
 	memcpy(absorption_array_[i-1], o.absorption_array_[i-1], szt);
       }
@@ -138,14 +133,21 @@ bool DynamicalDisk3D::isThreadSafe() const {
 
 DynamicalDisk3D::~DynamicalDisk3D() {
   GYOTO_DEBUG << "DynamicalDisk3D Destruction" << endl;
+  GYOTO_DEBUG_EXPR(nb_times_);
+  for (size_t i=1; i<=nb_times_; i++) {
+    if (emission_array_) delete [] emission_array_[i-1];
+    if (absorption_array_) delete [] absorption_array_[i-1];
+    if (velocity_array_)   delete [] velocity_array_[i-1];
+  }
   if (emission_array_) delete [] emission_array_;
   if (absorption_array_) delete [] absorption_array_;
   if (velocity_array_) delete [] velocity_array_;
+  GYOTO_DEBUG << "DynamicalDisk3D Destruction Done" << endl;
 }
 
 double const * DynamicalDisk3D::getVelocity() const { return Disk3D::getVelocity(); }
 
-void DynamicalDisk3D::copyQuantities(int iq) {
+void DynamicalDisk3D::copyQuantities(size_t iq) {
   if (iq<1 || iq>nb_times_)
     GYOTO_ERROR("In DynamicalDisk3D::copyQuantities: incoherent value of iq");
   setEmissquant(emission_array_[iq-1]);
@@ -162,13 +164,16 @@ void DynamicalDisk3D::getVelocity(double const pos[4], double vel[4]) {
   }else{
     double rcur=pos[1];
     double risco;
+    Metric::KerrBL const * kerrbl = dynamic_cast<Metric::KerrBL const *>(gg_());
+    Metric::Minkowski const * minko = dynamic_cast<Metric::Minkowski const *>(gg_());
+
     switch (gg_->coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       {
       string kin = gg_->kind();
-      if (kin == "KerrBL")
-	risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
-      else if (kin == "Minkowski")
+      if (kerrbl)
+	risco = kerrbl -> getRms();
+      else if (minko)
 	risco = 6.;
       else
 	risco=0., GYOTO_ERROR("In DynamicalDisk3D::getVelocity: bad metric");
@@ -186,7 +191,7 @@ void DynamicalDisk3D::getVelocity(double const pos[4], double vel[4]) {
 	vel[ii]=0.;
     }else{ 
       double time = pos[0], tcomp=tinit_;
-      int ifits=1;
+      size_t ifits=1;
       while(time>tcomp && ifits<nb_times_){
 	tcomp+=dt_;
 	ifits++;
@@ -335,7 +340,7 @@ double DynamicalDisk3D::emission(double nu, double dsem,
 			       double const co[8]) const {
   GYOTO_DEBUG << endl;
   double time = co[0], tcomp=tinit_;
-  int ifits=1;
+  size_t ifits=1;
   while(time>tcomp && ifits<nb_times_){
     tcomp+=dt_;
     ifits++;
@@ -445,7 +450,7 @@ double DynamicalDisk3D::transmission(double nuem, double dsem, state_t const &cp
 
   GYOTO_DEBUG << endl;
   double time = co[0], tcomp=tinit_;
-  int ifits=1;
+  size_t ifits=1;
   while(time>tcomp && ifits<nb_times_){
     tcomp+=dt_;
     ifits++;
@@ -470,30 +475,48 @@ double DynamicalDisk3D::transmission(double nuem, double dsem, state_t const &cp
 
 void DynamicalDisk3D::metric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL (see emission function)
-  string kin = gg->kind();
-  if (kin != "KerrBL" && kin != "Minkowski")
+  if (gg
+      && !dynamic_cast<const Metric::KerrBL*>(gg())
+      && !dynamic_cast<const Metric::Minkowski*>(gg()))
     GYOTO_ERROR
-      ("DynamicalDisk3D::metric(): metric must be KerrBL");
+      ("DynamicalDisk3D::metric(): metric must be KerrBL or Minkowski");
   Disk3D::metric(gg);
 }
 
 void DynamicalDisk3D::file(std::string const &content) {
 #ifdef GYOTO_USE_CFITSIO
+
+    GYOTO_DEBUG_EXPR(nb_times_);
+    GYOTO_DEBUG_EXPR(content);
+
+    for (size_t i=1; i<=nb_times_; i++) {
+      if (emission_array_) delete [] emission_array_[i-1];
+      if (absorption_array_) delete [] absorption_array_[i-1];
+      if (velocity_array_)   delete [] velocity_array_[i-1];
+    }
+    if (emission_array_) delete [] emission_array_;
+    if (absorption_array_) delete [] absorption_array_;
+    if (velocity_array_) delete [] velocity_array_;
+    emission_array_ = NULL;
+    absorption_array_   = NULL;
+    velocity_array_ = NULL;
+    nb_times_ = 0;
+
+    dirname_ = content;
+
     int withopacity=0;
 
-    dirname_ = new char[strlen(content.c_str())+1];
-    strcpy(dirname_,content.c_str());
     DIR *dp;
     struct dirent *dirp;
-    if((dp  = opendir(dirname_)) == NULL) {
+    if((dp  = opendir(dirname_.c_str())) == NULL) {
       GYOTO_ERROR("In DynamicalDisk3D.C constructor : bad dirname_");
     }
     
-    nb_times_=0;
+    nb_times_ = 0;
     while ((dirp = readdir(dp)) != NULL) {
       nb_times_++;
     }
-    nb_times_-=2; //for directories . and .. 
+    nb_times_ -= 2; //for directories . and ..
     
     /*
       NB: ***Caution***, here it is assumed that dirname_ 
@@ -530,7 +553,7 @@ void DynamicalDisk3D::file(std::string const &content) {
     size_t nnub=0, nphib=0, nzb=0, nrb=0;
     
     //fill in the arrays
-    for (int i=1; i<=nb_times_; i++) {
+    for (size_t i=1; i<=nb_times_; i++) {
       ostringstream stream_name ;
       stream_name << dirname_ << "data3D" 
 		  << setw(4) << setfill('0') 

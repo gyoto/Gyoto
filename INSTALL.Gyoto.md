@@ -350,7 +350,14 @@ LORENE tests are run using separate Makefile targets. To run all the
 tests (which assumes that both Gyoto was configures with both MPI and
 LORENE):
 
-    make check check-lorene check-mpi check-lorene-mpi
+    make check check-python check-lorene \
+         check-mpi check-python-mpi check-lorene-mpi
+
+Some of the Python tests (part of `make check') run on all available
+CPUs by default. You may specify a max number of threads with by
+setting the GYOTO_MAX_THREADS environment variable (note that other
+tests run on a fixed, limited number of threads or CPUs, usually 2 or
+8).
 
 Don't worry too much for the "severe" warnings.
 
