@@ -642,11 +642,40 @@ private:
      ///< Transmission: exp( &alpha;<SUB>&nu;</SUB> * ds<SUB>em</SUB> )
 
   /**
+   * \brief Transmission and emission matrices over one step
+   *
+   * For one step of length dsem with constant coefficients, the
+   * polarized transfer equation dS/ds = J - K S gives
+   * S(ds) = O S(0) + P J with
+   *   - O = exp(-K ds), the transmission (Mueller) matrix;
+   *   - P = &int;<SUB>0</SUB><SUP>ds</SUP> exp(-K s) ds, which multiplies the emission vector J.
+   *
+   * Both are computed together from a single 8x8 matrix exponential
+   * (Van Loan 1978): exp([[-K ds, 1],[0, 0]]) = [[O, P/ds],[0, 1]].
+   * This is exact for every K, including singular ones, and needs
+   * no optically thin / thick approximation.
+   *
+   * \param alphaInu, alphaQnu, alphaUnu, alphaVnu absorption coefficients in the Stokes basis (I,Q,U,V)
+   * \param rQnu, rUnu, rVnu Faraday coefficients in the Stokes basis (Q,U,V)
+   * \param sin2Chi, cos2Chi (or Chi) rotation between the parallel transported observer polarization basis and the Stokes basis
+   * \param dsem geometrical length in geometrical units
+   * \param[out] Onu transmission matrix O
+   * \param[out] Pnu emission matrix P
+   */
+  void transferMatrices(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem,
+        Eigen::Matrix4d &Onu, Eigen::Matrix4d &Pnu) const;
+  void transferMatrices(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double Chi, double dsem,
+        Eigen::Matrix4d &Onu, Eigen::Matrix4d &Pnu) const;
+
+  /**
    * Omatrix() computes the exponential of the Mueller matrix 
    * which contains the absorption and Faraday coefficients 
    * and is used in the polarized radiative transfer equation.
+   *
+   * \deprecated Use transferMatrices(), which returns O and P together.
    * 
-   * \param Onu output matrix (must be allocated previously)
    * \param alphanu[4] array containing the 4 absorption coefficients in the Stokes basis (I,Q,U,V)
    * \param rnu[3] array containing the 3 Faraday coefficients in the Stokes basis (Q,U,V)
    * \param Chi angle of rotation between the parallel transported observer polarization basis and the Stokes basis
@@ -659,6 +688,11 @@ private:
   Eigen::Matrix4d Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const;
 
+  /**
+   * Pmatrix() computes P = &int;<SUB>0</SUB><SUP>ds</SUP> exp(-K s) ds.
+   *
+   * \deprecated Use transferMatrices(), which returns O and P together.
+   */
   Eigen::Matrix4d Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const;
   

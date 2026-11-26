@@ -217,6 +217,7 @@ void SimBridge::filePrefix(std::string const &f){
 
   //  double* tmp;
 
+  // Reading grid from FITS file
   ntime_        = FitsRW::fitsReadKey(fptr, "NB_X0");
   time_array_   = new double[ntime_];
   FitsRW::fitsReadHDUData(fptr, "X0", time_array_, ntime_);
@@ -241,7 +242,7 @@ void SimBridge::filePrefix(std::string const &f){
   GYOTO_DEBUG << "nx3_" << nx3_ << endl;
   GYOTO_DEBUG << "x3 array: " << x3_array_[0] << " - " << x3_array_[nx3_-1] << endl;
 
-  // Read frequency array if exist
+  // Reading frequency array if it exist in FITS file
   int status = 0;
   string key = "NB_FREQ";
   double tmpd;
@@ -268,7 +269,7 @@ void SimBridge::filePrefix(std::string const &f){
     GYOTO_DEBUG << "pitch array: " << pitch_array_[0] << " - " << pitch_array_[npitch_-1] << endl;
   }
   
-
+  // Check if FITS file contains magnetic field and set the associated flag
   BinFile_ = FitsRW::fitsReadKey(fptr, "BINFILE");
 
   // Filling the flags
@@ -372,9 +373,9 @@ void SimBridge::boundaryConditions(string const &sbc){
   std::istringstream tokenStream(sbc);
   int wordCount = 0;
 
-  while (std::getline(tokenStream, token, ' ') && wordCount < 5) {
+  while (std::getline(tokenStream, token, ' ') && wordCount < 6) {
     std::istringstream commaStream(token);
-    while (std::getline(commaStream, token, ',') && wordCount < 5) {
+    while (std::getline(commaStream, token, ',') && wordCount < 6) {
       if (!token.empty()) {
         switch (wordCount) {
           case 0: boundCond_[0] = token; break;
@@ -389,6 +390,7 @@ void SimBridge::boundaryConditions(string const &sbc){
     }
   }
 }
+
 std::string SimBridge::boundaryConditions() const{
   std::string list;
   for (int ii=0;ii<6;ii++)
@@ -421,7 +423,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   GYOTO_DEBUG << endl;
 # endif
   
-  double tcur=coord_ph[0]; // in M units # TBC
+  double tcur=coord_ph[0]; // in M units
   int nfile=ntime_==1?1:2; // 1 if ntime=1, 2 otherwise
   //cout << "tcur: " << tcur << endl;
   int index=getIndex(tcur); //index of files to be loaded (index and index+1)
@@ -639,6 +641,19 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     }
   }else{
     for (size_t ii=0; ii<nbnu; ++ii){
+      // Compute the pitch angle
+      double pos[4] = {tcur, x1, x2, x3};
+      double vel[4];
+      const_cast<SimBridge*>(this)->getVelocity(pos, vel);
+      double B4vect[4]={0.,0.,0.,0.};
+      double theta_mag=0.;
+      if (magneticConfig_!="None"){
+        computeB4vect(B4vect, magneticConfig_, coord_obj, coord_ph);
+        theta_mag = get_theta_mag(B4vect, coord_ph, vel);
+      } else if (npitch_!=1) GYOTO_ERROR("Magnetic field configuration not set, cannot compute the pitch angle.");
+
+      
+
       GYOTO_DEBUG << "Setup arguments for the interpolation of radiative coefficients." << endl;
       double Xq[6] = {tcur, x1, x2, x3, nuem[ii], theta_mag};
       int X_params[6] = {nfile, nx1_, nx2_, nx3_, nnu_, npitch_};
@@ -687,8 +702,8 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     //cout << "In SimBridge: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
     //cout << "In SimBridge: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
     Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi);
-    Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
-    Eigen::Matrix4d Pmat = Pmatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], sin(2.*Chi), cos(2.*Chi), dsem);
+    Eigen::Matrix4d Omat, Pmat;
+    transferMatrices(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem, Omat, Pmat);
 
     // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
     Eigen::Vector4d Stokes=Pmat*Jstokes;
@@ -749,16 +764,16 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
     }else{
       if (cunninghamvel_ && gg_->kind()=="KerrBL"){
         // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
-	// initally from Cunnigham 1975
+	      // initally from Cunnigham 1975
         double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
         double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
         gamma_ms = sqrt(1.-2./(3.*risco)),
-	delta = rr*rr - 2.*rr + SPIN*SPIN,
-	hh = (2.*rr - SPIN*lambda_ms)/delta;
+	      delta = rr*rr - 2.*rr + SPIN*SPIN,
+	      hh = (2.*rr - SPIN*lambda_ms)/delta;
 	
-	vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
-	vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
-	vel[2] = 0.;
+	      vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
+	      vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
+	      vel[2] = 0.;
         vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
       }else{
         if (cunninghamvel_)

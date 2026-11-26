@@ -35,6 +35,7 @@
 #include <cmath>
 #include <sstream>
 #include <limits>
+#include <mutex>
 
 // NAMESPACES
 using namespace std;
@@ -704,15 +705,101 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 	return Omatrix(alphaInu, alphaQnu, alphaUnu, alphaVnu, rQnu, rUnu, rVnu, sin(2.*Chi), cos(2.*Chi), dsem);
 }
 
+void Generic::transferMatrices(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem,
+        Matrix4d &Onu, Matrix4d &Pnu) const{
+  /** Transmission matrix O = exp(-K ds) and emission matrix
+   *  P = int_0^ds exp(-K s) ds for one step of constant coefficients,
+   *  so that S(ds) = O S(0) + P J.
+   *
+   *  Both blocks come from a single 8x8 matrix exponential
+   *  (Van Loan 1978, IEEE Trans. Autom. Control 23, 395):
+   *
+   *      exp( [[-K ds, 1], [0, 0]] ) = [[ O, P/ds ], [ 0, 1 ]]
+   *
+   *  This is exact for every K, including singular ones (no
+   *  absorption, or |alpha_P| = alpha_I), and needs no separate
+   *  optically thin / thick approximations. The identity (not ds*1)
+   *  is placed in the upper-right block and the result multiplied by
+   *  ds afterwards: in cgs ds can be ~1e12 and putting it inside the
+   *  matrix degrades the accuracy of the exponential to ~1e-5.
+   */
+  double ds = dsem*gg_->unitLength();
+
+  double aI=alphaInu, aV=alphaVnu;
+  double aQ=alphaQnu*cos2Chi-alphaUnu*sin2Chi;
+  double aU=alphaUnu*cos2Chi+alphaQnu*sin2Chi;
+  double rQ=rQnu*cos2Chi-rUnu*sin2Chi;
+  double rU=rUnu*cos2Chi+rQnu*sin2Chi;
+  double rV=rVnu;
+
+  Matrix4d Kmat;
+  Kmat << aI,  aQ,  aU,  aV,
+          aQ,  aI,  rV, -rU,
+          aU, -rV,  aI,  rQ,
+          aV,  rU, -rQ,  aI;
+
+  // Slowest decay rate of exp(-K s) is aI - lambda1 (eigenvalues of K
+  // are aI +/- lambda1 and aI +/- i lambda2).
+  double alpha2 = aQ*aQ+aU*aU+aV*aV, r2 = rQ*rQ+rU*rU+rV*rV,
+    ar = aQ*rQ+aU*rU+aV*rV;
+  double lambda1 = sqrt(sqrt((alpha2-r2)*(alpha2-r2)/4.+ar*ar)+(alpha2-r2)/2.);
+
+  if ((aI-lambda1)*ds > 745.) {
+    // exp(-K ds) underflows to exactly 0 in double precision: then
+    // O = 0 and P = K^-1 are exact (not an approximation).
+    // K is invertible here since all its eigenvalues have real part
+    // >= aI - lambda1 > 0.
+    GYOTO_DEBUG << "exp(-K ds) underflows: O = 0, P = K^-1" << endl;
+    Onu = Matrix4d::Zero();
+    Pnu = Kmat.fullPivLu().solve(Matrix4d::Identity());
+  } else {
+    Matrix<double, 8, 8> aug = Matrix<double, 8, 8>::Zero();
+    aug.topLeftCorner<4, 4>() = -Kmat * ds;
+    aug.topRightCorner<4, 4>() = Matrix4d::Identity();
+    Matrix<double, 8, 8> expaug = aug.exp();
+    Onu = expaug.topLeftCorner<4, 4>();
+    Pnu = ds * expaug.topRightCorner<4, 4>();
+  }
+
+  if (Onu.array().isNaN().any() || Pnu.array().isNaN().any()) {
+    GYOTO_DEBUG << "K =\n" << Kmat << "\nds = " << ds << endl;
+    GYOTO_ERROR("In transferMatrices: NaN in O or P matrix. Check radiative coefficients' computation.");
+  }
+
+  double eps = 1.e-10;
+  if ((Onu.array().abs() > 1.0 + eps).any()){
+    GYOTO_DEBUG << "O matrix contains coefficient with |O(i,j)| > 1\n O =\n" << Onu << endl;
+    GYOTO_ERROR("Unphysical value in O matrix: |O(i,j)| > 1. Check radiative coefficients' computation.");
+  }
+}
+
+void Generic::transferMatrices(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double Chi, double dsem,
+        Matrix4d &Onu, Matrix4d &Pnu) const{
+  transferMatrices(alphaInu, alphaQnu, alphaUnu, alphaVnu, rQnu, rUnu, rVnu,
+		   sin(2.*Chi), cos(2.*Chi), dsem, Onu, Pnu);
+}
+
 Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const{
-	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
-	*		of the Mueller Matrix containing the absorption and Faraday coefficients
-	*/
-	Matrix4d Onu, zero=Matrix4d::Zero();
+  /** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
+   *		of the Mueller Matrix containing the absorption and Faraday coefficients.
+   *
+   *  DEPRECATED: use transferMatrices(), which returns O and P together.
+   *  Kept as an independent closed-form cross-check.
+   */
+  static std::once_flag deprecation_warned;
+  std::call_once(deprecation_warned, [](){
+    GYOTO_WARNING << "Astrobj::Generic::Omatrix() is deprecated and will be removed;"
+		  << " use Astrobj::Generic::transferMatrices() instead" << endl;
+  });
+
+  Matrix4d Onu, zero=Matrix4d::Zero();
   Matrix4d M1, M2, M3, M4;
-	double alpha2, r2, lambda1, lambda2, Theta, sigma;
-  
+  double alpha2, r2, lambda1, lambda2, Theta, sigma;
+  double ds = dsem*gg_->unitLength();
+
   double aI=alphaInu, aV=alphaVnu;
   double aQ=alphaQnu*cos2Chi-alphaUnu*sin2Chi;
   double aU=alphaUnu*cos2Chi+alphaQnu*sin2Chi;
@@ -723,17 +810,21 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 
   alpha2 = aQ*aQ+aU*aU+aV*aV;
   r2 = rQ*rQ+rU*rU+rV*rV;
-  lambda1 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alpha2-r2,1.)/2.,0.5);
-  lambda2 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alpha2-r2,1.)/2.,0.5);
-  Theta = pow(lambda1,2)+pow(lambda2,2);
-  sigma = (aQ*rQ+aU*rU+aV*rV) < 0 ? -1. : 1.;
+  double ar = aQ*rQ+aU*rU+aV*rV;
+  double Rad = sqrt((alpha2-r2)*(alpha2-r2)/4.+ar*ar);
+  // lambda1*lambda2 = |a.r|: compute the larger of the two directly
+  // and the other from the product, to avoid the cancellation in
+  // Rad -/+ (alpha2-r2)/2 when alpha2 >> r2 or r2 >> alpha2.
+  if (alpha2 >= r2) {
+    lambda1 = sqrt(Rad+(alpha2-r2)/2.);
+    lambda2 = lambda1>0. ? fabs(ar)/lambda1 : 0.;
+  } else {
+    lambda2 = sqrt(Rad-(alpha2-r2)/2.);
+    lambda1 = lambda2>0. ? fabs(ar)/lambda2 : 0.;
+  }
+  Theta = lambda1*lambda1+lambda2*lambda2;
+  sigma = ar < 0 ? -1. : 1.;
 
-
-  double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
-  	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
-  	coslb2=cos(lambda2*dsem*gg_->unitLength()),
-  	sinlb2=sin(lambda2*dsem*gg_->unitLength());
-  
   GYOTO_DEBUG
   	<< "alphaS : " << aI << ", " << aQ << ", " << aU << ", " << aV << "\n"
   	<< "rhoS   : " << rQ << ", " << rU << ", " << rV << "\n"
@@ -741,257 +832,125 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   	<< "r2 : " << r2 << "\n"
   	<< "lambda : " << lambda1 << ", " << lambda2 << "\n"
   	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
-  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << "\n"
-    << "coshL1, sinhL1 : " << coshlb1 << ", " << sinhlb1 << "\n"
-    << "cosL2, sinL2 : " << coslb2 << ", " << sinlb2 << endl;
-  
-  if (isinf(coshlb1) || isinf(sinhlb1)){
-  	GYOTO_DEBUG << "In Omatrix : the cosh or sinh is infinite or NaN, at least one of the coefficient is to large/low !" << endl;
-    return zero;
+  	<< "dsem*gg_ : " << ds << endl;
+
+  double expaI = exp(-aI*ds);
+
+  if (Theta*ds*ds < 1.e-6) {
+    // (Nearly) degenerate case: the polarized part N = K - aI*1 is
+    // (nearly) nilpotent and the closed form below divides by
+    // Theta ~ 0. Use the exact exponential instead. This covers the
+    // unpolarized case (alpha_P = rho = 0), where the previous code
+    // returned the identity instead of exp(-aI ds) * 1.
+    Matrix4d Nmat;
+    Nmat << 0.,  aQ,  aU,  aV,
+            aQ,  0.,  rV, -rU,
+            aU, -rV,  0.,  rQ,
+            aV,  rU, -rQ,  0.;
+    Onu = expaI * (-Nmat*ds).exp();
+  } else {
+    // Fold exp(-aI ds) into the hyperbolic terms so that nothing
+    // overflows: exp(-aI ds) cosh(lambda1 ds) =
+    // [exp(-(aI-lambda1) ds) + exp(-(aI+lambda1) ds)]/2, and
+    // aI >= lambda1 for physical coefficients.
+    double ep = exp(-(aI-lambda1)*ds), em = exp(-(aI+lambda1)*ds);
+    double coshlb1 = 0.5*(ep+em),
+      sinhlb1 = 0.5*(ep-em),
+      coslb2 = expaI*cos(lambda2*ds),
+      sinlb2 = expaI*sin(lambda2*ds);
+
+    // Fill of M1
+    M1 = Matrix4d::Identity();
+
+    // Fill of M2
+    M2 = zero;
+    M2(0,1)=lambda2*aQ-sigma*lambda1*rQ;
+    M2(0,2)=lambda2*aU-sigma*lambda1*rU;
+    M2(0,3)=lambda2*aV-sigma*lambda1*rV;
+    M2(1,0)=M2(0,1);
+    M2(1,2)=sigma*lambda1*aV+lambda2*rV;
+    M2(1,3)=-sigma*lambda1*aU-lambda2*rU;
+    M2(2,0)=M2(0,2);
+    M2(2,1)=-M2(1,2);
+    M2(2,3)=sigma*lambda1*aQ+lambda2*rQ;
+    M2(3,0)=M2(0,3);
+    M2(3,1)=-M2(1,3);
+    M2(3,2)=-M2(2,3);
+
+    // Fill of M3
+    M3 = zero;
+    M3(0,1)=lambda1*aQ+sigma*lambda2*rQ;
+    M3(0,2)=lambda1*aU+sigma*lambda2*rU;
+    M3(0,3)=lambda1*aV+sigma*lambda2*rV;
+    M3(1,0)=M3(0,1);
+    M3(1,2)=-sigma*lambda2*aV+lambda1*rV;
+    M3(1,3)=sigma*lambda2*aU-lambda1*rU;
+    M3(2,0)=M3(0,2);
+    M3(2,1)=-M3(1,2);
+    M3(2,3)=-sigma*lambda2*aQ+lambda1*rQ;
+    M3(3,0)=M3(0,3);
+    M3(3,1)=-M3(1,3);
+    M3(3,2)=-M3(2,3);
+
+    // Fill of M4
+    M4 = zero;
+    M4(0,0)= (alpha2+r2)/2.;
+    M4(0,1)=aV*rU-aU*rV;
+    M4(0,2)=aQ*rV-aV*rQ;
+    M4(0,3)=aU*rQ-aQ*rU;
+    M4(1,0)=-M4(0,1);
+    M4(1,1)=aQ*aQ+rQ*rQ-(alpha2+r2)/2.;
+    M4(1,2)=aQ*aU+rQ*rU;
+    M4(1,3)=aV*aQ+rV*rQ;
+    M4(2,0)=-M4(0,2);
+    M4(2,1)=M4(1,2);
+    M4(2,2)=aU*aU+rU*rU-(alpha2+r2)/2.;
+    M4(2,3)=aU*aV+rU*rV;
+    M4(3,0)=-M4(0,3);
+    M4(3,1)=M4(1,3);
+    M4(3,2)=M4(2,3);
+    M4(3,3)=aV*aV+rV*rV-(alpha2+r2)/2.;
+
+    // Filling O matrix, output (exp(-aI ds) already included above)
+    Onu = (coshlb1+coslb2)*M1/2.
+      -sinlb2*M2/Theta
+      -sinhlb1*M3/Theta
+      +(coshlb1-coslb2)*M4/Theta;
   }
 
-  // Fill of M1
-  M1 = zero;
-  for (int ii=0;ii<4;ii++){
-    M1(ii,ii)=1.;
-  }
-  //cout << "M1 :\n" << M1 << endl;
-
-  // Fill of M2
-  M2 = zero;
-  M2(0,1)=lambda2*aQ-sigma*lambda1*rQ;
-  M2(0,2)=lambda2*aU-sigma*lambda1*rU;
-  M2(0,3)=lambda2*aV-sigma*lambda1*rV;
-  M2(1,0)=M2(0,1);
-  M2(1,2)=sigma*lambda1*aV+lambda2*rV;
-  M2(1,3)=-sigma*lambda1*aU-lambda2*rU;
-  M2(2,0)=M2(0,2);
-  M2(2,1)=-M2(1,2);
-  M2(2,3)=sigma*lambda1*aQ+lambda2*rQ;
-  M2(3,0)=M2(0,3);
-  M2(3,1)=-M2(1,3);
-  M2(3,2)=-M2(2,3);
-  //cout << "M2 :\n" << M2 << endl;
-
-  // Fill of M3
-  M3 = zero;
-  M3(0,1)=lambda1*aQ+sigma*lambda2*rQ;
-  M3(0,2)=lambda1*aU+sigma*lambda2*rU;
-  M3(0,3)=lambda1*aV+sigma*lambda2*rV;
-  M3(1,0)=M3(0,1);
-  M3(1,2)=-sigma*lambda2*aV+lambda1*rV;
-  M3(1,3)=sigma*lambda2*aU-lambda1*rU;
-  M3(2,0)=M3(0,2);
-  M3(2,1)=-M3(1,2);
-  M3(2,3)=-sigma*lambda2*aQ+lambda1*rQ;
-  M3(3,0)=M3(0,3);
-  M3(3,1)=-M3(1,3);
-  M3(3,2)=-M3(2,3);
-	//cout << "M3 :\n" << M3 << endl;
-
-  // Fill of M4
-  M4 = zero;
-  M4(0,0)= (alpha2+r2)/2.;
-  M4(0,1)=aV*rU-aU*rV;
-  M4(0,2)=aQ*rV-aV*rQ;
-  M4(0,3)=aU*rQ-aQ*rU;
-  M4(1,0)=-M4(0,1);
-  M4(1,1)=pow(aQ,2)+pow(rQ,2)-(alpha2+r2)/2.;
-  M4(1,2)=aQ*aU+rQ*rU;
-  M4(1,3)=aV*aQ+rV*rQ;
-  M4(2,0)=-M4(0,2);
-  M4(2,1)=M4(1,2);
-  M4(2,2)=pow(aU,2)+pow(rU,2)-(alpha2+r2)/2.;
-  M4(2,3)=aU*aV+rU*rV;
-  M4(3,0)=-M4(0,3);
-  M4(3,1)=M4(1,3);
-  M4(3,2)=M4(2,3);
-  M4(3,3)=pow(aV,2)+pow(rV,2)-(alpha2+r2)/2.;
-	//cout << "M4 :\n" << M4 << endl;
-
-  if (Theta==0.)
-    return Matrix4d::Identity();
-  
-  // Filling O matrix, output
-  Onu=exp(-aI*dsem*gg_->unitLength())*\
-  			((coshlb1+coslb2)*M1/2. \
-        -sinlb2*M2/Theta \
-        -sinhlb1*M3/Theta \
-        +(coshlb1-coslb2)*M4/Theta);
-  
   if ((Onu.array().isNaN()).any()){
-    // Most probably comes from cosh and sinh close to inf which results in a NaN for Onu
-    // Physically this means absorption is high and there is no transmission
-    return zero;
-  } 
-  
-  double eps = 1.e-12;
+    GYOTO_DEBUG << "O =\n" << Onu << endl;
+    GYOTO_ERROR("In Omatrix: NaN in O matrix. Check radiative coefficients' computation.");
+  }
+
+  double eps = 1.e-10;
   if ((Onu.array().abs() > 1.0 + eps).any()){
     GYOTO_DEBUG << "O matrix contains coefficient with |O(i,j)| > 1\n O =\n" << Onu << endl;
     GYOTO_ERROR("Unphysical value in O matrix: |O(i,j)| > 1. Check radiative coefficients' computation.");
   }
-  
+
   return Onu;
 }
 
 Matrix4d Generic::Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const{
-	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
-	*		of the Mueller Matrix containing the absorption and Faraday coefficients
-	*/
-  Matrix4d Pnu, P;
-  
-  double aI=alphaInu, aV=alphaVnu;
-  double aQ=alphaQnu*cos2Chi-alphaUnu*sin2Chi;
-  double aU=alphaUnu*cos2Chi+alphaQnu*sin2Chi;
-  double rQ=rQnu*cos2Chi-rUnu*sin2Chi;
-  double rU=rUnu*cos2Chi+rQnu*sin2Chi;
-  double rV=rVnu;
-  //aU*=-1.; rU*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
-
-  Matrix4d Kmat;
-  Matrix4d I = Matrix4d::Identity();
-  Kmat << aI,  aQ,  aU,  aV,
-          aQ,  aI,  rV, -rU,
-          aU, -rV,  aI,  rQ,
-          aV,  rU, -rQ,  aI;
-
-  if (aI * dsem*gg_->unitLength() > 100.){
-    // Optically Thick regime, use approximation
-    GYOTO_DEBUG << "Medium fully optically thick, approximation P ≈ K⁻¹" << endl;;
-    P = Kmat.fullPivLu().solve(I);
-  } else if ((Kmat * dsem*gg_->unitLength()).norm() < 1.e-3){
-    // Optically Thin regime, use approximation. Precise at O(ds^2)
-    GYOTO_DEBUG << "Medium fully optically thin, approximation P ≈ ds ⋅ (I - 1/2 K ds)" << endl;;
-    P = dsem*gg_->unitLength() * (I - 0.5 * Kmat * dsem*gg_->unitLength());
-  } else {
-    // General case, exact formula
-    // Use of Eigen calculus of the exponetial of the matrice
-    GYOTO_DEBUG << "Intermediate regime: computing exact exponential" << endl;;
-    P = Kmat.fullPivLu().solve(I - (-Kmat * dsem*gg_->unitLength()).exp());
-  }
-
-  if (P(0,0) < 0.) {
-    GYOTO_DEBUG << "[WARNING] P(0,0) < 0: " << P(0,0)
-              << " — ignored cell" << endl;
-    return Matrix4d::Zero();
-  } else {
-    return P;
-  }
-
-  /*
-  double alpha2, r2, lambda1, lambda2, Theta, sigma;
-  alpha2 = aQ*aQ+aU*aU+aV*aV;
-  r2 = rQ*rQ+rU*rU+rV*rV;
-  lambda1 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alpha2-r2,1.)/2.,0.5);
-  lambda2 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alpha2-r2,1.)/2.,0.5);
-  Theta = pow(lambda1,2)+pow(lambda2,2);
-  sigma = (aQ*rQ+aU*rU+aV*rV) < 0 ? -1. : 1.;
-
-  double f1=1./(aI*aI - lambda1*lambda1), f2=1./(aI*aI + lambda2*lambda2);
-
-    double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
-  	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
-  	coslb2=cos(lambda2*dsem*gg_->unitLength()),
-  	sinlb2=sin(lambda2*dsem*gg_->unitLength());
-
-  cout
-  	<< "alphaS : " << aI << ", " << aQ << ", " << aU << ", " << aV << "\n"
-  	<< "rhoS   : " << rQ << ", " << rU << ", " << rV << "\n"
-  	<< "alpha2 : " << alpha2 << "\n"
-  	<< "r2 : " << r2 << "\n"
-  	<< "lambda : " << lambda1 << ", " << lambda2 << "\n"
-  	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
-  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << "\n"
-    << "coshL1, sinhL1 : " << coshlb1 << ", " << sinhlb1 << "\n"
-    << "cosL2, sinL2 : " << coslb2 << ", " << sinlb2 << "\n"
-    << "f1, f2 : " << f1 << ", " << f2 << endl;
-
-  if (isinf(coshlb1) || isinf(sinhlb1)) //Should not be the case as the optically thick regime use another approximation
-  	GYOTO_ERROR("In Pmatrix : the cosh or sinh is infinite or NaN, at least one of the coefficient is to large/low !"); 
-
-  Matrix4d zero;
-  zero <<  0, 0, 0, 0,
-           0, 0, 0, 0,
-           0, 0, 0, 0,
-           0, 0, 0, 0;
-  Matrix4d M1, M2, M3, M4;
-
-  // Fill of M1
-  M1 = zero;
-  for (int ii=0;ii<4;ii++){
-    M1(ii,ii)=1.;
-  }
-  //cout << "M1 :\n" << M1 << endl;
-
-  // Fill of M2
-  M2 = zero;
-  M2(0,1)=lambda2*aQ-sigma*lambda1*rQ;
-  M2(0,2)=lambda2*aU-sigma*lambda1*rU;
-  M2(0,3)=lambda2*aV-sigma*lambda1*rV;
-  M2(1,0)=M2(0,1);
-  M2(1,2)=sigma*lambda1*aV+lambda2*rV;
-  M2(1,3)=-sigma*lambda1*aU-lambda2*rU;
-  M2(2,0)=M2(0,2);
-  M2(2,1)=-M2(1,2);
-  M2(2,3)=sigma*lambda1*aQ+lambda2*rQ;
-  M2(3,0)=M2(0,3);
-  M2(3,1)=-M2(1,3);
-  M2(3,2)=-M2(2,3);
-  //cout << "M2 :\n" << M2 << endl;
-
-  // Fill of M3
-  M3 = zero;
-  M3(0,1)=lambda1*aQ+sigma*lambda2*rQ;
-  M3(0,2)=lambda1*aU+sigma*lambda2*rU;
-  M3(0,3)=lambda1*aV+sigma*lambda2*rV;
-  M3(1,0)=M3(0,1);
-  M3(1,2)=-sigma*lambda2*aV+lambda1*rV;
-  M3(1,3)=sigma*lambda2*aU-lambda1*rU;
-  M3(2,0)=M3(0,2);
-  M3(2,1)=-M3(1,2);
-  M3(2,3)=-sigma*lambda2*aQ+lambda1*rQ;
-  M3(3,0)=M3(0,3);
-  M3(3,1)=-M3(1,3);
-  M3(3,2)=-M3(2,3);
-	//cout << "M3 :\n" << M3 << endl;
-
-  // Fill of M4
-  M4 = zero;
-  M4(0,0)= (alpha2+r2)/2.;
-  M4(0,1)=aV*rU-aU*rV;
-  M4(0,2)=aQ*rV-aV*rQ;
-  M4(0,3)=aU*rQ-aQ*rU;
-  M4(1,0)=-M4(0,1);
-  M4(1,1)=pow(aQ,2)+pow(rQ,2)-(alpha2+r2)/2.;
-  M4(1,2)=aQ*aU+rQ*rU;
-  M4(1,3)=aV*aQ+rV*rQ;
-  M4(2,0)=-M4(0,2);
-  M4(2,1)=M4(1,2);
-  M4(2,2)=pow(aU,2)+pow(rU,2)-(alpha2+r2)/2.;
-  M4(2,3)=aU*aV+rU*rV;
-  M4(3,0)=-M4(0,3);
-  M4(3,1)=M4(1,3);
-  M4(3,2)=M4(2,3);
-  M4(3,3)=pow(aV,2)+pow(rV,2)-(alpha2+r2)/2.;
-	//cout << "M4 :\n" << M4 << endl;
-
-  Theta = (Theta==0.)?DBL_MIN:Theta; 
-  // Filling O matrix, output
-  Pnu=-lambda1*f1*M3/Theta	 
-    +aI*f1/2.*(M1 + 2.*M4/Theta) 
-    -lambda2*f2*M2/Theta	 // typo in Monika's paper minus not plus
-    +aI*f2/2.*(M1 - 2.*M4/Theta) 
-    -exp(-aI*dsem*gg_->unitLength())* 
-    (
-     (-lambda1*f1*M3/Theta + aI*f1/2.*(M1 + 2.*M4/Theta)) * coshlb1
-     +(-lambda2*f2*M2/Theta + aI*f2/2.*(M1 - 2.*M4/Theta)) * coslb2
-     +(-aI*f2*M2/Theta - lambda2*f2/2.*(M1 - 2.*M4/Theta)) * sinlb2
-     -(aI*f1*M3/Theta - lambda1*f1/2.*((M1 + 2.*M4/Theta))) * sinhlb1
-     );
-  
-  cout << "Pnu:\n" << Pnu << endl;
-  return P;*/
+  /** P = int_0^ds exp(-K s) ds, the matrix that multiplies the emission
+   *  vector J over one step.
+   *
+   *  DEPRECATED: use transferMatrices(), which returns O and P together.
+   *  The former optically thin / thick approximations and the
+   *  K^-1 (1 - exp(-K ds)) formula (wrong for singular K) are replaced
+   *  by the exact computation of transferMatrices().
+   */
+  static std::once_flag deprecation_warned;
+  std::call_once(deprecation_warned, [](){
+    GYOTO_WARNING << "Astrobj::Generic::Pmatrix() is deprecated and will be removed;"
+		  << " use Astrobj::Generic::transferMatrices() instead" << endl;
+  });
+  Matrix4d Onu, Pnu;
+  transferMatrices(alphaInu, alphaQnu, alphaUnu, alphaVnu, rQnu, rUnu, rVnu,
+		   sin2Chi, cos2Chi, dsem, Onu, Pnu);
+  return Pnu;
 }
 
 

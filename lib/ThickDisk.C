@@ -762,8 +762,8 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
     //cout << "In ThickDisk: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
     //cout << "RADSTUFF: " << "r= " << coord_ph[1] << " " << ", th= " << coord_ph[2]*180./M_PI << " Rad transf stuff: " << jInu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jQnu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jUnu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jVnu[ii]/(nuem[ii]*nuem[ii])*10. << " " << nuem[ii]*aInu[ii]*0.01 << ", " << nuem[ii]*aQnu[ii]*0.01 << ", " << nuem[ii]*aUnu[ii]*0.01 << ", " << nuem[ii]*aVnu[ii]*0.01 << " " << nuem[ii]*rotQnu[ii]*0.01 << ", " << nuem[ii]*rotUnu[ii]*0.01 << ", " << nuem[ii]*rotVnu[ii]*0.01 << endl;
     Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi);
-    Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
-    Eigen::Matrix4d Pmat = Pmatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], sin(2.*Chi), cos(2.*Chi), dsem);
+    Eigen::Matrix4d Omat, Pmat;
+    transferMatrices(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem, Omat, Pmat);
 
     // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
     Eigen::Vector4d Stokes=Pmat*Jstokes;
