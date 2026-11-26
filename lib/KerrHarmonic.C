@@ -88,7 +88,7 @@ void KerrHarmonic::gmunu(double g[4][4], const double * pos) const {
     uu = rBL-1., // u = rBL-M is a useful quantity, see FV notes
     u2 = uu*uu,
     costhBL = zz/uu, costhBL2 = costhBL*costhBL, // BL cos(theta)
-    sinthBL = pow(1 - costhBL2,0.5), sinthBL2 = sinthBL*sinthBL,
+    sinthBL2 = (x2+y2)/(u2+a2), sinthBL = pow(sinthBL2,0.5),
     rho2BL = rBL*rBL + a2 * costhBL2, // usual rho2 quantity in BL metric
     DeltaBL = rBL*rBL - 2.*rBL + a2; // usual Delta quantity in BL metric
 
@@ -105,9 +105,9 @@ void KerrHarmonic::gmunu(double g[4][4], const double * pos) const {
     drdx = uu*xx/Rcal2,
     drdy = uu*yy/Rcal2,
     drdz = (u2 + a2)*zz/(uu*Rcal2),
-    dthdx = xx*zz/(Rcal2*pow(u2-z2,0.5)),
-    dthdy = yy*zz/(Rcal2*pow(u2-z2,0.5)),
-    dthdz = 1./pow(u2-z2,0.5) * (z2*(u2+a2)/(Rcal2*u2) - 1.),
+    dthdx = xx*zz/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)),
+    dthdy = yy*zz/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)),
+    dthdz = 1./pow((u2*(x2+y2)/(u2+a2)),0.5) * (z2*(u2+a2)/(Rcal2*u2) - 1.),
     dphidx = aa/(a2+u2) * drdx - yy/(x2+y2) - drdx*aa/(u2 - mcal2), 
     dphidy = aa/(a2+u2) * drdy + xx/(x2+y2) - drdy*aa/(u2 - mcal2),
     dphidz = aa/(a2+u2) * drdz - drdz*aa/(u2 - mcal2);
@@ -156,7 +156,7 @@ double KerrHarmonic::gmunu(const double * pos, int mu, int nu) const {
     uu = rBL-1., // u = rBL-M is a useful quantity, see FV notes
     u2 = uu*uu,
     costhBL = zz/uu, costhBL2 = costhBL*costhBL, // BL cos(theta)
-    sinthBL = pow(1 - costhBL2,0.5), sinthBL2 = sinthBL*sinthBL,
+    sinthBL2 = (x2+y2)/(u2+a2), sinthBL = pow(sinthBL2,0.5),
     rho2BL = rBL*rBL + a2 * costhBL2, // usual rho2 quantity in BL metric
     DeltaBL = rBL*rBL - 2.*rBL + a2; // usual Delta quantity in BL metric
 
@@ -173,9 +173,9 @@ double KerrHarmonic::gmunu(const double * pos, int mu, int nu) const {
     drdx = uu*xx/Rcal2,
     drdy = uu*yy/Rcal2,
     drdz = (u2 + a2)*zz/(uu*Rcal2),
-    dthdx = xx*zz/(Rcal2*pow(u2-z2,0.5)),
-    dthdy = yy*zz/(Rcal2*pow(u2-z2,0.5)),
-    dthdz = 1./pow(u2-z2,0.5) * (z2*(u2+a2)/(Rcal2*u2) - 1.),
+    dthdx = xx*zz/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)),
+    dthdy = yy*zz/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)),
+    dthdz = 1./pow((u2*(x2+y2)/(u2+a2)),0.5) * (z2*(u2+a2)/(Rcal2*u2) - 1.),
     dphidx = aa/(a2+u2) * drdx - yy/(x2+y2) - drdx*aa/(u2 - mcal2), 
     dphidy = aa/(a2+u2) * drdy + xx/(x2+y2) - drdy*aa/(u2 - mcal2),
     dphidz = aa/(a2+u2) * drdz - drdz*aa/(u2 - mcal2);
@@ -233,7 +233,7 @@ void KerrHarmonic::gmunu_up(double gup[4][4], const double * pos) const {
     uu = rBL-1., // u = rBL-M is a useful quantity, see FV notes
     u2 = uu*uu,
     costhBL = zz/uu, costhBL2 = costhBL*costhBL, // BL cos(theta)
-    sinthBL = pow(1 - costhBL2,0.5), sinthBL2 = sinthBL*sinthBL,
+    sinthBL2 = (x2+y2)/(u2+a2), sinthBL = pow(sinthBL2,0.5),
     rho2BL = rBL*rBL + a2 * costhBL2, // usual rho2 quantity in BL metric
     DeltaBL = rBL*rBL - 2.*rBL + a2, // usual Delta quantity in BL metric
     cosPhi = (uu*xx + aa*yy)/(x2+y2) * sinthBL, //  Phi is KS phi, see FV notes; formula obtained playing with the x and y relations
@@ -293,7 +293,7 @@ void KerrHarmonic::jacobian(double jac[4][4][4], const double * pos) const {
     u2 = uu*uu,
     u2_mcal2 = u2 - mcal2,
     costhBL = zz/uu, costhBL2 = costhBL*costhBL, // BL cos(theta)
-    sinthBL = pow(1 - costhBL2,0.5), sinthBL2 = sinthBL*sinthBL,
+    sinthBL2 = (x2+y2)/(u2+a2), sinthBL = pow(sinthBL2,0.5),
     rho2BL = rBL2 + a2 * costhBL2, // usual rho2 quantity in BL metric
     DeltaBL = rBL2 - 2.*rBL + a2; // usual Delta quantity in BL metric
 
@@ -310,9 +310,9 @@ void KerrHarmonic::jacobian(double jac[4][4][4], const double * pos) const {
     drdx = uu*xx/Rcal2,
     drdy = uu*yy/Rcal2,
     drdz = (u2 + a2)*zz/(uu*Rcal2),
-    dthdx = xx*zz/(Rcal2*pow(u2-z2,0.5)),
-    dthdy = yy*zz/(Rcal2*pow(u2-z2,0.5)),
-    dthdz = 1./pow(u2-z2,0.5) * (z2*(u2+a2)/(Rcal2*u2) - 1.),
+    dthdx = xx*zz/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)),
+    dthdy = yy*zz/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)),
+    dthdz = 1./pow((u2*(x2+y2)/(u2+a2)),0.5) * (z2*(u2+a2)/(Rcal2*u2) - 1.),
     dphidx = aa/(a2+u2) * drdx - yy/(x2+y2) - drdx*aa/(u2 - mcal2), 
     dphidy = aa/(a2+u2) * drdy + xx/(x2+y2) - drdy*aa/(u2 - mcal2),
     dphidz = aa/(a2+u2) * drdz - drdz*aa/(u2 - mcal2);
@@ -327,17 +327,17 @@ void KerrHarmonic::jacobian(double jac[4][4][4], const double * pos) const {
     d2rdx2 = xx/Rcal2*drdx + uu/Rcal2 - 2.*uu*xx/Rcal3 * dRcaldx,
     d2rdy2 = yy/Rcal2*drdy + uu/Rcal2 - 2.*uu*yy/Rcal3 * dRcaldy,
     d2rdz2 = drdz * (1. - a2/u2) * zz/Rcal2 + (u2+a2)/(uu*Rcal2) - 2.*dRcaldz*zz/Rcal3 * (uu + a2/uu),
-    d2rdydx = xx/yy*d2rdy2 - xx/y2 * drdy,
+    d2rdydx = xx/Rcal2 * drdy - 2.*uu*xx/Rcal3 * dRcaldy,
     d2rdzdx = xx/Rcal2 * drdz - 2.*uu*xx/Rcal3 * dRcaldz,
     d2rdzdy = yy/Rcal2 * drdz - 2.*uu*yy/Rcal3 * dRcaldz,
-    d2thdx2 = zz/(Rcal2 * pow(u2-z2,0.5)) * (1. - xx * (2./Rcal * dRcaldx + uu/(u2-z2) * drdx)),
-    d2thdy2 = zz/(Rcal2 * pow(u2-z2,0.5)) * (1. - yy * (2./Rcal * dRcaldy + uu/(u2-z2) * drdy)),
-    d2thdz2 = 1./pow(u2-z2,0.5) * ((zz - uu*drdz)/(u2-z2) * (z2*(u2+a2)/(Rcal2*u2) - 1.)
+    d2thdx2 = zz/(Rcal2 * pow((u2*(x2+y2)/(u2+a2)),0.5)) * (1. - xx * (2./Rcal * dRcaldx + uu/((u2*(x2+y2)/(u2+a2))) * drdx)),
+    d2thdy2 = zz/(Rcal2 * pow((u2*(x2+y2)/(u2+a2)),0.5)) * (1. - yy * (2./Rcal * dRcaldy + uu/((u2*(x2+y2)/(u2+a2))) * drdy)),
+    d2thdz2 = 1./pow((u2*(x2+y2)/(u2+a2)),0.5) * ((zz - uu*drdz)/((u2*(x2+y2)/(u2+a2))) * (z2*(u2+a2)/(Rcal2*u2) - 1.)
 				   + 2.*zz*(u2+a2)/(Rcal2*u2) + 2.*z2/(Rcal2*uu)*drdz
 				   - 2.*z2*(u2+a2)/(Rcal3*u2)*dRcaldz - 2.*z2*(u2+a2)/(Rcal2*u2*uu)*drdz), // this one is really pretty, isn't it?
-    d2thdydx = -xx*zz/(Rcal2*pow(u2-z2,0.5)) * (2./Rcal * dRcaldy + uu/(u2-z2) * drdy),
-    d2thdzdx = xx/(Rcal2*pow(u2-z2,0.5)) * (1. - 2.*zz/Rcal * dRcaldz - zz/(u2-z2) * (drdz*uu - zz)),
-    d2thdzdy = yy/(Rcal2*pow(u2-z2,0.5)) * (1. - 2.*zz/Rcal * dRcaldz - zz/(u2-z2) * (drdz*uu - zz)),
+    d2thdydx = -xx*zz/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)) * (2./Rcal * dRcaldy + uu/((u2*(x2+y2)/(u2+a2))) * drdy),
+    d2thdzdx = xx/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)) * (1. - 2.*zz/Rcal * dRcaldz - zz/((u2*(x2+y2)/(u2+a2))) * (drdz*uu - zz)),
+    d2thdzdy = yy/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)) * (1. - 2.*zz/Rcal * dRcaldz - zz/((u2*(x2+y2)/(u2+a2))) * (drdz*uu - zz)),
     d2phidx2 = aa/(a2+u2) * d2rdx2 - 2.*aa * uu / ((a2+u2)*(a2+u2)) * drdx*drdx + 2.*xx*yy/((x2+y2)*(x2+y2)) - d2rdx2*aa/u2_mcal2 + 2.*drdx*drdx*aa*uu/(u2_mcal2 * u2_mcal2),
     d2phidy2 = aa/(a2+u2) * d2rdy2 - 2.*aa * uu / ((a2+u2)*(a2+u2)) * drdy*drdy - 2.*xx*yy/((x2+y2)*(x2+y2)) - d2rdy2*aa/u2_mcal2 + 2.*drdy*drdy*aa*uu/(u2_mcal2 * u2_mcal2),
     d2phidz2 = aa/(a2+u2) * d2rdz2 - 2.*aa * uu / ((a2+u2)*(a2+u2)) * drdz*drdz - d2rdz2*aa/u2_mcal2 + 2.*drdz*drdz*aa*uu/(u2_mcal2 * u2_mcal2),
@@ -514,7 +514,7 @@ void KerrHarmonic::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4], 
     u2 = uu*uu,
     u2_mcal2 = u2 - mcal2,
     costhBL = zz/uu, costhBL2 = costhBL*costhBL, // BL cos(theta)
-    sinthBL = pow(1 - costhBL2,0.5), sinthBL2 = sinthBL*sinthBL,
+    sinthBL2 = (x2+y2)/(u2+a2), sinthBL = pow(sinthBL2,0.5),
     rho2BL = rBL2 + a2 * costhBL2, // usual rho2 quantity in BL metric
     DeltaBL = rBL2 - 2.*rBL + a2, // usual Delta quantity in BL metric
     cosPhi = (uu*xx + aa*yy)/(x2+y2) * sinthBL, // Phi is KS phi, see FV notes; formula obtained playing with the x and y relations
@@ -541,9 +541,9 @@ void KerrHarmonic::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4], 
     drdx = uu*xx/Rcal2,
     drdy = uu*yy/Rcal2,
     drdz = (u2 + a2)*zz/(uu*Rcal2),
-    dthdx = xx*zz/(Rcal2*pow(u2-z2,0.5)),
-    dthdy = yy*zz/(Rcal2*pow(u2-z2,0.5)),
-    dthdz = 1./pow(u2-z2,0.5) * (z2*(u2+a2)/(Rcal2*u2) - 1.),
+    dthdx = xx*zz/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)),
+    dthdy = yy*zz/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)),
+    dthdz = 1./pow((u2*(x2+y2)/(u2+a2)),0.5) * (z2*(u2+a2)/(Rcal2*u2) - 1.),
     dphidx = aa/(a2+u2) * drdx - yy/(x2+y2) - drdx*aa/(u2 - mcal2), 
     dphidy = aa/(a2+u2) * drdy + xx/(x2+y2) - drdy*aa/(u2 - mcal2),
     dphidz = aa/(a2+u2) * drdz - drdz*aa/(u2 - mcal2);
@@ -570,17 +570,17 @@ void KerrHarmonic::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4], 
     d2rdx2 = xx/Rcal2*drdx + uu/Rcal2 - 2.*uu*xx/Rcal3 * dRcaldx,
     d2rdy2 = yy/Rcal2*drdy + uu/Rcal2 - 2.*uu*yy/Rcal3 * dRcaldy,
     d2rdz2 = drdz * (1. - a2/u2) * zz/Rcal2 + (u2+a2)/(uu*Rcal2) - 2.*dRcaldz*zz/Rcal3 * (uu + a2/uu),
-    d2rdydx = xx/yy*d2rdy2 - xx/y2 * drdy,
+    d2rdydx = xx/Rcal2 * drdy - 2.*uu*xx/Rcal3 * dRcaldy,
     d2rdzdx = xx/Rcal2 * drdz - 2.*uu*xx/Rcal3 * dRcaldz,
     d2rdzdy = yy/Rcal2 * drdz - 2.*uu*yy/Rcal3 * dRcaldz,
-    d2thdx2 = zz/(Rcal2 * pow(u2-z2,0.5)) * (1. - xx * (2./Rcal * dRcaldx + uu/(u2-z2) * drdx)),
-    d2thdy2 = zz/(Rcal2 * pow(u2-z2,0.5)) * (1. - yy * (2./Rcal * dRcaldy + uu/(u2-z2) * drdy)),
-    d2thdz2 = 1./pow(u2-z2,0.5) * ((zz - uu*drdz)/(u2-z2) * (z2*(u2+a2)/(Rcal2*u2) - 1.)
+    d2thdx2 = zz/(Rcal2 * pow((u2*(x2+y2)/(u2+a2)),0.5)) * (1. - xx * (2./Rcal * dRcaldx + uu/((u2*(x2+y2)/(u2+a2))) * drdx)),
+    d2thdy2 = zz/(Rcal2 * pow((u2*(x2+y2)/(u2+a2)),0.5)) * (1. - yy * (2./Rcal * dRcaldy + uu/((u2*(x2+y2)/(u2+a2))) * drdy)),
+    d2thdz2 = 1./pow((u2*(x2+y2)/(u2+a2)),0.5) * ((zz - uu*drdz)/((u2*(x2+y2)/(u2+a2))) * (z2*(u2+a2)/(Rcal2*u2) - 1.)
 				   + 2.*zz*(u2+a2)/(Rcal2*u2) + 2.*z2/(Rcal2*uu)*drdz
 				   - 2.*z2*(u2+a2)/(Rcal3*u2)*dRcaldz - 2.*z2*(u2+a2)/(Rcal2*u2*uu)*drdz), // this one is really pretty, isn't it?
-    d2thdydx = -xx*zz/(Rcal2*pow(u2-z2,0.5)) * (2./Rcal * dRcaldy + uu/(u2-z2) * drdy),
-    d2thdzdx = xx/(Rcal2*pow(u2-z2,0.5)) * (1. - 2.*zz/Rcal * dRcaldz - zz/(u2-z2) * (drdz*uu - zz)),
-    d2thdzdy = yy/(Rcal2*pow(u2-z2,0.5)) * (1. - 2.*zz/Rcal * dRcaldz - zz/(u2-z2) * (drdz*uu - zz)),
+    d2thdydx = -xx*zz/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)) * (2./Rcal * dRcaldy + uu/((u2*(x2+y2)/(u2+a2))) * drdy),
+    d2thdzdx = xx/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)) * (1. - 2.*zz/Rcal * dRcaldz - zz/((u2*(x2+y2)/(u2+a2))) * (drdz*uu - zz)),
+    d2thdzdy = yy/(Rcal2*pow((u2*(x2+y2)/(u2+a2)),0.5)) * (1. - 2.*zz/Rcal * dRcaldz - zz/((u2*(x2+y2)/(u2+a2))) * (drdz*uu - zz)),
     d2phidx2 = aa/(a2+u2) * d2rdx2 - 2.*aa * uu / ((a2+u2)*(a2+u2)) * drdx*drdx + 2.*xx*yy/((x2+y2)*(x2+y2)) - d2rdx2*aa/u2_mcal2 + 2.*drdx*drdx*aa*uu/(u2_mcal2 * u2_mcal2),
     d2phidy2 = aa/(a2+u2) * d2rdy2 - 2.*aa * uu / ((a2+u2)*(a2+u2)) * drdy*drdy - 2.*xx*yy/((x2+y2)*(x2+y2)) - d2rdy2*aa/u2_mcal2 + 2.*drdy*drdy*aa*uu/(u2_mcal2 * u2_mcal2),
     d2phidz2 = aa/(a2+u2) * d2rdz2 - 2.*aa * uu / ((a2+u2)*(a2+u2)) * drdz*drdz - d2rdz2*aa/u2_mcal2 + 2.*drdz*drdz*aa*uu/(u2_mcal2 * u2_mcal2),

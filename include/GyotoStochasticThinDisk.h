@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2025 Irene Urso
+    Copyright 2025, 2026 Irene Urso & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -87,7 +87,9 @@ class Gyoto::Astrobj::StochasticThinDisk : public Astrobj::ThinDisk {
   virtual double solution(double const c_obj[8]=NULL) const;
   virtual double envelope(double nu_em, state_t const &c_ph,double const c_obj[8]=NULL) const;
   
-  virtual double emission(double nu_em, state_t const &c_ph,double const c_obj[8]=NULL) const;
+  using Astrobj::ThinDisk::emission;
+  virtual double emission(double nu_em, double,
+			  state_t const &c_ph,double const c_obj[8]=NULL) const override;
   virtual void getVelocity(double const pos[4], double vel[4]);
 
   virtual void processHitQuantities(Photon* ph,

@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
 #include <cmath>
 
 using namespace Gyoto;
@@ -38,20 +39,26 @@ GYOTO_PROPERTY_DOUBLE(Kerr2PN, Quadrupole, quadrupole,
 GYOTO_PROPERTY_BOOL(Kerr2PN, KerrQuadrupole, NoKerrQuadrupole,
 		    kerrQuadrupole,
 		    "Should we fix the quadrupole to the Kerr value -spin^2? (bool, True)")
+GYOTO_PROPERTY_DOUBLE(Kerr2PN, PNOrder, pnOrder,
+		      "Post-Newtonian truncation order: 1 or 2 (default 2).")
 GYOTO_PROPERTY_END(Kerr2PN, Generic::properties)
+
+
 
 // accessors
 
 Gyoto::Metric::Kerr2PN::Kerr2PN() :
 Generic(GYOTO_COORDKIND_CARTESIAN, "Kerr2PN"),
-  spin_(0.), Q_(0.), quadrupole_is_kerr_(1)
+  spin_(0.), Q_(0.), quadrupole_is_kerr_(1), pnorder_(2)   // default: full 2PN
 {
   GYOTO_DEBUG << endl;
 }
 
+
 Gyoto::Metric::Kerr2PN::Kerr2PN(const Kerr2PN & orig)
   : Generic(orig), spin_(orig.spin_), Q_(orig.Q_),
-    quadrupole_is_kerr_(orig.quadrupole_is_kerr_)
+    quadrupole_is_kerr_(orig.quadrupole_is_kerr_),
+    pnorder_(orig.pnorder_)
 {
   GYOTO_DEBUG << endl;
 }
@@ -85,7 +92,15 @@ void Kerr2PN::quadrupole(const double QQ) {
   } // else they are independent parameters
 }
 void Kerr2PN::kerrQuadrupole(bool t) {
-  quadrupole_is_kerr_=t;}
+  quadrupole_is_kerr_=t;
+}
+void Kerr2PN::pnOrder(double n) {
+  int ni = int(n+0.5);
+  if (ni!=1 && ni!=2)
+    GYOTO_ERROR("Kerr2PN::pnOrder: order must be 1 or 2");
+  pnorder_ = (unsigned int)(ni);
+}
+double Kerr2PN::pnOrder() const { return double(pnorder_); }
 
 // Accessors
 double Kerr2PN::spin() const { return spin_ ; }
@@ -93,116 +108,172 @@ double Kerr2PN::quadrupole() const { return Q_ ; }
 bool Kerr2PN::kerrQuadrupole() const {
   return quadrupole_is_kerr_;}
 
-double Kerr2PN::gmunu(const double * pos, int mu, int nu) const {
-  double xx = pos[1], yy = pos[2], zz = pos[3],
-    rr = pow(xx*xx+yy*yy+zz*zz,0.5);
+/*
+  Full 4x4 covariant metric in one shot.
 
-  if ((mu==0) && (nu==0)) return -1.;
-  if ((mu==1) && (nu==1)) return 1.;
-  if ((mu==2) && (nu==2)) return 1.;
-  if ((mu==3) && (nu==3)) return 1.;
+  Without this override Generic::gmunu(g,pos) calls the scalar
+  gmunu(pos,mu,nu) 16 times, each one redoing the sqrt, the divisions
+  and the branch cascade.  This version is used by ScalarProd() and thus
+  by every norm check of the integrator.
+*/
+void Kerr2PN::gmunu(double g[4][4], const double * pos) const {
+  const double xx = pos[1], yy = pos[2], zz = pos[3];
+  const double r2 = xx*xx + yy*yy + zz*zz;
+  const double ir = 1./sqrt(r2);
+  const double ir2 = ir*ir, ir3 = ir2*ir, ir4 = ir2*ir2;
 
-  return 0.;
+  double g00 = -1. + 2.*ir - 2.*ir2;      // 0PN + 1PN
+  double A   =  1. + 2.*ir;               // 0PN + 1PN
+  double g01 = 0., g02 = 0., B = 0.;
+
+  if (pnorder_>=2) {
+    const double ne = zz*ir;
+    g00 += ir3*( 2. - spin_*spin_*(3.*ne*ne - 1.) );
+    A   += ir2;
+    B    = ir4;                           // coefficient of x_i x_j
+    const double w = 2.*spin_*ir3;        // g_0i = 2 (x X J)_i / r^3
+    g01 =  w*yy;
+    g02 = -w*xx;
+  }
+
+  const double x[3] = {xx, yy, zz};
+  g[0][0] = g00;
+  g[0][1] = g[1][0] = g01;
+  g[0][2] = g[2][0] = g02;
+  g[0][3] = g[3][0] = 0.;
+  for (int i=0; i<3; ++i) {
+    g[i+1][i+1] = A + B*x[i]*x[i];
+    for (int j=i+1; j<3; ++j)
+      g[i+1][j+1] = g[j+1][i+1] = B*x[i]*x[j];
+  }
 }
 
-// double Kerr2PN::gmunu_up(const double * pos, int mu, int nu) const {
-//   double rr = pos[1];
-//   if (rr<=0.) GYOTO_ERROR("In Kerr2PN::gmunu: r<0!");
+double Kerr2PN::gmunu(const double * pos, int mu, int nu) const {
+  const double xx = pos[1], yy = pos[2], zz = pos[3];
+  const double r2 = xx*xx + yy*yy + zz*zz;
+  const double ir = 1./sqrt(r2);
+  const double ir2 = ir*ir, ir3 = ir2*ir;
+  const bool pn2 = (pnorder_>=2);
 
-//   double sth2, cth2;
-//   sincos(pos[2], &sth2, &cth2);
-//   sth2*=sth2; cth2*=cth2;
+  if (mu==0 && nu==0) {
+    double val = -1. + 2.*ir - 2.*ir2;
+    if (pn2) {
+      const double ne = zz*ir;
+      val += ir3*( 2. - spin_*spin_*(3.*ne*ne - 1.) );
+    }
+    return val;
+  }
 
-//   //if ((mu==0) && (nu==0)) return -1./(1 - 2./rr + charge_*charge_/(rr*rr));
-//   //if ((mu==1) && (nu==1)) return (1. - 2./rr + charge_*charge_/(rr*rr));
-//   //if ((mu==2) && (nu==2)) return 1./(rr*rr);
-//   //if ((mu==3) && (nu==3)) return 1./(rr*rr*sth2);
+  if (mu==0 || nu==0) {
+    if (!pn2) return 0.;
+    const int ii = (mu==0) ? nu : mu;
+    if (ii==1) return  2.*spin_*yy*ir3;
+    if (ii==2) return -2.*spin_*xx*ir3;
+    return 0.;
+  }
 
-//   return 0.;
-// } 
+  // spatial block
+  const double x[4] = {0., xx, yy, zz};
+  double val = (mu==nu) ? 1. + 2.*ir + (pn2 ? ir2 : 0.) : 0.;
+  if (pn2) val += x[mu]*x[nu]*ir2*ir2;
+  return val;
+}
+
 
 int Kerr2PN::christoffel(double dst[4][4][4], double const pos[4]) const
 {
-  int a, mu, nu;
-  for (a=0; a<4; ++a)
-    for(mu=0; mu<4; ++mu)
-      for(nu=0; nu<4; ++nu)
-	dst[a][mu][nu]=0.;
+  std::memset(dst, 0, 64*sizeof(double));
 
-  //cout << "In Kerr2PN" << endl;
+  const double x[3] = {pos[1], pos[2], pos[3]};
+  const double r2  = x[0]*x[0] + x[1]*x[1] + x[2]*x[2];
+  const double ir  = 1./sqrt(r2);                 // the only sqrt + division
+  const double ir2 = ir*ir,  ir3 = ir2*ir, ir4 = ir2*ir2;
+  const double ir5 = ir4*ir, ir6 = ir4*ir2;
+  const bool   pn2 = (pnorder_>=2);
+
+  // ---- Gamma^0_0i = x^i/r^3 (complete at every order) --------------
+  for (int i=0; i<3; ++i) {
+    const double v = x[i]*ir3;
+    dst[0][0][i+1] = v;
+    dst[0][i+1][0] = v;
+  }
+
+  // ---- Gamma^i_00  (monopole part) ---------------------------------
+  {
+    double b = 1. - 4.*ir;                  // 0PN + 1PN
+    if (pn2) b += 9.*ir2;
+    const double f = ir3*b;
+    for (int i=0; i<3; ++i) dst[i+1][0][0] = x[i]*f;
+  }
+
+  // ---- Gamma^i_jk = c1 (d_ij x_k + d_ik x_j) + c2 d_jk x_i + c3 x_i x_j x_k
+  {
+    const double c1 = pn2 ? (ir4 - ir3) : -ir3;
+    const double c2 = ir3;
+    const double c3 = pn2 ? -2.*ir6 : 0.;
+    for (int i=0; i<3; ++i) {
+      const int a = (i==2) ? 0 : i+1;           // the two other indices
+      const int b = (a==2) ? 0 : a+1;
+      const double xi = x[i], xa = x[a], xb = x[b];
+      const double c3xi = c3*xi;
+      const double v_ii = (2.*c1 + c2)*xi + c3xi*xi*xi;
+      const double v_ia = (c1 + c3xi*xi)*xa;    // Gamma^i_{i a}
+      const double v_ib = (c1 + c3xi*xi)*xb;    // Gamma^i_{i b}
+      const double w_aa = xi*(c2 + c3*xa*xa);   // Gamma^i_{a a}
+      const double w_bb = xi*(c2 + c3*xb*xb);   // Gamma^i_{b b}
+      const double w_ab = c3xi*xa*xb;           // Gamma^i_{a b}
+      dst[i+1][i+1][i+1] = v_ii;
+      dst[i+1][i+1][a+1] = dst[i+1][a+1][i+1] = v_ia;
+      dst[i+1][i+1][b+1] = dst[i+1][b+1][i+1] = v_ib;
+      dst[i+1][a+1][a+1] = w_aa;
+      dst[i+1][b+1][b+1] = w_bb;
+      dst[i+1][a+1][b+1] = dst[i+1][b+1][a+1] = w_ab;
+    }
+  }
+
+  // ---- 2PN-only terms ------------------------------------------------
+  if (pn2 && spin_!=0.) {
+    const double chi = spin_, chi2 = chi*chi;
+
+    // quadrupole part of Gamma^i_00
+    const double ne = x[2]*ir;
+    const double h  = 0.5*chi2;
+    const double q  = -3.*h*ir5*(5.*ne*ne - 1.);
+    dst[1][0][0] += q*x[0];
+    dst[2][0][0] += q*x[1];
+    dst[3][0][0] += q*x[2] + 6.*h*ne*ir4;
+
+    // frame dragging (1.5PN): Gamma^0_ij and Gamma^i_0j, J = chi z_hat
+    const double s   = chi*ir5;
+    const double xy  = x[0]*x[1], yz = x[1]*x[2], xz = x[0]*x[2];
+    const double rho2 = x[0]*x[0] + x[1]*x[1];
+
+    dst[0][1][1] =  6.*s*xy;
+    dst[0][2][2] = -6.*s*xy;
+    dst[0][1][2] = dst[0][2][1] = -3.*s*(x[0]*x[0] - x[1]*x[1]);
+    dst[0][1][3] = dst[0][3][1] =  3.*s*yz;
+    dst[0][2][3] = dst[0][3][2] = -3.*s*xz;
+
+    const double a = chi*(2.*ir3 - 3.*rho2*ir5);
+    dst[1][0][2] = dst[1][2][0] =  a;
+    dst[2][0][1] = dst[2][1][0] = -a;
+    dst[1][0][3] = dst[1][3][0] = -3.*s*yz;
+    dst[3][0][1] = dst[3][1][0] =  3.*s*yz;
+    dst[2][0][3] = dst[2][3][0] =  3.*s*xz;
+    dst[3][0][2] = dst[3][2][0] = -3.*s*xz;
+  }
 
   return 0;
 }
 
+
 int Kerr2PN::isStopCondition(double const * const coord) const {
-  double rsink = 0.;
+  // Compare r^2 to rsink^2: no pow(), no sqrt on the position.
+  double rsink2 = 0.;
   if (spin_*spin_<1.){ // Black hole solution with event horizon
-    double rhor = 1 + sqrt(1 - spin_*spin_);
-    rsink = rhor + GYOTO_KERR_HORIZON_SECURITY;
+    const double rsink = 1. + sqrt(1. - spin_*spin_) + GYOTO_KERR_HORIZON_SECURITY;
+    rsink2 = rsink*rsink;
   }
-
-  double xx=coord[1], yy=coord[2], zz=coord[3],
-    rr = pow(xx*xx+yy*yy+zz*zz,0.5);
-
-  return rr < rsink ;
+  const double xx=coord[1], yy=coord[2], zz=coord[3];
+  return (xx*xx + yy*yy + zz*zz) < rsink2;
 }
-
-// void Kerr2PN::circularVelocity(double const * coor, double* vel,
-// 					     double dir) const {
-//   double sinth = sin(coor[2]);
-//   double coord[4] = {coor[0], coor[1]*sinth, M_PI*0.5, coor[3]};
-//   if (charge_*charge_ > coord[1])
-//     GYOTO_ERROR("RN::circularVelocity: bad radius to evaluate Omega");
-  
-//   vel[1] = vel[2] = 0.;
-//   vel[3] = 1./(dir*pow(coord[1], 1.5)) * sqrt(1 - charge_*charge_/coord[1]);
-  
-//   vel[0] = SysPrimeToTdot(coor, vel+1);
-//   vel[3] *= vel[0];
-// }
-
-// // PolishDoughnut specific functions
-// double Kerr2PN::getPotential(double const pos[4], double l_cst) const {
-//   // this is W = -ln(|u_t|) for a circular equatorial 4-velocity
-//   // Careful this is not the same as in publications where W is defined
-//   // as Wpubli = +ln(|u_t|). Thus, the center of the doughnut, which is
-//   // the minimum of Wpubli, is the maximum of WGyoto.
-  
-//   double rr = pos[1], r2 = rr*rr, sth = sin(pos[2]), sth2 = sth*sth,
-//     q2 = charge_*charge_,
-//     term = r2 - 2.*rr + q2;
-//   if (r2*sth2 - term * l_cst * l_cst / r2 == 0.){
-//     cout << "At r,sth2= " << rr << " " << sth2 << endl;
-//     GYOTO_ERROR("bad values in potential");
-//   }
-//   double logarg = term * sth2 / (r2*sth2 - term * l_cst * l_cst / r2);
-
-//   double  gtt = gmunu(pos,0,0);
-//   double  gpp = gmunu(pos,3,3);
-  
-//   if (logarg < 0){
-//     cout << "At r,sth2= " << rr << " " << sth2 << endl;
-//     cout << "ut2= " << -gtt*gpp/(gpp+l_cst*l_cst*gtt) << endl;
-//     GYOTO_ERROR("bad values in potential");
-//   }
-//   double W = -1./2. * log(logarg);
-
-//   // double  gtt = gmunu(pos,0,0);
-//   // double  gtp = gmunu(pos,0,3);
-//   // double  gpp = gmunu(pos,3,3);
-//   // double  Omega = -(gtp + l_cst * gtt)/(gpp + l_cst * gtp) ;
-  
-//   // double  W = 0.5 * log(abs(gtt + 2. * Omega * gtp + Omega*Omega * gpp)) 
-//   //   - log(abs(gtt + Omega * gtp)) ;
-  
-//   return  W ;
-// }
-// double Kerr2PN::getSpecificAngularMomentum(double rr) const {
-//   // this is l = -u_phi/u_t for a circular equatorial 4-velocity
-//   double qq=charge_, q2=qq*qq, r2=rr*rr;
-//   if (rr<q2 or 1. - 2./rr + q2/r2 == 0.){
-//     cout << "r, q2, term= " << rr << " " << q2 << " " << 1. - 2./rr + q2/r2 << endl;
-//     GYOTO_ERROR("bad values in l !");
-//   }
-//   return sqrt(rr-q2)/(1. - 2./rr + q2/r2);
-// }

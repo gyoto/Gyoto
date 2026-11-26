@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2024 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2026 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -479,9 +479,6 @@ private:
   virtual void processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
                                    double const * coord_obj_hit, double dt,
                                    Astrobj::Properties* data) const;
-  virtual void processHitQuantities(Photon* ph, double* coord_ph_hit,
-                                   double* coord_obj_hit, double dt,
-                                   Astrobj::Properties* data) const = delete ;
 
   /**
    * \brief Specific intensity I<SUB>&nu;</SUB>
@@ -535,9 +532,6 @@ private:
   virtual double emission(double nu_em, double dsem, state_t const &coord_ph,
 			  double const coord_obj[8]=NULL)
     const ;
-  virtual double emission(double nu_em, double dsem, double coord_ph[8],
-			  double coord_obj[8]=NULL)
-    const = delete; ///< Obsolete, update your code;
 
   /**
    * \brief Specific intensity I<SUB>&nu;</SUB> for several values of &nu;<SUB>em</SUB>
@@ -564,9 +558,6 @@ private:
   virtual void emission(double Inu[], double const nu_em[], size_t nbnu,
 			double dsem, state_t const &coord_ph,
 			double const coord_obj[8]=NULL) const ;
-  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
-			double dsem, double coord_ph[8],
-			double coord_obj[8]=NULL) const = delete ; ///< Obsolete, update your code
 
   /**
    * \brief emission and transmission together
@@ -575,10 +566,7 @@ private:
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,
 			  double const coord_obj[8]=NULL) const ;
-  virtual void radiativeQ(double Inu[], double Taunu[], 
-			  double nu_em[], size_t nbnu,
-			  double dsem, double coord_ph[8],
-			  double coord_obj[8]=NULL) const = delete ;
+
   /**
    * \brief Compute the increment of Stokes parameters and transmission matrix. Polarised version of RadiaveQ
    * 
@@ -630,8 +618,6 @@ private:
   virtual double integrateEmission(double nu1, double nu2, double dsem,
 				   state_t const &c_ph, double const c_obj[8]=NULL) const;
     ///< &int;<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> d&nu; (or j<SUB>&nu;</SUB>)
-  virtual double integrateEmission(double nu1, double nu2, double dsem,
-				   double c_ph[8], double c_obj[8]=NULL) const=delete; ///< Obsolete, update your code
 
   /**
    * Like double integrateEmission(double nu1, double nu2, double
@@ -642,10 +628,6 @@ private:
 				 size_t const * chaninds, size_t nbnu,
 				 double dsem, state_t const &cph, double const *co) const;
     ///< &int;<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> d&nu; (or j<SUB>&nu;</SUB>)
-  virtual void integrateEmission(double * I, double const * boundaries,
-				 size_t const * chaninds, size_t nbnu,
-				 double dsem, double *cph, double *co) const = delete;
-  ///< Obsolete, update your code
 
   /**
    * transmission() computes the transmission of this fluid element or
@@ -658,9 +640,6 @@ private:
    */
   virtual double transmission(double nuem, double dsem, state_t const &coord_ph, double const coord_obj[8]) const ;
      ///< Transmission: exp( &alpha;<SUB>&nu;</SUB> * ds<SUB>em</SUB> )
-  virtual double transmission(double nuem, double dsem, state_t const &coord) const = delete;  ///< Obsolete, update your code
-  virtual double transmission(double nuem, double dsem, double coord[8]) const = delete;
-  ///< Obsolete, update your code
 
   /**
    * Omatrix() computes the exponential of the Mueller matrix 
